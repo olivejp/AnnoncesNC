@@ -64,6 +64,33 @@ public class FullscreenActivity extends AppCompatActivity implements NoticeDialo
 
     private boolean P_OK = false;
     private RetrofitService retrofitService;
+    private retrofit.Callback<ReturnClass> callbackCheckConnection = new retrofit.Callback<ReturnClass>() {
+        // ------------------------------------------------
+        // Vérification de la connection au serveur
+        @Override
+        public void success(ReturnClass returnClass, Response response) {
+            if (returnClass.isStatus()) {
+                imgTestServer.setImageResource(R.drawable.ic_action_accept);
+                imgGetInfos.setVisibility(View.VISIBLE);
+                retrofitService.listcategorie(callbackListCategorie);
+            } else {
+                if (backupService(imgTestServer, textTestServer, R.string.text_test_backup_server)){
+                    retrofitService.checkConnection(callbackCheckConnection);
+                }else{
+                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
+                }
+            }
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+            if (backupService(imgTestServer, textTestServer, R.string.text_test_backup_server)){
+                retrofitService.checkConnection(callbackCheckConnection);
+            }else{
+                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
+            }
+        }
+    };
     private retrofit.Callback<ReturnClass> callbackGetNbAnnonce = new retrofit.Callback<ReturnClass>() {
         @Override
         public void success(ReturnClass rs, Response response) {
@@ -158,33 +185,6 @@ public class FullscreenActivity extends AppCompatActivity implements NoticeDialo
                 retrofitService.listcategorie(callbackListCategorie);
             }else{
                 SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_cat_list), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_CAT_LIST);
-            }
-        }
-    };
-    private retrofit.Callback<ReturnClass> callbackCheckConnection = new retrofit.Callback<ReturnClass>() {
-        // ------------------------------------------------
-        // Vérification de la connection au serveur
-        @Override
-        public void success(ReturnClass returnClass, Response response) {
-            if (returnClass.isStatus()) {
-                imgTestServer.setImageResource(R.drawable.ic_action_accept);
-                imgGetInfos.setVisibility(View.VISIBLE);
-                retrofitService.listcategorie(callbackListCategorie);
-            } else {
-                if (backupService(imgTestServer, textTestServer, R.string.text_test_backup_server)){
-                    retrofitService.checkConnection(callbackCheckConnection);
-                }else{
-                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
-                }
-            }
-        }
-
-        @Override
-        public void failure(RetrofitError error) {
-            if (backupService(imgTestServer, textTestServer, R.string.text_test_backup_server)){
-                retrofitService.checkConnection(callbackCheckConnection);
-            }else{
-                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
             }
         }
     };
