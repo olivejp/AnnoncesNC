@@ -8,12 +8,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Message implements Parcelable {
-    protected Integer idMessage;
-    protected Utilisateur sender;
-    protected Utilisateur receiver;
-    protected String message;
-    protected Long dateMessage;
-
     public static final Parcelable.Creator<Message> CREATOR = new Parcelable.Creator<Message>() {
 
         @Override
@@ -26,6 +20,11 @@ public class Message implements Parcelable {
             return new Message[size];
         }
     };
+    protected Integer idMessage;
+    protected Utilisateur sender;
+    protected Utilisateur receiver;
+    protected String message;
+    protected Long dateMessage;
 
     /* Constructeur à partir d'un Parcel*/
     public Message(Parcel in) {

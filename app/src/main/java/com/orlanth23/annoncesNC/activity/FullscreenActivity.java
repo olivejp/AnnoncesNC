@@ -43,7 +43,6 @@ public class FullscreenActivity extends AppCompatActivity implements NoticeDialo
     private static final String DIALOG_TAG_NO_SERVER = "NO_SERVER";
     private static final String DIALOG_TAG_NO_CAT_LIST = "NO_CAT_LIST";
     private static final String DIALOG_TAG_NO_STATS = "NO_STATS";
-
     private static final String BUNDLE_INTENT_OK = "BUNDLE_INTENT_OK";
 
     @Bind(R.id.text_version)
@@ -63,60 +62,66 @@ public class FullscreenActivity extends AppCompatActivity implements NoticeDialo
     @Bind(R.id.imgGetStats)
     ImageView imgGetStats;
 
-    private boolean P_OK = false; // Ce paramètre passe à vrai quand on a passé au moins une fois tous les tests
-
+    private boolean P_OK = false;
     private RetrofitService retrofitService;
-
-    /**
-     * Méthode pour builder le retrofitService
-     */
-    private void definitionRetrofitBuilder(){
-        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
-    }
-
-    private boolean backupService(ImageView imgView, TextView textView, int resourceString){
-        imgView.setImageResource(R.drawable.ic_remove_inverse);
-        if (!AccessPoint.isBackUp()) {
-            // -----------------------------------------------
-            // TENTATIVE DE CONNEXION AU SERVEUR DE SECOURS
-            AccessPoint.getBackUp();
-            textView.setText(resourceString);
-            definitionRetrofitBuilder();
-            return true;
-        } else {
-            imgView.setImageResource(R.drawable.ic_remove_inverse);
-            return false;
-        }
-    }
-
-    private retrofit.Callback<ReturnClass> callbackCheckConnection = new retrofit.Callback<ReturnClass>() {
-        // ------------------------------------------------
-        // Vérification de la connection au serveur
+    private retrofit.Callback<ReturnClass> callbackGetNbAnnonce = new retrofit.Callback<ReturnClass>() {
         @Override
-        public void success(ReturnClass returnClass, Response response) {
-            if (returnClass.isStatus()) {
-                imgTestServer.setImageResource(R.drawable.ic_action_accept);
-                imgGetInfos.setVisibility(View.VISIBLE);
-                retrofitService.listcategorie(callbackListCategorie);
+        public void success(ReturnClass rs, Response response) {
+            if (rs.isStatus()) {
+                P_OK = true;
+                ListeStats.setNbAnnonces(Integer.valueOf(rs.getMsg()));
+
+                imgGetStats.setImageResource(R.drawable.ic_action_accept);
+
+                // Lancement de l'activité principale
+                Intent intent = new Intent();
+                intent.setClass(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
             } else {
-                if (backupService(imgTestServer, textTestServer, R.string.text_test_backup_server)){
+                if (backupService(imgGetStats, textGetStats, R.string.text_test_backup_server)){
                     retrofitService.checkConnection(callbackCheckConnection);
                 }else{
-                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
+                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
                 }
             }
         }
 
         @Override
         public void failure(RetrofitError error) {
-            if (backupService(imgTestServer, textTestServer, R.string.text_test_backup_server)){
-                retrofitService.checkConnection(callbackCheckConnection);
+            if (backupService(imgGetStats, textGetStats, R.string.text_test_backup_server)){
+                retrofitService.getNbAnnonce(callbackGetNbAnnonce);
             }else{
-                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
+                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
             }
         }
     };
+    private retrofit.Callback<ReturnClass> callbackGetNbUser = new retrofit.Callback<ReturnClass>() {
+        @Override
+        public void success(ReturnClass rs, Response response) {
+            if (rs.isStatus()) {
+                ListeStats.setNbUsers(Integer.valueOf(rs.getMsg()));
 
+                // ------------------------------------------------
+                // Récupération du nombre d'annonce
+                retrofitService.getNbAnnonce(callbackGetNbAnnonce);
+            } else {
+                if (backupService(imgGetStats, textGetStats, R.string.text_test_backup_server)){
+                    retrofitService.checkConnection(callbackCheckConnection);
+                }else{
+                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
+                }
+            }
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+            if (backupService(imgGetStats, textGetStats, R.string.text_test_backup_server)){
+                retrofitService.getNbUser(callbackGetNbUser);
+            }else{
+                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
+            }
+        }
+    };
     private retrofit.Callback<ReturnClass> callbackListCategorie = new retrofit.Callback<ReturnClass>() {
 
         // ------------------------------------------------
@@ -156,66 +161,52 @@ public class FullscreenActivity extends AppCompatActivity implements NoticeDialo
             }
         }
     };
-
-    private retrofit.Callback<ReturnClass> callbackGetNbUser = new retrofit.Callback<ReturnClass>() {
+    private retrofit.Callback<ReturnClass> callbackCheckConnection = new retrofit.Callback<ReturnClass>() {
+        // ------------------------------------------------
+        // Vérification de la connection au serveur
         @Override
-        public void success(ReturnClass rs, Response response) {
-            if (rs.isStatus()) {
-                ListeStats.setNbUsers(Integer.valueOf(rs.getMsg()));
-
-                // ------------------------------------------------
-                // Récupération du nombre d'annonce
-                retrofitService.getNbAnnonce(callbackGetNbAnnonce);
+        public void success(ReturnClass returnClass, Response response) {
+            if (returnClass.isStatus()) {
+                imgTestServer.setImageResource(R.drawable.ic_action_accept);
+                imgGetInfos.setVisibility(View.VISIBLE);
+                retrofitService.listcategorie(callbackListCategorie);
             } else {
-                if (backupService(imgGetStats, textGetStats, R.string.text_test_backup_server)){
+                if (backupService(imgTestServer, textTestServer, R.string.text_test_backup_server)){
                     retrofitService.checkConnection(callbackCheckConnection);
                 }else{
-                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
+                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
                 }
             }
         }
 
         @Override
         public void failure(RetrofitError error) {
-            if (backupService(imgGetStats, textGetStats, R.string.text_test_backup_server)){
-                retrofitService.getNbUser(callbackGetNbUser);
+            if (backupService(imgTestServer, textTestServer, R.string.text_test_backup_server)){
+                retrofitService.checkConnection(callbackCheckConnection);
             }else{
-                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
+                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
             }
         }
     };
 
-    private retrofit.Callback<ReturnClass> callbackGetNbAnnonce = new retrofit.Callback<ReturnClass>() {
-        @Override
-        public void success(ReturnClass rs, Response response) {
-            if (rs.isStatus()) {
-                P_OK = true;
-                ListeStats.setNbAnnonces(Integer.valueOf(rs.getMsg()));
+    private void definitionRetrofitBuilder(){
+        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
+    }
 
-                imgGetStats.setImageResource(R.drawable.ic_action_accept);
-
-                // Lancement de l'activité principale
-                Intent intent = new Intent();
-                intent.setClass(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
-            } else {
-                if (backupService(imgGetStats, textGetStats, R.string.text_test_backup_server)){
-                    retrofitService.checkConnection(callbackCheckConnection);
-                }else{
-                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
-                }
-            }
+    private boolean backupService(ImageView imgView, TextView textView, int resourceString){
+        imgView.setImageResource(R.drawable.ic_remove_inverse);
+        if (!AccessPoint.isBackUp()) {
+            // -----------------------------------------------
+            // TENTATIVE DE CONNEXION AU SERVEUR DE SECOURS
+            AccessPoint.getBackUpServer();
+            textView.setText(resourceString);
+            definitionRetrofitBuilder();
+            return true;
+        } else {
+            imgView.setImageResource(R.drawable.ic_remove_inverse);
+            return false;
         }
-
-        @Override
-        public void failure(RetrofitError error) {
-            if (backupService(imgGetStats, textGetStats, R.string.text_test_backup_server)){
-                retrofitService.getNbAnnonce(callbackGetNbAnnonce);
-            }else{
-                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
-            }
-        }
-    };
+    }
 
     private void callWebservices() {
 
@@ -295,6 +286,5 @@ public class FullscreenActivity extends AppCompatActivity implements NoticeDialo
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
-
     }
 }

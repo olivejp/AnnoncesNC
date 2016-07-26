@@ -15,10 +15,8 @@ import android.widget.Toast;
 
 import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.activity.ChangePasswordActivity;
-import com.orlanth23.annoncesNC.activity.MessageActivity;
 import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
 import com.orlanth23.annoncesNC.dto.CurrentUser;
-import com.orlanth23.annoncesNC.dto.Utilisateur;
 import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesNC.utility.Constants;
 import com.orlanth23.annoncesNC.utility.Utility;
@@ -38,9 +36,7 @@ import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByActivity;
 public class MyProfileFragment extends Fragment{
 
     public static final String tag = MyProfileFragment.class.getName();
-
     public final static int CODE_CHANGE_PASSWORD = 600;
-    public final static int CODE_MY_MESSAGES = 700;
 
     @Bind(R.id.emailMyProfile)
     EditText emailMyProfile;
@@ -55,16 +51,9 @@ public class MyProfileFragment extends Fragment{
     @Bind(R.id.action_deconnexion)
     Button action_deconnexion;
 
-    // ToDo - Pour afficher les messages désactiver le commentaire
-    //    @Bind(R.id.action_messages)
-    //    Button action_messages;
-
     private RetrofitService retrofitService;
     private String newEmail;
     private Integer newTelephone;
-
-    public MyProfileFragment() {
-    }
 
     public static MyProfileFragment newInstance() {
         return new MyProfileFragment();
@@ -91,25 +80,12 @@ public class MyProfileFragment extends Fragment{
             myCustomActivity.changeColorToolBar(Constants.colorPrimary);
         }
 
-        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
-
-        // ToDo - Pour afficher les messages désactiver le commentaire
-        // Création d'un appel pour gérer les messages
-        //        View.OnClickListener onClickListenerMyMessage = new View.OnClickListener() {
-        //            @Override
-        //            public void onClick(View view) {
-        //                Intent intent = new Intent();
-        //                intent.setClass(getActivity(), MessageActivity.class);
-        //                startActivityForResult(intent, CODE_MY_MESSAGES);
-        //            }
-        //        };
-
+        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
 
         // Création d'un listener pour se déconnecter
         View.OnClickListener onClickListenerDeconnexion = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CurrentUser.getInstance();
                 CurrentUser.getInstance().setIdUTI(null);
                 CurrentUser.getInstance().setEmailUTI(null);
                 CurrentUser.getInstance().setTelephoneUTI(null);
@@ -204,8 +180,6 @@ public class MyProfileFragment extends Fragment{
         action_desinscrire.setOnClickListener(onClickListenerUnregister);
         action_change_password.setOnClickListener(onClickListenerChangePassword);
         action_deconnexion.setOnClickListener(onClickListenerDeconnexion);
-        // ToDo - Pour afficher les messages désactiver le commentaire
-        //        action_messages.setOnClickListener(onClickListenerMyMessage);
 
         return rootView;
     }

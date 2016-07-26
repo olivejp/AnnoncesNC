@@ -46,7 +46,6 @@ public class CurrentUser extends Utilisateur implements Parcelable {
     }
 
     private CurrentUser() {
-        // Ouverture d'une fenêtre pour authentification
         super();
         connected = false;
     }
@@ -59,11 +58,7 @@ public class CurrentUser extends Utilisateur implements Parcelable {
     }
 
     public static boolean isConnected() {
-        if (INSTANCE == null) {
-            return false;
-        } else {
-            return connected;
-        }
+        return INSTANCE != null && connected;
     }
 
     public static void setConnected(boolean connected) {
@@ -76,45 +71,41 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         // Récupération de l'utilisateur par défaut
         // Création d'un RestAdapter pour le futur appel de mon RestService
         String connexion_auto = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT);
-        if (connexion_auto != null) {
-            if (connexion_auto.equals("O")) {
-                if (!CurrentUser.isConnected()) {
-                    String email = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
-                    String password = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD);
+        if (connexion_auto != null && connexion_auto.equals("O")) {
+            if (!CurrentUser.isConnected()) {
+                String email = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
+                String password = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD);
 
-                    // Si les données d'identification ont été saisies
-                    if (email != null && password != null) {
-                        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
-                        retrofitService.doLogin(email, password, new Callback<ReturnClass>() {
-                                    @Override
-                                    public void success(ReturnClass rs, Response response) {
-                                        if (rs.isStatus()) {
-                                            Gson gson = new Gson();
+                // Si les données d'identification ont été saisies
+                if (email != null && password != null) {
+                    RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
+                    retrofitService.doLogin(email, password, new Callback<ReturnClass>() {
+                                @Override
+                                public void success(ReturnClass rs, Response response) {
+                                    if (rs.isStatus()) {
+                                        Gson gson = new Gson();
 
-                                            Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+                                        Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+                                        CurrentUser.getInstance().setIdUTI(user.getIdUTI());
+                                        CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
+                                        CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
+                                        CurrentUser.setConnected(true);
 
-                                            // Récupération de l'utilisateur comme étant l'utilisateur courant
-                                            CurrentUser.getInstance().setIdUTI(user.getIdUTI());
-                                            CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
-                                            CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
-                                            CurrentUser.setConnected(true);
+                                        runnable.run();
 
-                                            runnable.run();
-
-                                            // Display successfully registered message using Toast
-                                            Toast.makeText(activity, activity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
-                                        } else {
-                                            Toast.makeText(activity, rs.getMsg(), Toast.LENGTH_LONG).show();
-                                        }
-                                    }
-
-                                    @Override
-                                    public void failure(RetrofitError error) {
-                                        SendDialogByActivity(activity, activity.getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, null);
+                                        // Display successfully registered message using Toast
+                                        Toast.makeText(activity, activity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
+                                    } else {
+                                        Toast.makeText(activity, rs.getMsg(), Toast.LENGTH_LONG).show();
                                     }
                                 }
-                        );
-                    }
+
+                                @Override
+                                public void failure(RetrofitError error) {
+                                    SendDialogByActivity(activity, activity.getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, null);
+                                }
+                            }
+                    );
                 }
             }
         }

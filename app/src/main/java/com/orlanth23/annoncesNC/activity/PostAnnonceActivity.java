@@ -95,7 +95,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
     private String P_MODE;
     private String P_TITRE_ACTIVITY;
     private ProgressDialog prgDialog;
-    private RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+    private RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
     private Dialog dialogImageChoice;
     private AppCompatActivity mActivity = this;
     private UploadFileToServer P_UFTS;
@@ -220,7 +220,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
                 Gson gson = new Gson();
                 String reponse = null;
                 for (String sourceFile : P_PHOTO_TO_SEND) {
-                    reponse = postHttpRequest(sourceFile, AccessPoint.getPref_default_server_page_uploads(), AccessPoint.getPref_default_server_dir_uploads());
+                    reponse = postHttpRequest(sourceFile, AccessPoint.getDefaultServerPageUpload(), AccessPoint.getDefaultServerDirectoryUploads());
                     if (reponse != null) {
                         if (!reponse.isEmpty()) {
                             ReturnClassUFTS rs = gson.fromJson(reponse, ReturnClassUFTS.class);

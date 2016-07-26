@@ -107,7 +107,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
         // RECUPERATION de la liste des catégories
         // ---------------------------------------
         if (ListeCategories.getInstance().getListCategorie() == null) {
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
             retrofitService.listcategorie(new retrofit.Callback<ReturnClass>() {
                 @Override
                 public void success(ReturnClass rs, Response response) {

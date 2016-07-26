@@ -5,24 +5,16 @@ package com.orlanth23.annoncesNC.lists;
  */
 public class ListeStats {
 
-    /**
-     * Initialisation à null
-     */
     private static ListeStats INSTANCE = null;
-
     private static Integer nbAnnonces;
     private static Integer nbUsers;
 
-    /**
-     * Point d'accès pour l'instance unique du singleton
-     */
     public static ListeStats getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new ListeStats();
         }
         return INSTANCE;
     }
-
 
     public static Integer getNbAnnonces() {
         return nbAnnonces;

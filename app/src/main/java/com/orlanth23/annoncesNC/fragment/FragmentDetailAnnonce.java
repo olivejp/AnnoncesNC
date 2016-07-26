@@ -320,7 +320,7 @@ public class FragmentDetailAnnonce extends Fragment {
 
                 // Envoi d'un webservice pour supprimer l'annonce en question
                 // Définition d'un nouveau callback
-                RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+                RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
                 retrofit.Callback<ReturnClass> myCallback = new retrofit.Callback<ReturnClass>() {
                     @Override
                     public void success(ReturnClass rs, Response response) {

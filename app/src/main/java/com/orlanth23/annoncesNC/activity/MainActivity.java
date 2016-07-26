@@ -102,12 +102,8 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
 
         super.onCreate(savedInstanceState);
 
-        // On affecte à l'activité le layout
-        // Si on le fait à la fin de notre méthode, l'appli plantera car le findViewById a besoin
-        // d'avoir l'arbre de vue généré par setContentView.
         setContentView(R.layout.activity_main);
 
-        // On active le bouton flottant de poste quand on consulte une annonce
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add);
         if (fab != null) {
             if (fab.getVisibility() == View.INVISIBLE) {
@@ -119,7 +115,6 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout); // Récupération du layout latéral
         mDrawerList = (ListView) findViewById(R.id.list_slidermenu); // Récuparation de la liste latérale
 
-        // L'actionBarDrawerToggle est l'icone qui apparait en haut à gauche du menu
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 new Toolbar(this),
                 R.string.app_name, R.string.app_name) {
@@ -129,11 +124,8 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
             }
 
             public void onDrawerOpened(View drawerView) {
-                // Fermeture du clavier s'il est affiché
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(drawerView.getWindowToken(), 0);
-
-                // On enlève les options si le drawer category est ouvert
                 invalidateOptionsMenu();
             }
         };
@@ -141,7 +133,6 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
         mDrawerLayout.addDrawerListener(mDrawerToggle);
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
-        // Active le bouton en haut à gauche de l'écran (notre menu des catégories d'annonces)
         try {
             ActionBar actionBar = getSupportActionBar();
             if (actionBar != null) {
@@ -152,10 +143,9 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
             Log.e(TAG, "ActionBar is NullPointerException");
         }
 
-        // On met la couleur par défaut quand on arrive
         changeColorToolBar(Constants.colorPrimary);
 
-        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
 
         // Création d'un exécutable qui va récupérer les informations sur le serveur
         runnable = new Runnable() {

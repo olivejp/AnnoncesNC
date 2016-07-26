@@ -66,7 +66,7 @@ public class ChangePasswordActivity extends AppCompatActivity {
             String oldPasswordEncrypted = PasswordEncryptionService.desEncryptIt(oldPass);
             String newPasswordEncrypted = PasswordEncryptionService.desEncryptIt(newPass);
 
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
             retrofit.Callback<ReturnClass> myCallback = new retrofit.Callback<ReturnClass>() {
                 @Override
                 public void success(ReturnClass rs, Response response) {

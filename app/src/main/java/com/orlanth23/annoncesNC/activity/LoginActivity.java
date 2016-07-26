@@ -191,7 +191,7 @@ public class LoginActivity extends AppCompatActivity implements NoticeDialogFrag
         } else {
 
             // Création d'un RestAdapter pour le futur appel de mon RestService
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
             Callback<ReturnClass> myCallback = new Callback<ReturnClass>() {
                 @Override
                 public void success(ReturnClass rs, Response response) {

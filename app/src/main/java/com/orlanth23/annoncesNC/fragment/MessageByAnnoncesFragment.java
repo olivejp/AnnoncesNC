@@ -11,9 +11,9 @@ import java.util.ArrayList;
 /**
  * Created by stephaniedelessert on 15/07/16.
  */
-public class MessageByAnnoncesFragment extends Fragment{
+public class MessageByAnnoncesFragment extends Fragment {
 
-    private static final String PARAM_LIST    = "PARAM_LIST";
+    private static final String PARAM_LIST = "PARAM_LIST";
     private static final String PARAM_ANNONCE = "PARAM_ANNONCE";
 
     public MessageByAnnoncesFragment() {

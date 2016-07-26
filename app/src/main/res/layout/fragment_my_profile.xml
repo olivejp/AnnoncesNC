@@ -23,7 +23,6 @@
                 android:text="@string/text_my_profile_accueil"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
-            <!-- Name TextField -->
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -81,16 +80,6 @@
                 android:text="@string/change_password"
                 android:textColor="@color/white"
                 android:textStyle="bold"/>
-
-            <!--<Button-->
-                <!--android:id="@+id/action_messages"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginTop="5dp"-->
-                <!--android:background="@drawable/mybutton"-->
-                <!--android:text="@string/manage_messages"-->
-                <!--android:textColor="@color/white"-->
-                <!--android:textStyle="bold"/>-->
 
             <Button
                 android:id="@+id/action_deconnexion"

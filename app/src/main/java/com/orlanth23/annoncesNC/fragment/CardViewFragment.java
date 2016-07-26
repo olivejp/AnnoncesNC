@@ -279,7 +279,7 @@ public class CardViewFragment extends Fragment {
         };
 
         // Création d'un RestAdapter pour le futur appel de mon RestService
-        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
 
         prgDialog.setMessage(getString(R.string.dialog_msg_patience));
         prgDialog.show();

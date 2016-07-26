@@ -1,23 +1,18 @@
 package com.orlanth23.annoncesNC.webservices;
 
+import com.orlanth23.annoncesNC.utility.Constants;
+
 /**
  * Created by olivejp on 28/06/2016.
  */
 public class AccessPoint {
-    /**
-     * Initialisation à null
-     */
-    private static AccessPoint INSTANCE = null;
 
-    private static String pref_default_server_url = "http://annonces.noip.me";
-    private static String pref_default_server_page_uploads = "http://annonces.noip.me/AnnoncesNC/fileUpload.php";
-    private static String pref_default_server_dir_uploads = "http://annonces.noip.me/AnnoncesNC/uploads";
-    private static String ENDPOINT = "http://annonces.noip.me:8080/accountuser/REST";
+    private static AccessPoint INSTANCE = null;
+    private static String defaultServerPageUpload;
+    private static String defaultServerDirectoryUploads;
+    private static String defaultServerEndpoint;
     private static boolean isBackUp = false;
 
-    /**
-     * Point d'accès pour l'instance unique du singleton
-     */
     public static AccessPoint getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new AccessPoint();
@@ -25,39 +20,28 @@ public class AccessPoint {
         return INSTANCE;
     }
 
-    /**
-     * Permet de récuperer les données du serveur de secours.
-     */
-    public static void getBackUp() {
-        pref_default_server_url = "http://www.oliweb.nc";
-        pref_default_server_page_uploads = "http://www.oliweb.nc/Annonces/fileUpload.php";
-        pref_default_server_dir_uploads = "http://www.oliweb.nc/Annonces/uploads";
-        ENDPOINT = "http://www.oliweb.nc/accountuser/REST";
+    public static void getBackUpServer() {
+        defaultServerPageUpload = Constants.SERVER_SECONDARY_PAGE_UPLOAD;
+        defaultServerDirectoryUploads = Constants.SERVER_SECONDARY_DIRECTORY_UPLOAD;
+        defaultServerEndpoint = Constants.SERVER_SECONDARY_ENDPOINT;
         isBackUp = true;
     }
 
     public static void getPrincipalServer() {
-        pref_default_server_url = "http://annonces.noip.me";
-        pref_default_server_page_uploads = "http://annonces.noip.me/AnnoncesNC/fileUpload.php";
-        pref_default_server_dir_uploads = "http://annonces.noip.me/AnnoncesNC/uploads";
-        ENDPOINT = "http://annonces.noip.me:8080/accountuser/REST";
+        defaultServerPageUpload = Constants.SERVER_PRIMARY_PAGE_UPLOAD;
+        defaultServerDirectoryUploads = Constants.SERVER_PRIMARY_DIRECTORY_UPLOAD;
+        defaultServerEndpoint = Constants.SERVER_PRIMARY_ENDPOINT;
         isBackUp = false;
     }
-
-    public static String getPref_default_server_url() {
-        return pref_default_server_url;
+    public static String getDefaultServerPageUpload() {
+        return defaultServerPageUpload;
     }
 
-    public static String getPref_default_server_page_uploads() {
-        return pref_default_server_page_uploads;
+    public static String getDefaultServerDirectoryUploads() {
+        return defaultServerDirectoryUploads;
     }
-
-    public static String getPref_default_server_dir_uploads() {
-        return pref_default_server_dir_uploads;
-    }
-
-    public static String getENDPOINT() {
-        return ENDPOINT;
+    public static String getDefaultServerEndpoint() {
+        return defaultServerEndpoint;
     }
 
     public static boolean isBackUp() {

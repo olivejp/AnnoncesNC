@@ -168,7 +168,7 @@ public class RegisterActivity extends AppCompatActivity {
             final String motDePasseEncrypted = PasswordEncryptionService.desEncryptIt(password);
 
             // Appel du RETROFIT Webservice
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
             retrofit.Callback<ReturnClass> myCallback = new retrofit.Callback<ReturnClass>() {
                 @Override
                 public void success(ReturnClass rs, Response response) {
