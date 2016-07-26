@@ -1,0 +1,381 @@
+package com.orlanth23.annoncesNC.utility;
+
+/**
+ * Created by orlanth23 on 24/09/2015.
+ */
+
+import android.app.Activity;
+import android.app.FragmentManager;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.provider.MediaStore;
+import android.util.Log;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.CheckBox;
+import android.widget.EditText;
+
+import com.orlanth23.annoncesNC.R;
+import com.orlanth23.annoncesNC.database.DictionaryDAO;
+import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
+import com.orlanth23.annoncesNC.dto.CurrentUser;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Class which has Utility methods
+ */
+public class Utility {
+
+    public static final String DIALOG_TAG_UNREGISTER = "UNREGISTER";
+
+    //Email Pattern
+    private static final String EMAIL_PATTERN =
+            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+                    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+    private static final SimpleDateFormat originalDateFormat = new SimpleDateFormat("yyyyMMddHHmm", Locale.FRENCH);
+    private static final SimpleDateFormat newDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRENCH);
+
+
+    public static String getRealPathFromUri(Context context, Uri contentUri) {
+        Cursor cursor = null;
+        String result = null;
+        try {
+            String[] proj = {MediaStore.Images.Media.DATA};
+            cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
+            int column_index;
+            if (cursor != null) {
+                column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                cursor.moveToFirst();
+                result = cursor.getString(column_index);
+            }
+
+            return result;
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
+    /**
+     * Méthode pour réduire la taille d'une image
+     *
+     * @param p_bitmap
+     * @return
+     */
+    public static Bitmap resizeBitmap(Bitmap p_bitmap, int maxPx) {
+        int newWidth;
+        int newHeight;
+
+        // L'image est trop grande il faut la réduire
+        if ((p_bitmap.getWidth() > maxPx) || (p_bitmap.getHeight() > maxPx)) {
+            int max;
+            if (p_bitmap.getWidth() > maxPx) {
+                max = p_bitmap.getWidth();
+            } else {
+                max = p_bitmap.getHeight();
+            }
+
+            double prorata = (double) maxPx / max;
+
+            newWidth = (int) (p_bitmap.getWidth() * prorata);
+            newHeight = (int) (p_bitmap.getHeight() * prorata);
+        } else {
+            return p_bitmap;
+        }
+
+        return Bitmap.createScaledBitmap(p_bitmap, newWidth, newHeight, true);
+    }
+
+    /**
+     * Sauvegarde une Bitmap et renvoie son Path
+     * @param bitmap
+     * @param TAG
+     * @return
+     */
+    public static String saveBitmap(Bitmap bitmap, String TAG) {
+        // On enregistre cette nouvelle image retaillée et on récupère son chemin dans path
+        String retour = null;
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        File f = Utility.getOutputMediaFile(Constants.MEDIA_TYPE_IMAGE, CurrentUser.getInstance().getIdUTI(), TAG);
+        try {
+            if (f != null) {
+                if (f.createNewFile()) {
+                    FileOutputStream fo = new FileOutputStream(f);
+                    fo.write(bytes.toByteArray());
+                    fo.close();
+                    retour = f.getPath();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return retour;
+    }
+
+    /**
+     * Transforme une bitmap en ByteArray
+     *
+     * @param bitmap
+     * @return
+     */
+    public static byte[] transformToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        return stream.toByteArray();
+    }
+
+    /**
+     * Va récupérer une Bitmap depuis une URI
+     *
+     * @param context
+     * @param uri
+     * @return
+     */
+    public static Bitmap getBitmapFromUri(Context context, Uri uri) {
+        InputStream imageStream;
+        Bitmap bitmap = null;
+        try {
+            imageStream = context.getContentResolver().openInputStream(uri);
+            bitmap = BitmapFactory.decodeStream(imageStream);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    /**
+     * Validate Email with regular expression
+     *
+     * @param email
+     * @return true for Valid Email and false for Invalid Email
+     */
+    public static boolean validate(String email) {
+        Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+        Matcher matcher = pattern.matcher(email);
+
+        return matcher.matches() && email.contains("@");
+    }
+
+    public static boolean isPasswordValid(String password) {
+        return password.length() >= 4;
+    }
+
+    /**
+     * Checks for Null String object
+     *
+     * @param txt
+     * @return true for not null and false for null String object
+     */
+    public static boolean isNotNull(String txt) {
+        return txt != null && txt.trim().length() > 0;
+    }
+
+    public static boolean isWifiActivated(Activity activity){
+        // Test de la connexion WIFI
+        ConnectivityManager connManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
+    }
+
+    public static boolean is3GActivated(Activity activity){
+        // Test de la connexion 3g
+        ConnectivityManager connManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
+    }
+
+    public static int getColorFromString(String color){
+        String colorComplete = "#".concat(color);
+        return Color.parseColor(colorComplete);
+    }
+
+    public static int getColorFromInteger(Integer color){
+        String colorString = color.toString();
+        return getColorFromString(colorString);
+    }
+
+    // Récupération des préférences du nombre de caractère
+    public static int getPrefNumberCar(Context context){
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        String number = sharedPrefs.getString("pref_key_number_car", context.getResources().getString(R.string.pref_default_number_car));
+        return Integer.valueOf(number);
+    }
+
+    public static void SendDialogByFragmentManager(FragmentManager fragmentManager, String message, int type, int img, String tag) {
+        NoticeDialogFragment dialogErreur = new NoticeDialogFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(NoticeDialogFragment.P_MESSAGE, message);
+        bundle.putInt(NoticeDialogFragment.P_TYPE, type);
+        bundle.putInt(NoticeDialogFragment.P_IMG, img);
+        dialogErreur.setArguments(bundle);
+        dialogErreur.show(fragmentManager, tag);
+    }
+
+    // Envoi d'un message
+    public static void SendDialogByActivity(Activity activity, String message, int type, int img, String tag) {
+        SendDialogByFragmentManager(activity.getFragmentManager(), message, type, img, tag);
+    }
+
+    /**
+     * Créer un URI pour stocker l'image/la video
+     */
+    public static Uri getOutputMediaFileUri(int type, Integer preName, String TAG) {
+        return Uri.fromFile(getOutputMediaFile(type, preName, TAG));
+    }
+
+    /**
+     * retourne le nom d'une image / d'une video
+     */
+    public static File getOutputMediaFile(int type, Integer preName, String TAG) {
+        // External sdcard location
+        File mediaStorageDir = new File(
+                Environment
+                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                Constants.IMAGE_DIRECTORY_NAME);
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists()) {
+            if (!mediaStorageDir.mkdirs()) {
+                Log.d(TAG, "Oops! Failed create "
+                        + Constants.IMAGE_DIRECTORY_NAME + " directory");
+                return null;
+            }
+        }
+
+        // Create a media file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS",
+                Locale.getDefault()).format(new Date());
+        File mediaFile;
+        if (type == Constants.MEDIA_TYPE_IMAGE) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator
+                    + String.valueOf(preName) +  "_IMG_" + timeStamp + ".jpg");
+        } else if (type == Constants.MEDIA_TYPE_VIDEO) {
+            mediaFile = new File(mediaStorageDir.getPath() + File.separator
+                    + String.valueOf(preName) +  "_VID_" + timeStamp + ".mp4");
+        } else {
+            return null;
+        }
+
+        return mediaFile;
+    }
+
+    /**
+     * Retourne un string avec la date en format DMY
+     * @param dateYMDHM
+     * @return
+     */
+    public static String convertDate(String dateYMDHM){
+        Date dateOriginal = null;
+        try {
+            dateOriginal = originalDateFormat.parse(dateYMDHM);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return newDateFormat.format(dateOriginal);
+    }
+
+    /**
+     *
+     * @param prix
+     * @return
+     */
+    public static String convertPrice(Integer prix){
+        return NumberFormat.getNumberInstance(Locale.FRENCH).format(prix) + " " + Constants.CURRENCY;
+    }
+
+
+    /**
+     * @param activity
+     * @return
+     */
+    public static boolean checkNetwork(Activity activity) {
+        // Si le wifi ou la 3g ne sont pas activés, inutile de continuer
+        return (Utility.isWifiActivated(activity) || Utility.is3GActivated(activity));
+    }
+
+    /**
+     * Hide keyboard
+     *
+     * @param ctx
+     */
+    public static void hideKeyboard(Context ctx) {
+        InputMethodManager inputManager = (InputMethodManager) ctx
+                .getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        // check if no view has focus:
+        View v = ((Activity) ctx).getCurrentFocus();
+        if (v == null)
+            return;
+
+        inputManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
+    }
+
+    public static boolean saveAutoComplete(Context context, EditText emailText, EditText passwordText, CheckBox checkBox) {
+        boolean retourLogin;
+        boolean retourPassword;
+        boolean retourAutoConnect;
+        String valeur;
+
+        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_LOGIN)) {
+            // L'enregistrement existe bien, on va juste le mettre à jour
+            retourLogin = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_LOGIN, emailText.getText().toString());
+        } else {
+            // Création de l'enregistrement
+            retourLogin = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_LOGIN, emailText.getText().toString());
+        }
+
+
+        // Encryptage du mot de passe
+        String motDePasseEncrypted = PasswordEncryptionService.desEncryptIt(passwordText.getText().toString());
+        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD)) {
+            // L'enregistrement existe bien, on va juste le mettre à jour
+            retourPassword = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD, motDePasseEncrypted);
+        } else {
+            // Création de l'enregistrement
+            retourPassword = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD, motDePasseEncrypted);
+        }
+
+        if (checkBox.isChecked()) {
+            valeur = "O";
+        } else {
+            valeur = "N";
+        }
+
+        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT)) {
+            // L'enregistrement existe bien, on va juste le mettre à jour
+            retourAutoConnect = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT, valeur);
+        } else {
+            // Création de l'enregistrement
+            retourAutoConnect = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT, valeur);
+        }
+
+        return retourLogin && retourPassword && retourAutoConnect;
+    }
+
+}

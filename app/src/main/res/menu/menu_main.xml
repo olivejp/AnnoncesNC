@@ -1,0 +1,36 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:appcompat="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+    <item
+        android:id="@+id/action_search"
+        android:title="@string/action_search"
+        appcompat:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_post"
+        android:title="@string/action_post"
+        appcompat:showAsAction="never" />
+    <item
+        android:id="@+id/action_connect"
+        android:title="@string/action_log_in"
+        appcompat:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        appcompat:showAsAction="never" />
+    <item
+        android:id="@+id/action_my_profile"
+        android:icon="@drawable/ic_login_inverse"
+        android:title="@string/action_profile"
+        appcompat:showAsAction="always" />
+    <item
+        android:id="@+id/action_suggestion"
+        android:title="Suggestion"
+        appcompat:showAsAction="never" />
+    <item
+        android:id="@+id/action_leave"
+        android:title="Quitter"
+        appcompat:showAsAction="never" />
+</menu>

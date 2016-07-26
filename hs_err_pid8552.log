@@ -1,0 +1,164 @@
+#
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_PRIV_INSTRUCTION (0xc0000096) at pc=0x000000006f808ac7, pid=8552, tid=7724
+#
+# JRE version: Java(TM) SE Runtime Environment (8.0_20-b26) (build 1.8.0_20-b26)
+# Java VM: Java HotSpot(TM) 64-Bit Server VM (25.20-b23 mixed mode windows-amd64 compressed oops)
+# Problematic frame:
+# V  [jvm.dll+0x3d8ac7]
+#
+# Failed to write core dump. Minidumps are not enabled by default on client versions of Windows
+#
+# If you would like to submit a bug report, please visit:
+#   http://bugreport.sun.com/bugreport/crash.jsp
+#
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x0000000014e98800):  VMThread [stack: 0x0000000016b90000,0x0000000016c90000] [id=7724]
+
+siginfo: ExceptionCode=0xc0000096
+
+Registers:
+RAX=0x0000000000000067, RBX=0x000000000228e0f0, RCX=0x0000000016c8f530, RDX=0x000000006fa52878
+RSP=0x0000000016c8f470, RBP=0x0000000016c8f6d0, RSI=0x0000000000000000, RDI=0x0000000016c8f530
+R8 =0x000000000000003e, R9 =0x0000000016c8f530, R10=0x000000000000003e, R11=0x0000000016c8ec70
+R12=0x0000000014d257d8, R13=0x000000006fbcc700, R14=0x0000000000000000, R15=0x0000000002281f50
+RIP=0x000000006f808ac7, EFLAGS=0x0000000000010206
+
+Top of Stack: (sp=0x0000000016c8f470)
+0x0000000016c8f470:   000000000228d660 000000006f9ff758
+0x0000000016c8f480:   00000000c0000000 00000000c4280000
+0x0000000016c8f490:   00000000eab00000 0000000016c8f530
+0x0000000016c8f4a0:   0000000000000001 000000006f800dc5
+0x0000000016c8f4b0:   0000000016c8f530 0000000000000000
+0x0000000016c8f4c0:   0000000000000001 0000000000000000
+0x0000000016c8f4d0:   0000000016c8f530 000000006f512601
+0x0000000016c8f4e0:   000000000236fdd8 000000006fa06318
+0x0000000016c8f4f0:   0000000000000006 0000000000000001
+0x0000000016c8f500:   0000000002290470 000000006f4d08b5
+0x0000000016c8f510:   0000000002290480 000000006f67f45e
+0x0000000016c8f520:   000000000236a2c0 00007fff5d80347c
+0x0000000016c8f530:   000000006fa32920 0000005000000000
+0x0000000016c8f540:   0000000600000000 00000000000001fc
+0x0000000016c8f550:   0000000000000000 0000000002290958
+0x0000000016c8f560:   00000000000001fc 0000000000000400 
+
+Instructions: (pc=0x000000006f808ac7)
+0x000000006f808aa7:   18 4d 8b 48 28 4d 8b 40 10 48 8b cf 48 89 44 24
+0x000000006f808ab7:   20 e8 03 8b e8 ff 48 8d 15 b4 9d 24 00 48 8b cf
+0x000000006f808ac7:   e8 14 8a e8 ff 48 8b 8b 98 00 00 00 48 8b d7 48
+0x000000006f808ad7:   8b 01 48 8b 5c 24 40 48 83 c4 30 5f 48 ff a0 e8 
+
+
+Register to memory mapping:
+
+RAX=0x0000000000000067 is an unknown value
+RBX=0x000000000228e0f0 is an unknown value
+RCX=0x0000000016c8f530 is an unknown value
+RDX=0x000000006fa52878 is an unknown value
+RSP=0x0000000016c8f470 is an unknown value
+RBP=0x0000000016c8f6d0 is an unknown value
+RSI=0x0000000000000000 is an unknown value
+RDI=0x0000000016c8f530 is an unknown value
+R8 =0x000000000000003e is an unknown value
+R9 =0x0000000016c8f530 is an unknown value
+R10=0x000000000000003e is an unknown value
+R11=0x0000000016c8ec70 is an unknown value
+R12=0x0000000014d257d8 is an unknown value
+R13=0x000000006fbcc700 is an unknown value
+R14=0x0000000000000000 is an unknown value
+R15=0x0000000002281f50 is an unknown value
+
+
+Stack: [0x0000000016b90000,0x0000000016c90000],  sp=0x0000000016c8f470,  free space=1021k
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x3d8ac7]
+V  [jvm.dll+0x3d0dc5]
+V  [jvm.dll+0xe2601]
+V  [jvm.dll+0xa08b5]
+V  [jvm.dll+0xa10d0]
+V  [jvm.dll+0x3e0b8f]
+V  [jvm.dll+0x3e0cb0]
+V  [jvm.dll+0x3d0934]
+V  [jvm.dll+0x3e32d6]
+V  [jvm.dll+0x2312c7]
+V  [jvm.dll+0x230506]
+V  [jvm.dll+0x2309a1]
+V  [jvm.dll+0x230bbe]
+V  [jvm.dll+0x283f5a]
+C  [msvcr100.dll+0x21d9f]
+C  [msvcr100.dll+0x21e3b]
+C  [KERNEL32.DLL+0x18102]
+C  [ntdll.dll+0x5c5b4]
+
+VM_Operation (0x0000000019decc80): ParallelGCFailedAllocation, mode: safepoint, requested by thread 0x000000001894b000
+
+
+---------------  P R O C E S S  ---------------
+
+Java Threads: ( => current thread )
+  0x000000001894c800 JavaThread "File lock request listener" [_thread_in_native, id=8976, stack(0x000000001b4c0000,0x000000001b5c0000)]
+  0x0000000018949800 JavaThread "Stdin handler" [_thread_blocked, id=3652, stack(0x0000000019df0000,0x0000000019ef0000)]
+  0x000000001894b000 JavaThread "Daemon worker" [_thread_blocked, id=6724, stack(0x0000000019cf0000,0x0000000019df0000)]
+  0x0000000018948800 JavaThread "Cancel handler" [_thread_blocked, id=6596, stack(0x0000000019bf0000,0x0000000019cf0000)]
+  0x000000001894b800 JavaThread "Handler for socket connection from /127.0.0.1:51149 to /127.0.0.1:51150" [_thread_in_native, id=7120, stack(0x0000000019af0000,0x0000000019bf0000)]
+  0x000000001894a000 JavaThread "Daemon" [_thread_blocked, id=8876, stack(0x00000000199f0000,0x0000000019af0000)]
+  0x0000000018948000 JavaThread "Incoming local TCP Connector on port 51149" [_thread_in_native, id=7740, stack(0x0000000018290000,0x0000000018390000)]
+  0x0000000016f54800 JavaThread "Service Thread" daemon [_thread_blocked, id=8696, stack(0x0000000017890000,0x0000000017990000)]
+  0x0000000016ec8000 JavaThread "C1 CompilerThread3" daemon [_thread_blocked, id=4012, stack(0x0000000017790000,0x0000000017890000)]
+  0x0000000016ec2000 JavaThread "C2 CompilerThread2" daemon [_thread_blocked, id=8880, stack(0x0000000017690000,0x0000000017790000)]
+  0x0000000016ebc000 JavaThread "C2 CompilerThread1" daemon [_thread_blocked, id=7676, stack(0x0000000017590000,0x0000000017690000)]
+  0x0000000016eb6800 JavaThread "C2 CompilerThread0" daemon [_thread_blocked, id=5772, stack(0x0000000017490000,0x0000000017590000)]
+  0x0000000016eb5800 JavaThread "Attach Listener" daemon [_thread_blocked, id=7060, stack(0x0000000017390000,0x0000000017490000)]
+  0x0000000016eb4800 JavaThread "Signal Dispatcher" daemon [_thread_blocked, id=7056, stack(0x0000000017290000,0x0000000017390000)]
+  0x0000000002378800 JavaThread "Finalizer" daemon [_thread_blocked, id=6812, stack(0x0000000016d90000,0x0000000016e90000)]
+  0x0000000014e9c800 JavaThread "Reference Handler" daemon [_thread_blocked, id=7628, stack(0x0000000016c90000,0x0000000016d90000)]
+  0x0000000001f8e000 JavaThread "main" [_thread_blocked, id=7256, stack(0x0000000002180000,0x0000000002280000)]
+
+Other Threads:
+=>0x0000000014e98800 VMThread [stack: 0x0000000016b90000,0x0000000016c90000] [id=7724]
+  0x0000000016f56800 WatcherThread [stack: 0x0000000017990000,0x0000000017a90000] [id=9184]
+
+VM state:at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread:  ([mutex/lock_event])
+[0x0000000001f8d370] Threads_lock - owner thread: 0x0000000014e98800
+[0x0000000001f8d8f0] Heap_lock - owner thread: 0x000000001894b000
+
+Heap:
+ PSYoungGen      total 38400K, used 1640K [0x00000000eab00000, 0x00000000eee00000, 0x0000000100000000)
+  eden space 33280K, 0% used [0x00000000eab00000,0x00000000eab00000,0x00000000ecb80000)
+  from space 5120K, 32% used [0x00000000ecb80000,0x00000000ecd1a180,0x00000000ed080000)
+  to   space 11776K, 0% used [0x00000000ee280000,0x00000000ee280000,0x00000000eee00000)
+ ParOldGen       total 68096K, used 8705K [0x00000000c0000000, 0x00000000c4280000, 0x00000000eab00000)
+  object space 68096K, 12% used [0x00000000c0000000,0x00000000c0880668,0x00000000c4280000)
+ Metaspace       used 22009K, capacity 22546K, committed 22912K, reserved 1069056K
+  class space    used 2916K, capacity 3078K, committed 3200K, reserved 1048576K
+
+Card table byte_map: [0x0000000011740000,0x0000000011950000] byte_map_base: 0x0000000011140000
+
+Marking Bits: (ParMarkBitMap*) 0x000000006fc0b460
+ Begin Bits: [0x00000000122b0000, 0x00000000132b0000)
+ End Bits:   [0x00000000132b0000, 0x00000000142b0000)
+
+Polling page: 0x0000000000530000
+
+CodeCache: size=245760Kb used=7531Kb max_used=7543Kb free=238228Kb
+ bounds [0x0000000002380000, 0x0000000002af0000, 0x0000000011380000]
+ total_blobs=2579 nmethods=1963 adapters=530
+ compilation: enabled
+
+Compilation events (10 events):
+Event: 4.595 Thread 0x0000000016ec8000 nmethod 1960 0x0000000002adbf90 code [0x0000000002adc100, 0x0000000002adc348]
+Event: 4.595 Thread 0x0000000016ec8000 1961       3       com.google.common.collect.MapMakerInternalMap$1::clear (1 bytes)
+Event: 4.595 Thread 0x0000000016ec8000 nmethod 1961 0x0000000002adc410 code [0x0000000002adc560, 0x0000000002adc6b0]
+Event: 4.625 Thread 0x0000000016ec8000 1962       3       org.gradle.internal.classloader.FilteringClassLoader::classAllowed (116 bytes)
+Event: 4.626 Thread 0x0000000016ec8000 nmethod 1962 0x0000000002adc750 code [0x0000000002adc9a0, 0x0000000002add8b8]
+Event: 4.640 Thread 0x0000000016ec2000 1963       4       java.util.HashMap$HashIterator::nextNode (100 bytes)
+Event: 4.644 Thread 0x0000000016ec2000 nmethod 1963 0x0000000002ae0ad0 code [0x0000000002ae0c20, 0x0000000002ae0df8]
+Event: 4.656 Thread 0x0000000016eb6800 1964       4       java.lang.String::lastIndexOf (151 bytes)
+Event: 4.663 Thread 0x0000000016eb6800 nmethod 1964 0x0000000002adefd0 code [0x0000000002adf120, 0x0000000002adf398]
+Event: 4.677 Thread 0x0000000016ec8000 1966       3       com.google.common.collect.MapMakerInternalMap$Segment::getEntry (80 bytes)
+

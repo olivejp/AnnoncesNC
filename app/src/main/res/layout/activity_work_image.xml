@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/degrade"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:layout_margin="10dp"
+        android:background="@drawable/linear_corner">
+
+        <ImageView
+            android:id="@+id/work_image_view"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="30dp"
+            android:contentDescription="@string/image_network"
+            android:scaleType="fitCenter" />
+
+        <LinearLayout
+            android:id="@+id/work_image_linear_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:orientation="vertical">
+
+            <Button
+                android:id="@+id/work_image_button_rotate_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:background="@drawable/mybutton"
+                android:clickable="true"
+                android:drawableLeft="@drawable/ic_action_right"
+                android:drawableStart="@drawable/ic_action_right"
+                android:padding="5dp"
+                android:text="@string/action_rotate"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#fff"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/work_image_button_save_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:background="@drawable/mybutton"
+                android:clickable="true"
+                android:drawableLeft="@drawable/ic_action_accept"
+                android:drawableStart="@drawable/ic_action_accept"
+                android:padding="5dp"
+                android:text="Valider"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#fff"
+                android:visibility="visible" />
+
+            <Button
+                android:id="@+id/work_image_button_delete_image"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:background="@drawable/mybutton"
+                android:clickable="true"
+                android:drawableLeft="@drawable/ic_remove_inverse"
+                android:drawableStart="@drawable/ic_remove_inverse"
+                android:padding="5dp"
+                android:text="Annuler"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="#fff"
+                android:visibility="visible" />
+
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>

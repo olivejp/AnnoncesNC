@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="action_settings">Paramètres</string>
+    <string name="action_post">Poster une annonce</string>
+    <string name="action_log_in">Se connecter</string>
+    <string name="action_log_out">Se déconnecter</string>
+    <string name="action_search">Rechercher</string>
+    <string name="action_profile">Mon profil</string>
+
+    <!-- Strings related to login -->
+    <string name="title_activity_login">Se connecter</string>
+    <string name="title_post_annonce_activity">Poster une annonce</string>
+    <string name="title_register">S\'enregistrer</string>
+
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Mot de passe</string>
+    <string name="action_sign_in">Se connecter</string>
+    <string name="action_sign_in_short">Se connecter</string>
+    <string name="action_sign_up">Créer un compte</string>
+
+    <string name="error_invalid_email">Cette adresse mail est invalide</string>
+    <string name="error_invalid_password">Ce mot de passe est trop court</string>
+    <string name="error_incorrect_password">Cet mot de passe est incorrect</string>
+    <string name="error_field_required">Ce champ est requis</string>
+    <string name="error_all_fields_required">Remplissez tout les champs</string>
+    <string name="error_no_wifi">Cette application nécessite une connexion Wifi ou Données mobiles pour fonctionner.\n\nMerci de réessayer quand vous disposerez d\'une connexion.</string>
+
+    <string name="dialogSendingQuestion">Publier l\'annonce ?</string>
+
+    <string name="dialogOk">OK</string>
+    <string name="dialogYes">Oui</string>
+    <string name="dialogNo">Non</string>
+
+    <string name="text_titre">Titre</string>
+    <string name="text_description">Description</string>
+    <string name="text_prix">Prix</string>
+    <string name="text_save_annonce">Créer</string>
+
+    <string name="searchTitle">Rechercher</string>
+
+
+    <string name="desc_list_item_icon">Item Icon</string>
+    <string name="title_activity_settings">Paramètres</string>
+    <!-- Strings related to Settings -->
+
+    <!-- Example General settings -->
+    <string name="pref_header_general">Général</string>
+
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_key_number_car">pref_key_number_car</string>
+    <string name="pref_title_number_car">Nombre de caractères</string>
+    <string name="pref_description_number_car">Nombre de caractères affichés dans la descriptions des annonces.</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Toujours</item>
+        <item>Dès que possible</item>
+        <item>Jamais</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+
+    <!-- Example settings for Data & Sync -->
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_server">Server</string>
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+    <string name="pref_header_notifications">Notifications</string>
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+    <string name="pref_title_vibrate">Vibrate</string>
+
+
+    // Messages d'erreur
+    <string name="error_creating_fragment">Erreur dans la création du fragment</string>
+
+    <string name="btnTakePicture">Photo</string>
+    <string name="btnRecordVideo">Video</string>
+    <string name="txtOr">ou</string>
+
+
+    <string name="btnUploadToServer">Charger sur le serveur</string>
+    <string name="action_upload">Upload Photo</string>
+    <string name="title_activity_upload">Upload Photo</string>
+    <string name="title_activity_preview">Preview Photo</string>
+    <string name="dialog_msg_patience">Patientez s\'il vous plait…</string>
+    <string name="dialog_wait_login">En attente d\'identification</string>
+    <string name="dialog_wait_looking_for_cat">Recherche des catégories…Merci de patienter</string>
+    <string name="text_error_no_file">Désolé, le chemin est manquant!</string>
+    <string name="action_my_annonces">Mes annonces</string>
+    <string name="error_need_user_connection">Vous n\'êtes pas connecté</string>
+    <string name="error_post_description">Entrez une description à votre annonce</string>
+    <string name="error_post_price">Entrez un prix à votre annonce</string>
+    <string name="error_post_title">Entrez un titre à votre annonce</string>
+    <string name="error_choose_category">Choisissez une catégorie</string>
+    <string name="dialog_failed_post">Erreur l\'annonce n\'a pas pu être sauvée.</string>
+    <string name="dialog_sending_photo">Envoi de la photo…</string>
+    <string name="dialog_sending_post">Envoi de l\'annonce…</string>
+    <string name="dialog_success_post">Votre annonce a bien été sauvée.</string>
+    <string name="dialog_search_ads">Recherche des annonces… Veuillez patienter</string>
+
+    <string name="remember_me">Se rapeller de moi</string>
+    <string name="action_cancelled">Capture annulée</string>
+    <string name="action_failed">Echec de la capture d\'image</string>
+    <string name="text_categorie">Catégorie</string>
+    <string name="action_call">Appel</string>
+    <string name="action_email">Email</string>
+    <string name="text_post_by">Posté par </string>
+    <string name="text_pre_date">le</string>
+    <string name="pref_description_timeout">Délai avant déconnexion du webservice</string>
+    <string name="pref_key_timeout">pref_key_timeout</string>
+    <string name="pref_title_timeout">Délai avant déconnexion</string>
+    <string name="dialog_failed_webservice">Le webservice n\'a pas pu être contacter correctement.</string>
+    <string name="action_update">Mettre à jour</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="action_picture">Nouvelle photo</string>
+    <string name="action_gallery">Photo existante</string>
+    <string name="dialog_no_text">Veuillez saisir un texte à rechercher.</string>
+    <string name="dialog_want_to_quit">Voulez vous quitter l\'application ?</string>
+    <string name="title_details">Détails</string>
+    <string name="dialog_register_ok">Vous avez été enregistré!</string>
+    <string name="dialog_no_result">Aucun résultat à afficher.</string>
+    <string name="text_lost_password">Perte de mot de passe</string>
+    <string name="action_send_new_password">Envoyer un mot de passe</string>
+    <string name="description_lost_password">Saisissez votre email et  cliquez sur le bouton. Un nouveau mot de passe vous sera envoyé par email.</string>
+    <string name="action_lost_password">Mot de passe perdu</string>
+    <string name="dialog_password_send">Un email vous a été envoyé</string>
+    <string name="text_home_page"><![CDATA[Cliquez sur l\'icône & en haut à gauche de l\'écran pour faire apparaître la liste des catégories. \n\nL\'icône en haut à droite vous permet d\'accéder aux principales fonctions de l\'application.]]></string>
+    <string name="text_update_annonce">Mettre à jour</string>
+    <string name="action_share">Partage</string>
+    <string name="connected_with">"Connecté avec le compte "</string>
+    <string name="keyword">Mots clef</string>
+    <string name="photo_disponible">Photo disponible</string>
+    <string name="gamme_de_prix">Gamme de prix</string>
+    <string name="error_no_server">Connection au serveur distant impossible !!</string>
+    <string name="text_all_category">Toutes les catégories</string>
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="banner_ad_unit_id">ca-app-pub-9977775483546656/8087223926</string>
+    <string name="text_register">Bienvenue sur l\'application Oliweb NC. \nS\'enregistrer ne prend que quelques secondes. Aucun code n\'est envoyé sur votre adresse mail. \nIl vous suffit seulement de remplir les champs suivants.</string>
+    <string name="error_no_parameter">Aucun paramètre défini</string>
+    <string name="error_min_sup_max">Le minimum ne peut pas être supérieur au maximum</string>
+    <string name="text_dscription_search">L\'écran de recherche vous permet de sélectionner les annonces qui vous intéressent selon les critères : mots clef, catégorie de l\'annonce, gamme de prix, présence d\'une photo.</string>
+    <string name="tiret">-</string>
+    <string name="app_name">Oliweb NC</string>
+    <string name="hello_blank_fragment">Bonjour fragment vide</string>
+    <string name="text_password">Mot de passe</string>
+    <string name="text_password_confirm">Confirmer mot de passe</string>
+    <string name="action_rotate">Pivoter</string>
+    <string name="textNbAnnonces">Nombre d\'annonces :</string>
+    <string name="textNbUser">Nombre d\'utilisateurs :</string>
+    <string name="textSlogan">L\'application Android des annonces Calédoniennes</string>
+    <string name="text_test_network">Connexion au réseau :</string>
+    <string name="text_test_server">Connexion au serveur :</string>
+    <string name="text_get_infos">Récupération d\'informations sur le serveur :</string>
+    <string name="text_get_stats">Récupération des statistiques serveur :</string>
+    <string name="telephone">Téléphone</string>
+    <string name="title_activity_activity_profile">Mon Profil</string>
+    <string name="email">Email</string>
+    <string name="date_registered">Enregistré le :</string>
+    <string name="nb_ads_published">Nombre d\'annonces publiées :</string>
+    <string name="save">Enregistrer</string>
+    <string name="change_password">Changer de mot de passe</string>
+    <string name="unregister">Désinscrire</string>
+    <string name="manage_my_ads">Gérer mes annonces</string>
+    <string name="dialog_update_user_succeed">Votre profil a bien été mis à jour</string>
+    <string name="dialog_confirm_unregister">Voulez vous vraiment vous désinscrire ?\nToutes vos annonces n\'apparaitront plus sur l\'application.</string>
+    <string name="text_connexion_required">Une connexion est requise avant de pouvoir poster une annonce.\n\nSi vous n\'avez pas encore de compte, cliquer sur CREER UN COMPTE</string>
+    <string name="error_no_cat_list">Impossible de récupérer les informations sur le serveur</string>
+    <string name="error_no_stats">Impossible de récupérer les statistiques sur le serveur</string>
+    <string name="text_my_profile_accueil">Cette page vous permet de gérer votre compte.\nVous pouvez modifier vos données personnelles, accéder à la gestion de vos annonces et changer de mot de passe.</string>
+    <string name="text_change_password_accueil">Pour changer votre mot de passe, saisissez votre ancien mot de passe, puis saisissez votre nouveau mot de passe.</string>
+    <string name="text_old_password">Mot de passe actuel</string>
+    <string name="text_new_password">Nouveau mot de passe</string>
+    <string name="dialog_no_update">Aucune modification à enregistrer</string>
+    <string name="title_activity_work_image">Travail sur l\'image</string>
+    <string name="title_activity_image_viewer">ImageViewerActivity</string>
+    <string name="text_test_backup_server">Connexion au serveur de secours :</string>
+    <string name="manage_messages">Gérer mes messages</string>
+    <string name="title_activity_message">Mes Messages</string>
+</resources>

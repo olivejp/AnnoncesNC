@@ -1,0 +1,128 @@
+package com.orlanth23.annoncesNC.dto;
+
+import android.app.Activity;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.widget.Toast;
+
+import com.google.gson.Gson;
+import com.orlanth23.annoncesNC.R;
+import com.orlanth23.annoncesNC.database.DictionaryDAO;
+import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
+import com.orlanth23.annoncesNC.webservices.AccessPoint;
+import com.orlanth23.annoncesNC.webservices.RetrofitService;
+import com.orlanth23.annoncesNC.webservices.ReturnClass;
+
+import retrofit.Callback;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
+import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByActivity;
+
+/**
+ * Created by olivejp on 10/09/2015.
+ */
+public class CurrentUser extends Utilisateur implements Parcelable {
+
+    public static final Parcelable.Creator<CurrentUser> CREATOR = new Parcelable.Creator<CurrentUser>() {
+
+        @Override
+        public CurrentUser createFromParcel(Parcel source) {
+            return new CurrentUser(source);
+        }
+
+        @Override
+        public CurrentUser[] newArray(int size) {
+            return new CurrentUser[size];
+        }
+    };
+    private static CurrentUser INSTANCE = null;
+    private static boolean connected = false;
+
+    protected CurrentUser(Parcel in) {
+        INSTANCE = in.readParcelable(CurrentUser.class.getClassLoader());
+        connected = (boolean) in.readValue(Boolean.class.getClassLoader());
+    }
+
+    private CurrentUser() {
+        // Ouverture d'une fenêtre pour authentification
+        super();
+        connected = false;
+    }
+
+    public static synchronized CurrentUser getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new CurrentUser();
+        }
+        return INSTANCE;
+    }
+
+    public static boolean isConnected() {
+        if (INSTANCE == null) {
+            return false;
+        } else {
+            return connected;
+        }
+    }
+
+    public static void setConnected(boolean connected) {
+        if (INSTANCE != null){
+            CurrentUser.connected = connected;
+        }
+    }
+
+    public static void retrieveConnection(final Activity activity, final Runnable runnable) {
+        // Récupération de l'utilisateur par défaut
+        // Création d'un RestAdapter pour le futur appel de mon RestService
+        String connexion_auto = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT);
+        if (connexion_auto != null) {
+            if (connexion_auto.equals("O")) {
+                if (!CurrentUser.isConnected()) {
+                    String email = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
+                    String password = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD);
+
+                    // Si les données d'identification ont été saisies
+                    if (email != null && password != null) {
+                        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+                        retrofitService.doLogin(email, password, new Callback<ReturnClass>() {
+                                    @Override
+                                    public void success(ReturnClass rs, Response response) {
+                                        if (rs.isStatus()) {
+                                            Gson gson = new Gson();
+
+                                            Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+
+                                            // Récupération de l'utilisateur comme étant l'utilisateur courant
+                                            CurrentUser.getInstance().setIdUTI(user.getIdUTI());
+                                            CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
+                                            CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
+                                            CurrentUser.setConnected(true);
+
+                                            runnable.run();
+
+                                            // Display successfully registered message using Toast
+                                            Toast.makeText(activity, activity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Toast.makeText(activity, rs.getMsg(), Toast.LENGTH_LONG).show();
+                                        }
+                                    }
+
+                                    @Override
+                                    public void failure(RetrofitError error) {
+                                        SendDialogByActivity(activity, activity.getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, null);
+                                    }
+                                }
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(INSTANCE, 0);
+        dest.writeValue(connected);
+    }
+}

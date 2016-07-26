@@ -1,0 +1,446 @@
+package com.orlanth23.annoncesNC.fragment;
+
+import android.Manifest;
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.Fragment;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.net.Uri;
+import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.orlanth23.annoncesNC.R;
+import com.orlanth23.annoncesNC.activity.ImageViewerActivity;
+import com.orlanth23.annoncesNC.activity.PostAnnonceActivity;
+import com.orlanth23.annoncesNC.dto.Annonce;
+import com.orlanth23.annoncesNC.dto.Photo;
+import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesNC.utility.Constants;
+import com.orlanth23.annoncesNC.utility.Utility;
+import com.orlanth23.annoncesNC.webservices.AccessPoint;
+import com.orlanth23.annoncesNC.webservices.RetrofitService;
+import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.squareup.picasso.Picasso;
+
+import java.io.File;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
+
+public class FragmentDetailAnnonce extends Fragment {
+
+    public static final String tag = FragmentDetailAnnonce.class.getName();
+    public static final String ARG_PARAM_MODE = "MODE";
+    public final static int SEND_SMS_FROM_DETAIL = 600;
+    public final static int SEND_CALL_FROM_DETAIL = 700;
+    public final static int SEND_MAIL_FROM_DETAIL = 800;
+    public final static int UPDATE_DETAIL = 900;
+    private static final String ARG_PARAM_ANNONCE = "ANNONCE";
+    private static String P_MODE;
+    private static Annonce P_ANNONCE;
+    @Bind(R.id.value_id_annonce)
+    TextView value_id_annonce;
+    @Bind(R.id.value_user)
+    TextView value_user;
+    @Bind(R.id.value_titre)
+    TextView value_titre;
+    @Bind(R.id.value_description)
+    TextView value_description;
+    @Bind(R.id.value_prix_annonce)
+    TextView value_prix_annonce;
+    @Bind(R.id.actionAppel)
+    Button btnActionAppel;
+    @Bind(R.id.actionEmail)
+    Button btnActionEmail;
+    @Bind(R.id.actionSms)
+    Button btnActionSms;
+    @Bind(R.id.actionDelete)
+    Button btnActionDelete;
+    @Bind(R.id.actionUpdate)
+    Button btnActionUpdate;
+    @Bind(R.id.linearButtonMaj)
+    LinearLayout linearButtonMaj;
+    @Bind(R.id.linearButtonVis)
+    LinearLayout linearButtonVis;
+    @Bind(R.id.image_container)
+    LinearLayout P_IMAGE_CONTAINER;
+    private Picasso myPicasso;
+    private HorizontalScrollView horizontalScrollView;
+    private ScrollView scrollImageView;
+
+    private ProgressDialog prgDialog;
+
+    private String telephoneUser;
+    private String emailUser;
+    private Dialog dialogDeleteChoice;
+
+    // Création du listener pour supprimer une annonce
+    private View.OnClickListener clickListenerDeleteBouton = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            dialogDeleteChoice.show();
+        }
+    };
+
+
+    // Création du listener pour envoyer un sms
+    private View.OnClickListener clickListenerSmsBouton = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent sendIntent = new Intent(Intent.ACTION_VIEW);
+            sendIntent.putExtra("sms_body", "Votre annonce m\'intéresse");
+            sendIntent.putExtra("address", telephoneUser);
+            sendIntent.setType("vnd.android-dir/mms-sms");
+            startActivityForResult(sendIntent, SEND_SMS_FROM_DETAIL);
+        }
+    };
+    // Création du listener pour appeler la personne qui a publié l'annonce
+    private View.OnClickListener clickListenerCallBouton = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(Intent.ACTION_CALL);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+            intent.setData(Uri.parse("tel:" + telephoneUser));
+            if (ActivityCompat.checkSelfPermission(getActivity().getApplicationContext(), Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+                return;
+            }
+            startActivityForResult(intent, SEND_CALL_FROM_DETAIL);
+        }
+    };
+
+    // Création du listener pour envoyer un email
+    private View.OnClickListener clickListenerEmailBouton = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String[] TO = {emailUser};
+            String[] CC = {""};
+            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+
+            emailIntent.setData(Uri.parse("mailto:"));
+            emailIntent.setType("text/plain");
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
+            emailIntent.putExtra(Intent.EXTRA_CC, CC);
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, value_titre.getText());
+            emailIntent.putExtra(Intent.EXTRA_TEXT, "Votre annonce m\'intéresse");
+
+            try {
+                startActivityForResult(Intent.createChooser(emailIntent, "Envoi de mail..."), SEND_MAIL_FROM_DETAIL);
+            } catch (android.content.ActivityNotFoundException ex) {
+                Toast.makeText(getActivity(), "There is no email client installed.", Toast.LENGTH_LONG).show();
+            }
+        }
+    };
+    // Création du listener pour mettre à jour l'annonce
+    private View.OnClickListener clickListenerUpdateBouton = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            if (P_MODE.equals(Constants.PARAM_MAJ)) {
+                // Passage d'un paramètre Mise à jour
+                Bundle bd = new Bundle();
+                bd.putString(PostAnnonceActivity.BUNDLE_KEY_MODE, P_MODE);
+                bd.putParcelable(PostAnnonceActivity.BUNDLE_KEY_ANNONCE, P_ANNONCE);
+
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), PostAnnonceActivity.class).putExtras(bd);
+                startActivityForResult(intent, UPDATE_DETAIL);
+            }
+        }
+    };
+
+    // Création du listener pour agrandir l'image
+    private View.OnClickListener clickListenerImageBouton = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent i = new Intent();
+            i.setClass(getActivity(), ImageViewerActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString(ImageViewerActivity.BUNDLE_KEY_URI, P_ANNONCE.getPhotos().get(v.getId()).getNamePhoto());
+            i.putExtras(bundle);
+            startActivity(i);
+        }
+    };
+
+    public FragmentDetailAnnonce() {
+        // Required empty public constructor
+    }
+
+    /**
+     * Use this factory method to create a new instance of
+     * this fragment using the provided parameters.
+     *
+     * @param annonce Parameter 1.
+     * @return A new instance of fragment
+     */
+    public static FragmentDetailAnnonce newInstance(String mode, Annonce annonce) {
+        FragmentDetailAnnonce fragment = new FragmentDetailAnnonce();
+        Bundle args = new Bundle();
+        args.putString(ARG_PARAM_MODE, mode);
+        args.putParcelable(ARG_PARAM_ANNONCE, annonce);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            P_MODE = getArguments().getString(ARG_PARAM_MODE);
+            P_ANNONCE = getArguments().getParcelable(ARG_PARAM_ANNONCE);
+        }
+
+        myPicasso = Picasso.with(getActivity());
+        myPicasso.setIndicatorsEnabled(true);
+
+        // Fenêtre de confirmation avant de supprimer une annonce
+        dialogDeleteChoice = new Dialog(getActivity());
+        prgDialog = new ProgressDialog(getActivity());
+        createDialogDeleteChoice();
+    }
+
+    private void populateViewForOrientation(LayoutInflater inflater, ViewGroup viewGroup) {
+        viewGroup.removeAllViewsInLayout();
+        View rootView = inflater.inflate(R.layout.fragment_detail_annonces, viewGroup);
+        initUI(rootView);
+    }
+
+    private void initUI(View rootView) {
+        // On inflate la vue
+        ButterKnife.bind(this, rootView);
+
+        horizontalScrollView = (HorizontalScrollView) rootView.findViewById(R.id.horizontalScrollView);
+        scrollImageView = (ScrollView) rootView.findViewById(R.id.scrollImageView);
+
+        // Intégration de AdMob
+        AdView mAdView = (AdView) rootView.findViewById(R.id.adView);
+        AdRequest mAdRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(mAdRequest);
+
+
+        // On crée un bouton de suppression et de mise à jour
+        switch (P_MODE) {
+            case Constants.PARAM_MAJ:
+                linearButtonVis.setVisibility(View.GONE);
+                btnActionDelete.setOnClickListener(clickListenerDeleteBouton);
+                btnActionUpdate.setOnClickListener(clickListenerUpdateBouton);
+                break;
+            default:
+                linearButtonMaj.setVisibility(View.GONE);
+                btnActionAppel.setOnClickListener(clickListenerCallBouton);
+                btnActionEmail.setOnClickListener(clickListenerEmailBouton);
+                btnActionSms.setOnClickListener(clickListenerSmsBouton);
+                break;
+        }
+
+        presentAnnonce();  // On présente l'annonce
+        presentPhoto(); // Présentation des photo
+    }
+
+    private void presentPhoto() {
+        // On enlève toutes les vues du ScrollView
+        P_IMAGE_CONTAINER.removeAllViews();
+
+        // Pour toutes les images qu'on a on va créer un nouveau imageView et insérer le bitmap à l'intérieur
+        int id = 0;
+        if (!P_ANNONCE.getPhotos().isEmpty()) {
+            if (horizontalScrollView != null) {
+                horizontalScrollView.setVisibility(View.VISIBLE);
+            } else {
+                scrollImageView.setVisibility(View.VISIBLE);
+            }
+            P_IMAGE_CONTAINER.setVisibility(View.VISIBLE);
+            for (Photo photo : P_ANNONCE.getPhotos()) {
+                // Récupération de la dimension standard d'une image
+                int dimension = (int) getResources().getDimension(R.dimen.image_list_view);
+
+                // Création du nouveau widget
+                ImageView image = new ImageView(getActivity());
+                image.setId(id);
+                image.setMinimumWidth(dimension);
+                image.setMaxWidth(dimension);
+                image.setMinimumHeight(dimension);
+                image.setMaxHeight(dimension);
+                image.setScaleType(ImageView.ScaleType.FIT_CENTER);
+
+                if (photo.getNamePhoto().contains("http://") || photo.getNamePhoto().contains("https://")) {
+                    // Chargement d'une photo à partir d'internet
+                    myPicasso.load(photo.getNamePhoto()).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(image);
+                } else {
+                    // Chargement à partir du local
+                    Uri uri = Uri.parse(photo.getNamePhoto());
+                    myPicasso.load(new File(String.valueOf(uri))).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(image);
+                }
+                P_IMAGE_CONTAINER.addView(image);
+
+                // On affecte un clickListener sur chacune des photos
+                image.setOnClickListener(clickListenerImageBouton);
+
+                id++; // Incrémentation de la variable Id
+            }
+        } else {
+            // Si il n'y a pas de photo, inutile d'afficher la scroll horizontal
+            if (horizontalScrollView != null) {
+                horizontalScrollView.setVisibility(View.GONE);
+            } else {
+                scrollImageView.setVisibility(View.VISIBLE);
+            }
+            P_IMAGE_CONTAINER.setVisibility(View.GONE);
+        }
+    }
+
+    private void createDialogDeleteChoice() {
+        dialogDeleteChoice.setContentView(R.layout.dialog_delete_choice);
+        dialogDeleteChoice.setTitle("Supprimer l'annonce ?");
+
+        Button dialogButtonYes = (Button) dialogDeleteChoice.findViewById(R.id.dialog_delete_yes);
+        Button dialogButtonNo = (Button) dialogDeleteChoice.findViewById(R.id.dialog_delete_no);
+
+        dialogButtonYes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                prgDialog.setMessage(getString(R.string.dialog_msg_patience));
+
+                // Envoi d'un webservice pour supprimer l'annonce en question
+                // Définition d'un nouveau callback
+                RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getENDPOINT()).build().create(RetrofitService.class);
+                retrofit.Callback<ReturnClass> myCallback = new retrofit.Callback<ReturnClass>() {
+                    @Override
+                    public void success(ReturnClass rs, Response response) {
+                        prgDialog.hide();
+                        // Suppression de l'enregistrement dans la liste
+                        if (rs.isStatus()) {
+                            // Retour au fragment précédent
+                            Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
+                            getFragmentManager().popBackStackImmediate();
+                        }
+                    }
+
+                    @Override
+                    public void failure(RetrofitError error) {
+                        prgDialog.hide();
+                        Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+                    }
+                };
+                prgDialog.show();
+                retrofitService.deleteAnnonce(P_ANNONCE.getIdANO(), myCallback);
+            }
+        });
+
+        dialogButtonNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogDeleteChoice.dismiss();
+            }
+        });
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_detail_annonces, container, false);
+
+        initUI(view);
+
+        return view;
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        LayoutInflater inflater = LayoutInflater.from(getActivity());
+        populateViewForOrientation(inflater, (ViewGroup) getView());
+    }
+
+    /**
+     *
+     */
+    private void presentAnnonce() {
+        // Récupération de toutes les valeurs de l'annonce dans les zones graphiques
+        value_id_annonce.setText(P_ANNONCE.getIdANO().toString());
+        value_titre.setText(P_ANNONCE.getTitreANO());
+        value_description.setText(P_ANNONCE.getDescriptionANO());
+        value_prix_annonce.setText(Utility.convertPrice(P_ANNONCE.getPriceANO()));
+
+        String maDate = P_ANNONCE.getDatePublished().toString();
+        emailUser = P_ANNONCE.getOwnerANO().getEmailUTI();
+
+        // On tente de formater la date correctement
+        value_user.setText(getString(R.string.text_post_by).concat(" ").concat(emailUser).concat(" ").concat(getString(R.string.text_pre_date)).concat(" ").concat(Utility.convertDate(maDate)));
+
+        // Si on est en mode visualisation, on peut cliquer sur les boutons téléphoner, email et sms
+        if (P_MODE.equals(Constants.PARAM_VIS)) {
+            telephoneUser = P_ANNONCE.getOwnerANO().getTelephoneUTI().toString();
+            if (telephoneUser.isEmpty()) {
+                btnActionAppel.setActivated(false);
+                btnActionAppel.setVisibility(View.GONE);
+                btnActionSms.setActivated(false);
+                btnActionSms.setVisibility(View.GONE);
+            } else {
+                btnActionAppel.setActivated(true);
+                btnActionAppel.setVisibility(View.VISIBLE);
+                btnActionSms.setActivated(true);
+                btnActionSms.setVisibility(View.VISIBLE);
+            }
+
+            emailUser = P_ANNONCE.getOwnerANO().getEmailUTI();
+            if (emailUser.isEmpty()) {
+                btnActionEmail.setActivated(false);
+                btnActionEmail.setVisibility(View.GONE);
+            } else {
+                btnActionEmail.setActivated(true);
+                btnActionEmail.setVisibility(View.VISIBLE);
+            }
+        }
+
+        // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
+        Activity myActivity = getActivity();
+        myActivity.setTitle(P_ANNONCE.getCategorieANO().getNameCAT());
+        if (myActivity instanceof CustomActivityInterface) {
+            CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
+            myCustomActivity.changeColorToolBar(P_ANNONCE.getCategorieANO().getImageCAT());
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == UPDATE_DETAIL) {
+            if (resultCode == Activity.RESULT_OK) {
+                // On a bien fait la mise à jour de l'annonce, on va retourner aux annonces
+                getFragmentManager().popBackStackImmediate();
+            }
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        dialogDeleteChoice.dismiss();
+        prgDialog.dismiss();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        dialogDeleteChoice.dismiss();
+        prgDialog.dismiss();
+    }
+}

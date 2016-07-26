@@ -1,0 +1,213 @@
+<resources>
+    <string name="app_name">Oliweb NC</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="action_search">Search</string>
+    <string name="action_post">Post</string>
+    <string name="action_log_in">Log in</string>
+    <string name="action_log_out">Log out</string>
+    <string name="action_sign_up">Sign up</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="action_upload">Upload Photo</string>
+    <string name="action_profile">My profile</string>
+    <string name="action_my_annonces">My posts</string>
+
+    <string name="searchTitle">Search</string>
+
+    <string name="desc_list_item_icon">Item Icon</string>
+
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_post_annonce_activity">Post</string>
+    <string name="title_activity_login">Sign in</string>
+    <string name="title_register">Sign in</string>
+    <string name="title_activity_upload">Upload Photo</string>
+    <string name="title_activity_preview">Preview Photo</string>
+
+    <string name="iconeOliweb" translatable="false">iconeOliweb</string>
+
+    <string name="dialogYes">Yes</string>
+    <string name="dialogNo">No</string>
+    <string name="dialogOk">OK</string>
+    <string name="dialogSendingQuestion">Publish ?</string>
+    <string name="dialog_wait_login">Wait for logging</string>
+    <string name="dialog_msg_patience">Please wait…</string>
+    <string name="dialog_wait_looking_for_cat">Looking for categories…please wait</string>
+
+    // Messages d'erreur
+    <string name="error_creating_fragment">Error in creating fragment</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="error_all_fields_required">Fill all the fields</string>
+    <string name="error_no_wifi">No wifi connection or mobile access, shut down.</string>
+
+    <string name="text_titre">Title</string>
+    <string name="text_description">Description</string>
+    <string name="text_prix">Price</string>
+    <string name="text_save_annonce">Save</string>
+    <string name="txtOr">or</string>
+    <string name="text_error_no_file">Sorry, file path is missing!</string>
+
+
+    <string name="pref_header_general">General</string>
+    <string name="pref_title_social_recommendations">Enable social recommendations</string>
+    <string name="pref_description_social_recommendations">Recommendations for people to contact
+        based on your message history
+    </string>
+
+    <string name="pref_key_number_car">pref_key_number_car</string>
+    <string name="pref_title_number_car">Number caracters</string>
+    <string name="pref_default_number_car" translatable="false">100</string>
+    <string name="pref_description_number_car">Number of caracters shown in the description field.</string>
+
+    <string name="pref_key_timeout">pref_key_timeout</string>
+
+    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
+    <string-array name="pref_example_list_titles">
+        <item>Always</item>
+        <item>When possible</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_example_list_values">
+        <item>1</item>
+        <item>0</item>
+        <item>-1</item>
+    </string-array>
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+    <string name="pref_server">Server</string>
+    <string name="pref_title_sync_frequency">Sync frequency</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>1 hour</item>
+        <item>3 hours</item>
+        <item>6 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_sync_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>60</item>
+        <item>180</item>
+        <item>360</item>
+        <item>-1</item>
+    </string-array>
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+    <string name="pref_header_notifications">Notifications</string>
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+    <string name="pref_title_vibrate">Vibrate</string>
+
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+
+    <string name="btnTakePicture">Take picture</string>
+    <string name="btnRecordVideo">Take video</string>
+    <string name="btnUploadToServer">Upload to server</string>
+
+    <string name="error_need_user_connection">You\'re not connected</string>
+    <string name="error_post_description">Fill the description field</string>
+    <string name="error_post_price">Fill the price field</string>
+    <string name="error_post_title">Fill the title field</string>
+    <string name="error_choose_category">Choose a category</string>
+    <string name="dialog_failed_post">Error your ad has not been posted</string>
+    <string name="dialog_sending_photo">Sending the picture…</string>
+    <string name="dialog_sending_post">Sending the ad…</string>
+    <string name="dialog_success_post">Your ad was posted.</string>
+    <string name="dialog_search_ads">Looking for ads…Please wait</string>
+    <string name="remember_me">Remember me</string>
+    <string name="action_cancelled">Action cancelled</string>
+    <string name="action_failed">Action failed</string>
+    <string name="text_categorie">Category</string>
+    <string name="action_email">Email</string>
+    <string name="action_call">Call</string>
+    <string name="text_post_by">Post by</string>
+    <string name="text_pre_date"> on </string>
+    <string name="action_sms" translatable="false">SMS</string>
+    <string name="pref_description_timeout">Time before timeout</string>
+    <string name="pref_title_timeout">Timeout</string>
+    <string name="dialog_failed_webservice">The webservice could not be properly contact.</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_update">Update</string>
+    <string name="action_picture">New picture</string>
+    <string name="action_gallery">From gallery</string>
+    <string name="dialog_no_text">No text to look for</string>
+    <string name="dialog_want_to_quit">Do you want to leave the app ?</string>
+    <string name="title_details">Details</string>
+    <string name="dialog_register_ok">You have been registered!</string>
+    <string name="dialog_no_result">No result to show</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="text_lost_password">Password lost</string>
+    <string name="action_send_new_password">Send a new password</string>
+    <string name="description_lost_password">Type your email and press the button. A new password will be send to you by email.</string>
+    <string name="action_lost_password">Lost password</string>
+    <string name="dialog_password_send">A email was send to you</string>
+    <string name="text_home_page"><![CDATA[Click on the icon & to show the list of category.\n\nThe top right icon allows you to have the main features.]]></string>
+    <string name="text_update_annonce">Update</string>
+    <string name="facebook_app_id" translatable="false">465862300284732</string>
+    <string name="action_share">Share</string>
+    <string name="connected_with">"Connecté avec le compte "</string>
+    <string name="keyword">Keyword</string>
+    <string name="max" translatable="false">Max</string>
+    <string name="min" translatable="false">Min</string>
+    <string name="gamme_de_prix">Price range</string>
+    <string name="photo_disponible">Photo</string>
+    <string name="error_no_server">No server</string>
+
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+
+    <string name="image_network" translatable="false">image_network</string>
+    <string name="text_all_category">All categories</string>
+    <string name="tiret">-</string>
+    <string name="banner_ad_unit_id">ca-app-pub-9977775483546656/8087223926</string>
+    <string name="text_register">Welcome to the application Oliweb NC. \nRegister only takes a few seconds. No code is sent to your email address . \nOnly fill the following fields.</string>
+    <string name="color_black" translatable="false">000000</string>
+    <string name="error_no_parameter">No defined parameter</string>
+    <string name="error_min_sup_max">The minimum may not exceed the maximum</string>
+    <string name="text_dscription_search">The search screen allows you to select ads to you based on the criteria : keywords , ad category , price range, the presence of a photo.</string>
+    <string name="version" translatable="false">Alpha 1.6</string>
+
+
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="text_password">Password</string>
+    <string name="text_password_confirm">Confirm password</string>
+    <string name="action_rotate">Rotate</string>
+    <string name="title_activity_activity_profile">My Profile</string>
+    <string name="textNbAnnonces">Published Ads :</string>
+    <string name="textNbUser">Registered Users :</string>
+    <string name="textSlogan">Caledonian Mobile app</string>
+    <string name="telephone">Telephone number</string>
+    <string name="email">Email</string>
+    <string name="dialog_update_user_succeed">Your profil has been updated</string>
+    <string name="dialog_confirm_unregister">Do you really want to unregister ?</string>
+    <string name="change_password">Update password</string>
+    <string name="date_registered">Registered since : </string>
+    <string name="manage_my_ads">Manage my ads</string>
+    <string name="nb_ads_published">Published ads : </string>
+    <string name="save">Save</string>
+    <string name="text_connexion_required">Connection is required to post ads.\n\nIf you don\'t get a account, click on SIGN UP.</string>
+    <string name="text_get_infos">Seeking informations on server : </string>
+    <string name="text_get_stats">Seeking stats on server : </string>
+    <string name="text_test_network">Connection to network : </string>
+    <string name="text_test_server">Connection to server :</string>
+    <string name="unregister">Unregister</string>
+    <string name="server_client_id" translatable="false">192941275829-0rm3i003nfgeqnhm78207rgbf1tqee2q.apps.googleusercontent.com</string>
+    <string name="error_no_stats">Can\'t get stats from the server</string>
+    <string name="error_no_cat_list">Can\'t get informations from the server</string>
+    <string name="dialog_no_update">No updates to save</string>
+    <string name="text_change_password_accueil">To change your password, fill your old password then tip your new password.</string>
+    <string name="text_new_password">New password</string>
+    <string name="text_old_password">Old password</string>
+    <string name="text_my_profile_accueil">Here you can manage your profile. Update your personal datas, manage your ads and change your password.</string>
+    <string name="title_activity_image_viewer">ImageViewerActivity</string>
+    <string name="title_activity_work_image">Work on image</string>
+    <string name="text_test_backup_server">Connection to backup server :</string>
+    <string name="title_activity_message">My Messages</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="manage_messages">Manage my messages</string>
+</resources>
+
