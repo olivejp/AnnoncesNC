@@ -1,26 +1,29 @@
 ext {
-    supportLibVersion = '24.0.0'  // variable dont on peut faire référence
+    supportLibVersion = '24.2.1'  // variable dont on peut faire référence
 }
 
 apply plugin: 'com.android.application'
 
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+def keystoreProperties = new Properties()
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+
 android {
     signingConfigs {
         config {
-            keyAlias 'AnnoncesNC'
-            keyPassword 'Toyota84'
-            storeFile file('C:/Users/olivejp/Dropbox/Projets Mobile/Projet Annonce/keystore.jks')
-            // storeFile file('/Users/stephaniedelessert/Dropbox/Projets Mobile/Projet Annonce/keystore.jks')
-            storePassword 'je@n-p@ul84'
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
         }
     }
     compileSdkVersion 24
-    buildToolsVersion "24.0.0"
+    buildToolsVersion "24.0.3"
     defaultConfig {
         applicationId "com.orlanth23.annoncesNC"
         minSdkVersion 16
         targetSdkVersion 24
-        versionCode 14
+        versionCode 15
         multiDexEnabled false
     }
     buildTypes {
@@ -30,7 +33,6 @@ android {
             signingConfig signingConfigs.config
             debuggable false
         }
-
         ShrinkRelease {
             shrinkResources true
             minifyEnabled true
@@ -38,13 +40,15 @@ android {
             signingConfig signingConfigs.config
             debuggable false
         }
-
         ShrinkDebug {
             shrinkResources true
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.config
             debuggable true
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
     productFlavors {
@@ -71,10 +75,9 @@ dependencies {
     compile 'com.squareup.retrofit:retrofit:1.9.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.code.gson:gson:2.4'
-    compile 'com.google.firebase:firebase-ads:9.0.0'
-    compile 'com.google.android.gms:play-services-ads:9.2.1'
+    compile 'com.google.android.gms:play-services-ads:9.6.1'
     compile 'org.jetbrains:annotations-java5:15.0'
-    compile 'com.android.support:support-v4:24.0.0'
+    compile 'com.android.support:support-v4:24.2.1'
     compile 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
 }
 
