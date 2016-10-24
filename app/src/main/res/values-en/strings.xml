@@ -189,6 +189,9 @@
     <string name="text_test_backup_server">Connection to backup server :</string>
     <string name="title_activity_message">My Messages</string>
     <string name="manage_messages">Manage my messages</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="error_same_oldPassword_newPassword">Le nouveau mot de passe est identique à l\'ancien</string>
+    <string name="error_confirmPassword_incorrect">Le mot de passe de confirmation est incorrect</string>
 
 </resources>
 

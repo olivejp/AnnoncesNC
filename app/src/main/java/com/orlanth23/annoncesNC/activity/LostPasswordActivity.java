@@ -2,11 +2,8 @@ package com.orlanth23.annoncesNC.activity;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
@@ -18,7 +15,7 @@ import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -30,51 +27,29 @@ import retrofit.client.Response;
 import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByFragmentManager;
 
 
-public class LostPasswordActivity extends AppCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
+public class LostPasswordActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
 
     private static final String tag = LostPasswordActivity.class.getName();
 
-    // UI references.
     @Bind(R.id.email)
     AutoCompleteTextView mEmailView;
     @Bind(R.id.login_error)
     TextView errorMsg;
-
-    private ProgressDialog prgDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lost_password);
         ButterKnife.bind(this);
-
-        // Création d'une progress dialog pour demander de patienter
-        prgDialog = new ProgressDialog(this);
-        prgDialog.setMessage(getString(R.string.dialog_msg_patience));
-
-        ActionBar ab = getSupportActionBar();
-        if (ab != null) {
-            ab.setDisplayHomeAsUpEnabled(true);
-            ab.setTitle(getString(R.string.action_lost_password));
-        }
-
-        // On récupère des données de la BD
+        changeActionBarTitle(R.string.action_lost_password, true);
         populateAutoComplete();
     }
 
-    /**
-     * Méthode de récupération des identifiants dans la base de données
-     * <p/>
-     * On va remplir automatiquement la zone mot de passe
-     */
     private void populateAutoComplete() {
         mEmailView.setText(DictionaryDAO.getValueByKey(getApplicationContext(), DictionaryDAO.Dictionary.DB_CLEF_LOGIN));
     }
 
 
-    /**
-     * @param view
-     */
     public void lostPassword(View view) {
 
         // Reset errors.
@@ -91,7 +66,7 @@ public class LostPasswordActivity extends AppCompatActivity implements NoticeDia
             mEmailView.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
-        } else if (!Utility.validate(email)) {
+        } else if (!Utility.validateEmail(email)) {
             mEmailView.setError(getString(R.string.error_invalid_email));
             focusView = mEmailView;
             cancel = true;
@@ -103,12 +78,12 @@ public class LostPasswordActivity extends AppCompatActivity implements NoticeDia
         } else {
 
             // Création d'un RestAdapter pour le futur appel de mon RestService
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
-            Callback<ReturnClass> myCallback = new Callback<ReturnClass>() {
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+            Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
                 @Override
-                public void success(ReturnClass rs, Response response) {
+                public void success(ReturnWS retour, Response response) {
                     prgDialog.hide();
-                    if (rs.isStatus()) {
+                    if (retour.statusValid()) {
 
                         // Display successfully registered message using Toast
                         Toast.makeText(getApplicationContext(), getString(R.string.dialog_password_send), Toast.LENGTH_LONG).show();
@@ -118,8 +93,8 @@ public class LostPasswordActivity extends AppCompatActivity implements NoticeDia
                         setResult(Activity.RESULT_OK, resultIntent);
                         finish();
                     } else {
-                        errorMsg.setText(rs.getMsg());
-                        Toast.makeText(getApplicationContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
+                        errorMsg.setText(retour.getMsg());
+                        Toast.makeText(getApplicationContext(), retour.getMsg(), Toast.LENGTH_LONG).show();
                     }
                 }
 

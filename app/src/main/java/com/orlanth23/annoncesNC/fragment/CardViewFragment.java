@@ -1,9 +1,5 @@
 package com.orlanth23.annoncesNC.fragment;
 
-/**
- * Created by olivejp on 05/04/2016.
- */
-
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
@@ -155,7 +151,7 @@ public class CardViewFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         // On inflate la vue
-        rootView = inflater.inflate(R.layout.cardviewfragment, container, false);
+        rootView = inflater.inflate(R.layout.fragement_card_view, container, false);
 
         prgDialog = new ProgressDialog(getActivity());
 
@@ -279,7 +275,7 @@ public class CardViewFragment extends Fragment {
         };
 
         // Création d'un RestAdapter pour le futur appel de mon RestService
-        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
+        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
 
         prgDialog.setMessage(getString(R.string.dialog_msg_patience));
         prgDialog.show();
@@ -287,20 +283,20 @@ public class CardViewFragment extends Fragment {
             case ACTION_ANNONCE_BY_CATEGORY:
                 // Appel du service RETROFIT
                 if (category != null) {
-                    retrofitService.listannoncebycategorywithpage(category.getIdCAT(), currentPage, myCallback);
+                    retrofitService.getListAnnonceByCategoryWithPage(category.getIdCAT(), currentPage, myCallback);
                 }
                 break;
             case ACTION_ANNONCE_BY_KEYWORD:
                 // Appel du service RETROFIT
-                retrofitService.dosearchwithpage(keyword, currentPage, myCallback);
+                retrofitService.searchAnnonceWithPage(keyword, currentPage, myCallback);
                 break;
             case ACTION_ANNONCE_BY_USER:
                 // Appel du service RETROFIT
-                retrofitService.listannoncebyuser(idUser, currentPage, myCallback);
+                retrofitService.getListAnnonceByUser(idUser, currentPage, myCallback);
                 break;
             case ACTION_MULTI_PARAM:
                 // Appel du service RETROFIT multiparamètre
-                retrofitService.doSearchMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage, myCallback);
+                retrofitService.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage, myCallback);
                 break;
         }
     }

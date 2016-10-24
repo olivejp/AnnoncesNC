@@ -34,7 +34,7 @@ import com.orlanth23.annoncesNC.utility.Constants;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.orlanth23.annoncesNC.webservices.ReturnWS;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -45,9 +45,9 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-public class FragmentDetailAnnonce extends Fragment {
+public class DetailAnnonceFragment extends Fragment {
 
-    public static final String tag = FragmentDetailAnnonce.class.getName();
+    public static final String tag = DetailAnnonceFragment.class.getName();
     public static final String ARG_PARAM_MODE = "MODE";
     public final static int SEND_SMS_FROM_DETAIL = 600;
     public final static int SEND_CALL_FROM_DETAIL = 700;
@@ -179,7 +179,7 @@ public class FragmentDetailAnnonce extends Fragment {
         }
     };
 
-    public FragmentDetailAnnonce() {
+    public DetailAnnonceFragment() {
         // Required empty public constructor
     }
 
@@ -190,8 +190,8 @@ public class FragmentDetailAnnonce extends Fragment {
      * @param annonce Parameter 1.
      * @return A new instance of fragment
      */
-    public static FragmentDetailAnnonce newInstance(String mode, Annonce annonce) {
-        FragmentDetailAnnonce fragment = new FragmentDetailAnnonce();
+    public static DetailAnnonceFragment newInstance(String mode, Annonce annonce) {
+        DetailAnnonceFragment fragment = new DetailAnnonceFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM_MODE, mode);
         args.putParcelable(ARG_PARAM_ANNONCE, annonce);
@@ -320,15 +320,15 @@ public class FragmentDetailAnnonce extends Fragment {
 
                 // Envoi d'un webservice pour supprimer l'annonce en question
                 // Définition d'un nouveau callback
-                RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
-                retrofit.Callback<ReturnClass> myCallback = new retrofit.Callback<ReturnClass>() {
+                RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+                retrofit.Callback<ReturnWS> myCallback = new retrofit.Callback<ReturnWS>() {
                     @Override
-                    public void success(ReturnClass rs, Response response) {
+                    public void success(ReturnWS retour, Response response) {
                         prgDialog.hide();
                         // Suppression de l'enregistrement dans la liste
-                        if (rs.isStatus()) {
+                        if (retour.statusValid()) {
                             // Retour au fragment précédent
-                            Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(), retour.getMsg(), Toast.LENGTH_LONG).show();
                             getFragmentManager().popBackStackImmediate();
                         }
                     }

@@ -1,13 +1,13 @@
 package com.orlanth23.annoncesNC.webservices;
 
-public class ReturnClass {
+public class ReturnWS {
 
     private String tag;
     private boolean status;
     private String msg;
     private Integer id;
 
-    public ReturnClass(String tag, boolean status, String msg, Integer id) {
+    public ReturnWS(String tag, boolean status, String msg, Integer id) {
         this.tag = tag;
         this.status = status;
         this.msg = msg;
@@ -22,7 +22,7 @@ public class ReturnClass {
         this.tag = tag;
     }
 
-    public boolean isStatus() {
+    public boolean statusValid() {
         return status;
     }
 

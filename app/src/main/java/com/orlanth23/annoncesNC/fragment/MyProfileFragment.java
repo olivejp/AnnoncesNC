@@ -22,7 +22,7 @@ import com.orlanth23.annoncesNC.utility.Constants;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -80,7 +80,7 @@ public class MyProfileFragment extends Fragment{
             myCustomActivity.changeColorToolBar(Constants.colorPrimary);
         }
 
-        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
+        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
 
         // Création d'un listener pour se déconnecter
         View.OnClickListener onClickListenerDeconnexion = new View.OnClickListener() {
@@ -131,7 +131,7 @@ public class MyProfileFragment extends Fragment{
 
                     // When Email entered is invalid
                     String email = emailMyProfile.getText().toString();
-                    if (!Utility.validate(email)) {
+                    if (!Utility.validateEmail(email)) {
                         emailMyProfile.setError(getString(R.string.error_invalid_email));
                         emailMyProfile.requestFocus();
                     }else{
@@ -141,10 +141,10 @@ public class MyProfileFragment extends Fragment{
 
                         newEmail = emailMyProfile.getText().toString();
                         newTelephone = Integer.valueOf(telephoneMyProfile.getText().toString());
-                        retrofitService.doUpdateUser(CurrentUser.getInstance().getIdUTI(), newEmail, newTelephone, new Callback<ReturnClass>() {
+                        retrofitService.updateUser(CurrentUser.getInstance().getIdUTI(), newEmail, newTelephone, new Callback<ReturnWS>() {
                             @Override
-                            public void success(ReturnClass rs, Response response) {
-                                if (rs.isStatus()){
+                            public void success(ReturnWS retour, Response response) {
+                                if (retour.statusValid()){
                                     CurrentUser.getInstance().setEmailUTI(newEmail);
                                     CurrentUser.getInstance().setTelephoneUTI(newTelephone);
                                     Toast.makeText(getActivity(), getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
@@ -156,7 +156,7 @@ public class MyProfileFragment extends Fragment{
                                     }
                                     getFragmentManager().popBackStackImmediate();
                                 }else{
-                                    Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getActivity(), retour.getMsg(), Toast.LENGTH_LONG).show();
 
                                     // Le web service a échoué, on réactive quand même le bouton
                                     action_save_change.setEnabled(true);

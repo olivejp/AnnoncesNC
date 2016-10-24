@@ -2,15 +2,12 @@ package com.orlanth23.annoncesNC.webservices;
 
 import com.orlanth23.annoncesNC.utility.Constants;
 
-/**
- * Created by olivejp on 28/06/2016.
- */
 public class AccessPoint {
 
     private static AccessPoint INSTANCE = null;
-    private static String defaultServerPageUpload;
-    private static String defaultServerDirectoryUploads;
-    private static String defaultServerEndpoint;
+    private static String serverPageUpload = Constants.SERVER_PRIMARY_PAGE_UPLOAD;
+    private static String serverDirectoryUploads = Constants.SERVER_PRIMARY_DIRECTORY_UPLOAD;
+    private static String serverEndpoint = Constants.SERVER_PRIMARY_ENDPOINT;
     private static boolean isBackUp = false;
 
     public static AccessPoint getInstance() {
@@ -20,31 +17,31 @@ public class AccessPoint {
         return INSTANCE;
     }
 
-    public static void getBackUpServer() {
-        defaultServerPageUpload = Constants.SERVER_SECONDARY_PAGE_UPLOAD;
-        defaultServerDirectoryUploads = Constants.SERVER_SECONDARY_DIRECTORY_UPLOAD;
-        defaultServerEndpoint = Constants.SERVER_SECONDARY_ENDPOINT;
+    public void changeToBackUpServer() {
+        serverPageUpload = Constants.SERVER_SECONDARY_PAGE_UPLOAD;
+        serverDirectoryUploads = Constants.SERVER_SECONDARY_DIRECTORY_UPLOAD;
+        serverEndpoint = Constants.SERVER_SECONDARY_ENDPOINT;
         isBackUp = true;
     }
 
-    public static void getPrincipalServer() {
-        defaultServerPageUpload = Constants.SERVER_PRIMARY_PAGE_UPLOAD;
-        defaultServerDirectoryUploads = Constants.SERVER_PRIMARY_DIRECTORY_UPLOAD;
-        defaultServerEndpoint = Constants.SERVER_PRIMARY_ENDPOINT;
+    public void changeToPrincipalServer() {
+        serverPageUpload = Constants.SERVER_PRIMARY_PAGE_UPLOAD;
+        serverDirectoryUploads = Constants.SERVER_PRIMARY_DIRECTORY_UPLOAD;
+        serverEndpoint = Constants.SERVER_PRIMARY_ENDPOINT;
         isBackUp = false;
     }
-    public static String getDefaultServerPageUpload() {
-        return defaultServerPageUpload;
+    public String getServerPageUpload() {
+        return serverPageUpload;
     }
 
-    public static String getDefaultServerDirectoryUploads() {
-        return defaultServerDirectoryUploads;
+    public String getServerDirectoryUploads() {
+        return serverDirectoryUploads;
     }
-    public static String getDefaultServerEndpoint() {
-        return defaultServerEndpoint;
+    public String getServerEndpoint() {
+        return serverEndpoint;
     }
 
-    public static boolean isBackUp() {
+    public boolean isBackUp() {
         return isBackUp;
     }
 }

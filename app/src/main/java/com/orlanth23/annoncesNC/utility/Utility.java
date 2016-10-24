@@ -1,9 +1,5 @@
 package com.orlanth23.annoncesNC.utility;
 
-/**
- * Created by orlanth23 on 24/09/2015.
- */
-
 import android.app.Activity;
 import android.app.FragmentManager;
 import android.content.Context;
@@ -24,6 +20,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.database.DictionaryDAO;
@@ -44,9 +41,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Class which has Utility methods
- */
+
 public class Utility {
 
     public static final String DIALOG_TAG_UNREGISTER = "UNREGISTER";
@@ -58,6 +53,17 @@ public class Utility {
     private static final SimpleDateFormat originalDateFormat = new SimpleDateFormat("yyyyMMddHHmm", Locale.FRENCH);
     private static final SimpleDateFormat newDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRENCH);
 
+    public static boolean isTextViewOnError(boolean condition, TextView textView, String msgError, boolean requestFocus){
+        if (condition) {
+            textView.setError(msgError);
+            if (requestFocus){
+                textView.requestFocus();
+            }
+            return true;
+        }else{
+            return false;
+        }
+    }
 
     public static String getRealPathFromUri(Context context, Uri contentUri) {
         Cursor cursor = null;
@@ -80,12 +86,6 @@ public class Utility {
         }
     }
 
-    /**
-     * Méthode pour réduire la taille d'une image
-     *
-     * @param p_bitmap
-     * @return
-     */
     public static Bitmap resizeBitmap(Bitmap p_bitmap, int maxPx) {
         int newWidth;
         int newHeight;
@@ -110,12 +110,6 @@ public class Utility {
         return Bitmap.createScaledBitmap(p_bitmap, newWidth, newHeight, true);
     }
 
-    /**
-     * Sauvegarde une Bitmap et renvoie son Path
-     * @param bitmap
-     * @param TAG
-     * @return
-     */
     public static String saveBitmap(Bitmap bitmap, String TAG) {
         // On enregistre cette nouvelle image retaillée et on récupère son chemin dans path
         String retour = null;
@@ -138,25 +132,12 @@ public class Utility {
         return retour;
     }
 
-    /**
-     * Transforme une bitmap en ByteArray
-     *
-     * @param bitmap
-     * @return
-     */
-    public static byte[] transformToByteArray(Bitmap bitmap) {
+    public static byte[] transformBitmapToByteArray(Bitmap bitmap) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
         return stream.toByteArray();
     }
 
-    /**
-     * Va récupérer une Bitmap depuis une URI
-     *
-     * @param context
-     * @param uri
-     * @return
-     */
     public static Bitmap getBitmapFromUri(Context context, Uri uri) {
         InputStream imageStream;
         Bitmap bitmap = null;
@@ -169,13 +150,7 @@ public class Utility {
         return bitmap;
     }
 
-    /**
-     * Validate Email with regular expression
-     *
-     * @param email
-     * @return true for Valid Email and false for Invalid Email
-     */
-    public static boolean validate(String email) {
+    public static boolean validateEmail(String email) {
         Pattern pattern = Pattern.compile(EMAIL_PATTERN);
         Matcher matcher = pattern.matcher(email);
 
@@ -186,24 +161,18 @@ public class Utility {
         return password.length() >= 4;
     }
 
-    /**
-     * Checks for Null String object
-     *
-     * @param txt
-     * @return true for not null and false for null String object
-     */
     public static boolean isNotNull(String txt) {
         return txt != null && txt.trim().length() > 0;
     }
 
-    public static boolean isWifiActivated(Activity activity){
+    private static boolean isWifiActivated(Activity activity){
         // Test de la connexion WIFI
         ConnectivityManager connManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
     }
 
-    public static boolean is3GActivated(Activity activity){
+    private static boolean is3GActivated(Activity activity){
         // Test de la connexion 3g
         ConnectivityManager connManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
@@ -285,11 +254,6 @@ public class Utility {
         return mediaFile;
     }
 
-    /**
-     * Retourne un string avec la date en format DMY
-     * @param dateYMDHM
-     * @return
-     */
     public static String convertDate(String dateYMDHM){
         Date dateOriginal = null;
         try {
@@ -300,35 +264,18 @@ public class Utility {
         return newDateFormat.format(dateOriginal);
     }
 
-    /**
-     *
-     * @param prix
-     * @return
-     */
     public static String convertPrice(Integer prix){
         return NumberFormat.getNumberInstance(Locale.FRENCH).format(prix) + " " + Constants.CURRENCY;
     }
 
-
-    /**
-     * @param activity
-     * @return
-     */
-    public static boolean checkNetwork(Activity activity) {
-        // Si le wifi ou la 3g ne sont pas activés, inutile de continuer
+    public static boolean checkWifiAndMobileData(Activity activity) {
         return (Utility.isWifiActivated(activity) || Utility.is3GActivated(activity));
     }
 
-    /**
-     * Hide keyboard
-     *
-     * @param ctx
-     */
     public static void hideKeyboard(Context ctx) {
         InputMethodManager inputManager = (InputMethodManager) ctx
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
 
-        // check if no view has focus:
         View v = ((Activity) ctx).getCurrentFocus();
         if (v == null)
             return;

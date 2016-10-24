@@ -1,9 +1,5 @@
 package com.orlanth23.annoncesNC.activity;
 
-/**
- * Created by orlanth23 on 24/09/2015.
- */
-
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,7 +20,7 @@ import com.orlanth23.annoncesNC.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -126,7 +122,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
 
         // When Email entered is invalid
-        if (!Utility.validate(email)) {
+        if (!Utility.validateEmail(email)) {
             emailET.setError(getString(R.string.error_invalid_email));
             focusView = emailET;
             cancel = true;
@@ -168,12 +164,12 @@ public class RegisterActivity extends AppCompatActivity {
             final String motDePasseEncrypted = PasswordEncryptionService.desEncryptIt(password);
 
             // Appel du RETROFIT Webservice
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
-            retrofit.Callback<ReturnClass> myCallback = new retrofit.Callback<ReturnClass>() {
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+            retrofit.Callback<ReturnWS> myCallback = new retrofit.Callback<ReturnWS>() {
                 @Override
-                public void success(ReturnClass rs, Response response) {
+                public void success(ReturnWS retour, Response response) {
                     prgDialog.hide();
-                    if (rs.isStatus()) {
+                    if (retour.statusValid()) {
 
                         // Si on a coché la case pour se souvenir de l'utilisateur
                         if (checkBox_register_remember_me.isChecked()) {
@@ -189,7 +185,7 @@ public class RegisterActivity extends AppCompatActivity {
                         // Récupération de l'utilisateur
                         Gson gson = new Gson();
 
-                        Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+                        Utilisateur user = gson.fromJson(retour.getMsg(), Utilisateur.class);
 
                         // Récupération de l'utilisateur comme étant l'utilisateur courant
                         CurrentUser.getInstance().setIdUTI(user.getIdUTI());
@@ -203,8 +199,8 @@ public class RegisterActivity extends AppCompatActivity {
                         setResult(RESULT_OK, returnIntent);                             // On retourne un résultat RESULT_OK
                         finish();                                                       // On finit l'activité
                     } else {
-                        errorMsg.setText(rs.getMsg());
-                        Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
+                        errorMsg.setText(retour.getMsg());
+                        Toast.makeText(mActivity, retour.getMsg(), Toast.LENGTH_LONG).show();
                     }
                 }
 

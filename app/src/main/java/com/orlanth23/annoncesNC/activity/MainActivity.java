@@ -44,7 +44,7 @@ import com.orlanth23.annoncesNC.utility.Constants;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
 
         changeColorToolBar(Constants.colorPrimary);
 
-        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
+        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
 
         // Création d'un exécutable qui va récupérer les informations sur le serveur
         runnable = new Runnable() {
@@ -154,14 +154,14 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                 // ---------------------------------------
                 // RECUPERATION de la liste des catégories
                 // ---------------------------------------
-                retrofitService.listcategorie(new retrofit.Callback<ReturnClass>() {
+                retrofitService.getListCategory(new retrofit.Callback<ReturnWS>() {
                     @Override
-                    public void success(ReturnClass rs, Response response) {
-                        if (rs.isStatus()) {
+                    public void success(ReturnWS retour, Response response) {
+                        if (retour.statusValid()) {
                             Gson gson = new Gson();
                             Type listType = new TypeToken<ArrayList<Categorie>>() {
                             }.getType();
-                            ArrayList<Categorie> categories = gson.fromJson(rs.getMsg(), listType);
+                            ArrayList<Categorie> categories = gson.fromJson(retour.getMsg(), listType);
 
                             // On réceptionne la liste des catégories dans l'instance ListeCategories
                             listeCategories = ListeCategories.getInstance();
@@ -182,10 +182,10 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                 });
 
                 // Récupération du nombre d'annonces
-                retrofitService.getNbAnnonce(new retrofit.Callback<ReturnClass>() {
+                retrofitService.getNbAnnonce(new retrofit.Callback<ReturnWS>() {
                     @Override
-                    public void success(ReturnClass rs, Response response) {
-                        if (rs.isStatus()) {
+                    public void success(ReturnWS rs, Response response) {
+                        if (rs.statusValid()) {
                             ListeStats.setNbAnnonces(Integer.valueOf(rs.getMsg()));
                         }
                     }
@@ -197,10 +197,10 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                 });
 
                 // Récupération du nombre d'utilisateur
-                retrofitService.getNbUser(new retrofit.Callback<ReturnClass>() {
+                retrofitService.getNbUser(new retrofit.Callback<ReturnWS>() {
                     @Override
-                    public void success(ReturnClass rs, Response response) {
-                        if (rs.isStatus()) {
+                    public void success(ReturnWS rs, Response response) {
+                        if (rs.statusValid()) {
                             ListeStats.setNbUsers(Integer.valueOf(rs.getMsg()));
                         }
                     }
@@ -311,10 +311,10 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                 break;
             case Utility.DIALOG_TAG_UNREGISTER :
                 // On lance le webservice pour se désinscrire
-                retrofitService.doUnregisterUser(CurrentUser.getInstance().getIdUTI(), new retrofit.Callback<ReturnClass>() {
+                retrofitService.unregisterUser(CurrentUser.getInstance().getIdUTI(), new retrofit.Callback<ReturnWS>() {
                     @Override
-                    public void success(ReturnClass rs, Response response) {
-                        if (rs.isStatus()) {
+                    public void success(ReturnWS retour, Response response) {
+                        if (retour.statusValid()) {
                             CurrentUser cu = CurrentUser.getInstance();
                             cu.setTelephoneUTI(0);
                             cu.setEmailUTI(null);
@@ -324,7 +324,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                             refreshMenu();
                             getFragmentManager().popBackStackImmediate();
                         }else{
-                            Toast.makeText(getApplicationContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), retour.getMsg(), Toast.LENGTH_LONG).show();
                         }
                     }
 
@@ -415,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
         // Vérification que l'utilisateur est connecté
         if (!CurrentUser.isConnected()) {
             // Ouverture de l'activity pour connecter l'utilisateur
-            intent.setClass(this, LoginActivity.class);
+            intent.setClass(this, LoginActivityRetrofit.class);
             b.putInt(PARAM_REQUEST_CODE, CODE_POST_NOT_LOGGED); //Your id
             intent.putExtras(b);
             startActivityForResult(intent, CODE_POST_NOT_LOGGED);
@@ -538,7 +538,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                 if (!CurrentUser.isConnected()) {
                     // Ouverture de l'activity pour connecter l'utilisateur
                     Intent intent = new Intent();
-                    intent.setClass(this, LoginActivity.class);
+                    intent.setClass(this, LoginActivityRetrofit.class);
                     startActivityForResult(intent, CODE_CONNECT_USER);
                     return true;
                 } else {

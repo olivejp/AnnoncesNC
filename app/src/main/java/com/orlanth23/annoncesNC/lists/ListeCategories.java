@@ -1,14 +1,12 @@
 package com.orlanth23.annoncesNC.lists;
 
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.orlanth23.annoncesNC.dto.Categorie;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-
-/**
- * Created by orlanth23 on 28/08/2015.
- */
 public class ListeCategories {
 
     private static ListeCategories INSTANCE = null;
@@ -23,6 +21,14 @@ public class ListeCategories {
 
     public static void setMyArrayList(ArrayList<Categorie> arrayList) {
         myArrayList = arrayList;
+    }
+
+    public static void setMyArrayListFromJson(String json) {
+        Gson gson = new Gson();
+        Type listType = new TypeToken<ArrayList<Categorie>>() {
+        }.getType();
+        ArrayList<Categorie> categories = gson.fromJson(json, listType);
+        setMyArrayList(categories);
     }
 
     public int getIndexByName(String nameCategorie) {

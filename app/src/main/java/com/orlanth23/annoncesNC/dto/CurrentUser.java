@@ -11,7 +11,7 @@ import com.orlanth23.annoncesNC.database.DictionaryDAO;
 import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -20,9 +20,6 @@ import retrofit.client.Response;
 
 import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByActivity;
 
-/**
- * Created by olivejp on 10/09/2015.
- */
 public class CurrentUser extends Utilisateur implements Parcelable {
 
     public static final Parcelable.Creator<CurrentUser> CREATOR = new Parcelable.Creator<CurrentUser>() {
@@ -40,7 +37,7 @@ public class CurrentUser extends Utilisateur implements Parcelable {
     private static CurrentUser INSTANCE = null;
     private static boolean connected = false;
 
-    protected CurrentUser(Parcel in) {
+    private CurrentUser(Parcel in) {
         INSTANCE = in.readParcelable(CurrentUser.class.getClassLoader());
         connected = (boolean) in.readValue(Boolean.class.getClassLoader());
     }
@@ -67,6 +64,13 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         }
     }
 
+    public static void setUser(Utilisateur user){
+        INSTANCE.setIdUTI(user.getIdUTI());
+        INSTANCE.setEmailUTI(user.getEmailUTI());
+        INSTANCE.setTelephoneUTI(user.getTelephoneUTI());
+        setConnected(true);
+    }
+
     public static void retrieveConnection(final Activity activity, final Runnable runnable) {
         // Récupération de l'utilisateur par défaut
         // Création d'un RestAdapter pour le futur appel de mon RestService
@@ -78,14 +82,14 @@ public class CurrentUser extends Utilisateur implements Parcelable {
 
                 // Si les données d'identification ont été saisies
                 if (email != null && password != null) {
-                    RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
-                    retrofitService.doLogin(email, password, new Callback<ReturnClass>() {
+                    RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+                    retrofitService.login(email, password, new Callback<ReturnWS>() {
                                 @Override
-                                public void success(ReturnClass rs, Response response) {
-                                    if (rs.isStatus()) {
+                                public void success(ReturnWS retour, Response response) {
+                                    if (retour.statusValid()) {
                                         Gson gson = new Gson();
 
-                                        Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+                                        Utilisateur user = gson.fromJson(retour.getMsg(), Utilisateur.class);
                                         CurrentUser.getInstance().setIdUTI(user.getIdUTI());
                                         CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
                                         CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
@@ -96,7 +100,7 @@ public class CurrentUser extends Utilisateur implements Parcelable {
                                         // Display successfully registered message using Toast
                                         Toast.makeText(activity, activity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
                                     } else {
-                                        Toast.makeText(activity, rs.getMsg(), Toast.LENGTH_LONG).show();
+                                        Toast.makeText(activity, retour.getMsg(), Toast.LENGTH_LONG).show();
                                     }
                                 }
 

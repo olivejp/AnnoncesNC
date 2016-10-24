@@ -20,7 +20,7 @@ import com.orlanth23.annoncesNC.dto.CurrentUser;
 import com.orlanth23.annoncesNC.dto.Message;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -90,16 +90,16 @@ public class MessageActivity extends AppCompatActivity {
         prgDialog.setMessage(getString(R.string.dialog_msg_patience));
         prgDialog.setCancelable(false);
 
-        retrofit.Callback<ReturnClass> myCallback = new retrofit.Callback<ReturnClass>() {
+        retrofit.Callback<ReturnWS> myCallback = new retrofit.Callback<ReturnWS>() {
             @Override
-            public void success(ReturnClass rs, Response response) {
+            public void success(ReturnWS retour, Response response) {
                 prgDialog.hide();
-                if (rs.isStatus()) {
+                if (retour.statusValid()) {
                     // Récupération des messages dans notre liste mémoire
                     Gson gson = new Gson();
                     Type listType = new TypeToken<ArrayList<Message>>() {
                     }.getType();
-                    messages = gson.fromJson(rs.getMsg(), listType);
+                    messages = gson.fromJson(retour.getMsg(), listType);
                 }
             }
 
@@ -110,7 +110,7 @@ public class MessageActivity extends AppCompatActivity {
             }
         };
 
-        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
+        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
         retrofitService.getListMessage(CurrentUser.getInstance().getIdUTI(), myCallback);
 
     }

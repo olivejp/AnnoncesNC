@@ -204,4 +204,7 @@
     <string name="text_test_backup_server">Connexion au serveur de secours :</string>
     <string name="manage_messages">Gérer mes messages</string>
     <string name="title_activity_message">Mes Messages</string>
+    <string name="section_format">Bonjour le monde d\'une section: %1$d</string>
+    <string name="error_same_oldPassword_newPassword">Le nouveau mot de passe est identique à l\'ancien</string>
+    <string name="error_confirmPassword_incorrect">Le mot de passe de confirmation est incorrect</string>
 </resources>

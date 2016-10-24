@@ -155,7 +155,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:background="@drawable/mybutton"
-                    android:onClick="lostPassword"
+                    android:onClick="callLostPasswordActivity"
                     android:text="@string/action_search"
                     android:textColor="#fff"
                     android:textStyle="bold" />

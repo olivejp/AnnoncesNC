@@ -1,8 +1,5 @@
 package com.orlanth23.annoncesNC.lists;
 
-/**
- * Created by olivejp on 26/05/2016.
- */
 public class ListeStats {
 
     private static ListeStats INSTANCE = null;

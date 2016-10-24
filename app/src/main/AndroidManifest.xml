@@ -44,7 +44,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.LoginActivity"
+            android:name=".activity.LoginActivityRetrofit"
             android:label="@string/title_activity_login"
             android:parentActivityName=".activity.MainActivity"
             android:windowSoftInputMode="adjustResize|stateHidden">
@@ -64,11 +64,11 @@
         <activity
             android:name=".activity.RegisterActivity"
             android:label="@string/title_register"
-            android:parentActivityName=".activity.LoginActivity"
+            android:parentActivityName=".activity.LoginActivityRetrofit"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesNC.activity.LoginActivity" />
+                android:value="com.orlanth23.annoncesNC.activity.LoginActivityRetrofit" />
         </activity>
         <activity
             android:name=".activity.SettingsActivity"
@@ -81,10 +81,10 @@
         <activity
             android:name=".activity.LostPasswordActivity"
             android:label="@string/action_lost_password"
-            android:parentActivityName=".activity.LoginActivity">
+            android:parentActivityName=".activity.LoginActivityRetrofit">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesNC.activity.LoginActivity" />
+                android:value="com.orlanth23.annoncesNC.activity.LoginActivityRetrofit" />
         </activity>
         <activity
             android:name=".activity.ChangePasswordActivity"

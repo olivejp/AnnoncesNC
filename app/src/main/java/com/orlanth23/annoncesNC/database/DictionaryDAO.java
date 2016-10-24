@@ -6,20 +6,11 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
-/**
- * Created by orlanth23 on 13/03/2016.
- */
 public class DictionaryDAO {
-    // To prevent someone from accidentally instantiating the contract class,
-    // give it an empty constructor.
+
     public DictionaryDAO() {
     }
 
-    /**
-     * @param context
-     * @param clef
-     * @return
-     */
     public static String getValueByKey(Context context, String clef) {
         String retour = null;
         Cursor cursor;
@@ -49,11 +40,6 @@ public class DictionaryDAO {
         return retour;
     }
 
-    /**
-     * @param context
-     * @param clef
-     * @return
-     */
     public static boolean existDictionary(Context context, String clef) {
         Cursor cursor;
         DictionaryOpenHelper dbHelper = new DictionaryOpenHelper(context);
@@ -80,12 +66,6 @@ public class DictionaryDAO {
         return existe;
     }
 
-    /**
-     * @param context
-     * @param clef
-     * @param value
-     * @return
-     */
     public static boolean insertInto(Context context, String clef, String value) {
         DictionaryOpenHelper dbHelper = new DictionaryOpenHelper(context);
         SQLiteDatabase db = dbHelper.getWritableDatabase();

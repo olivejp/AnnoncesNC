@@ -39,7 +39,7 @@ import com.orlanth23.annoncesNC.utility.UploadFileToServer;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.orlanth23.annoncesNC.webservices.ReturnWS;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
@@ -95,7 +95,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
     private String P_MODE;
     private String P_TITRE_ACTIVITY;
     private ProgressDialog prgDialog;
-    private RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
+    private RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
     private Dialog dialogImageChoice;
     private AppCompatActivity mActivity = this;
     private UploadFileToServer P_UFTS;
@@ -113,7 +113,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
             Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
 
             // Transformation de l'image en byteArray, avant de le mettre dans un bundle et de le filer à l'activité suivante
-            byte[] p_BYTEARRAY = Utility.transformToByteArray(bitmap);
+            byte[] p_BYTEARRAY = Utility.transformBitmapToByteArray(bitmap);
 
             // On va appeler l'activity avec le bitmap qu'on veut modifier et son numéro dans l'arraylist
             // qui servira à son retour pour le mettre à jour.
@@ -187,7 +187,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
         ArrayList<Categorie> myListCategorie = ListeCategories.getInstance().getListCategorie();
         if (myListCategorie != null) {
             if (!myListCategorie.isEmpty()) {
-                SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.drawer_list_category, myListCategorie);
+                SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.drawer_list_categorie, myListCategorie);
                 spinnerCategorie.setAdapter(adapter);
             }
         }
@@ -220,7 +220,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
                 Gson gson = new Gson();
                 String reponse = null;
                 for (String sourceFile : P_PHOTO_TO_SEND) {
-                    reponse = postHttpRequest(sourceFile, AccessPoint.getDefaultServerPageUpload(), AccessPoint.getDefaultServerDirectoryUploads());
+                    reponse = postHttpRequest(sourceFile, AccessPoint.getInstance().getServerPageUpload(), AccessPoint.getInstance().getServerDirectoryUploads());
                     if (reponse != null) {
                         if (!reponse.isEmpty()) {
                             ReturnClassUFTS rs = gson.fromJson(reponse, ReturnClassUFTS.class);
@@ -384,21 +384,21 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
         Integer prix = P_ANNONCE.getPriceANO();
 
         // ------------------------------------------Appel premier retrofitservice---------------------------------------------
-        retrofitService.doPostAnnonce(idCat, idUser, idAnnonce, titre, description, prix, new retrofit.Callback<ReturnClass>() {
+        retrofitService.postAnnonce(idCat, idUser, idAnnonce, titre, description, prix, new retrofit.Callback<ReturnWS>() {
             @Override
-            public void success(ReturnClass rs, Response response) {
-                if (rs.isStatus()) {
+            public void success(ReturnWS retour, Response response) {
+                if (retour.statusValid()) {
 
                     prgDialog.setProgress(100);
-                    P_ANNONCE.setIdANO(rs.getId());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
+                    P_ANNONCE.setIdANO(retour.getId());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
 
                     // Suppression des photos qu'on a enlevé
                     if (!P_PHOTO_TO_DELETE.isEmpty()) {
                         for (Photo photo : P_PHOTO_TO_DELETE) {
                             Integer idPhoto = photo.getIdPhoto();
-                            retrofitService.doDeletePhoto(idAnnonce, idPhoto, new retrofit.Callback<ReturnClass>() {
+                            retrofitService.deletePhoto(idAnnonce, idPhoto, new retrofit.Callback<ReturnWS>() {
                                 @Override
-                                public void success(ReturnClass rs, Response response) {
+                                public void success(ReturnWS retour, Response response) {
                                 }
 
                                 @Override
@@ -417,7 +417,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
                     }
                 } else {
                     // Echec de l'envoi
-                    endPostAnnonceActivity(Activity.RESULT_CANCELED, rs.getMsg());
+                    endPostAnnonceActivity(Activity.RESULT_CANCELED, retour.getMsg());
                 }
             }
             @Override
@@ -441,11 +441,11 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
         CPT_PHOTO_TOTAL = 0;
         for (Photo photo : P_ANNONCE.getPhotos()) {     // On va lire toutes les photos de notre annonce...
             // ------------------------------------------Appel second retrofitService pour envoyer les données des photos---------------------------------------------
-            retrofitService.doPostPhoto(P_ANNONCE.getIdANO(), photo.getIdPhoto(), photo.getNamePhoto(), new retrofit.Callback<ReturnClass>() {
+            retrofitService.postPhoto(P_ANNONCE.getIdANO(), photo.getIdPhoto(), photo.getNamePhoto(), new retrofit.Callback<ReturnWS>() {
                 @Override
-                public void success(ReturnClass rs, Response response) {
+                public void success(ReturnWS rs, Response response) {
                     CPT_PHOTO_TOTAL++;
-                    if (rs.isStatus()) {
+                    if (rs.statusValid()) {
                         // Si la photo n'existe pas encore, on l'ajoute à la liste des photos à envoyer
                         if (!rs.getMsg().equals("PHOTO_ALREADY_EXIST")) {
                             P_PHOTO_TO_SEND.add(rs.getMsg()); // Ajout de la photo à la liste des photos à envoyer

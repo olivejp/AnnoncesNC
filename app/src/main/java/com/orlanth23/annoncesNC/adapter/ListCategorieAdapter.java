@@ -14,7 +14,6 @@ import com.orlanth23.annoncesNC.utility.Utility;
 
 import java.util.ArrayList;
 
-
 public class ListCategorieAdapter extends BaseAdapter {
 
     private Context context;
@@ -45,18 +44,16 @@ public class ListCategorieAdapter extends BaseAdapter {
         if (convertView == null) {
             LayoutInflater mInflater = (LayoutInflater)
                     context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-            convertView = mInflater.inflate(R.layout.drawer_list_category, null);
+            convertView = mInflater.inflate(R.layout.drawer_list_categorie, parent);
         }
 
         TextView txtColorCategory = (TextView) convertView.findViewById(R.id.colorCategory);
         TextView txtidCategory = (TextView) convertView.findViewById(R.id.idCategory);
         TextView txtTitle = (TextView) convertView.findViewById(R.id.titleCategory);
         TextView txtCount = (TextView) convertView.findViewById(R.id.counterCategory);
-
-        // Récupération de la couleur
-        int color = Utility.getColorFromString(navCategorieItems.get(position).getImageCAT());
-
         txtidCategory.setText(String.valueOf(navCategorieItems.get(position).getIdCAT()));
+
+        int color = Utility.getColorFromString(navCategorieItems.get(position).getImageCAT());
         txtColorCategory.setBackgroundColor(color);
         txtTitle.setText(navCategorieItems.get(position).getNameCAT());
         txtCount.setText(String.valueOf(navCategorieItems.get(position).getNbAnnonceCAT()));

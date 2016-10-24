@@ -20,9 +20,6 @@ import java.io.ByteArrayOutputStream;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
-/**
- * Created by orlanth23 on 10/06/2016.
- */
 public class WorkImageActivity extends AppCompatActivity {
 
     public static final String BUNDLE_KEY_MODE = "MODE";

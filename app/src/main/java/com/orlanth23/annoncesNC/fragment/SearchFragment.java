@@ -29,7 +29,7 @@ import com.orlanth23.annoncesNC.utility.Constants;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnClass;
+import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -40,22 +40,10 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-/**
- * Created by olivejp on 21/10/2015.
- */
 public class SearchFragment extends Fragment implements OnClickListener {
 
     public static final String TAG = SearchFragment.class.getName();
-    private static View.OnKeyListener spinnerOnKey = new View.OnKeyListener() {
-        public boolean onKey(View v, int keyCode, KeyEvent event) {
-            if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-                Utility.hideKeyboard(v.getContext());
-                return true;
-            } else {
-                return false;
-            }
-        }
-    };
+
     @Bind(R.id.buttonSearch)
     Button btnSearch;
     @Bind(R.id.editTextSearch)
@@ -71,9 +59,17 @@ public class SearchFragment extends Fragment implements OnClickListener {
     @Bind(R.id.txtCheckBox)
     TextView txtCheckBox;
     private ArrayList<Categorie> listCat;
-    /**
-     *
-     */
+
+    private static View.OnKeyListener spinnerOnKey = new View.OnKeyListener() {
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+                Utility.hideKeyboard(v.getContext());
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
     private View.OnClickListener textCheckBoxclickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -89,12 +85,31 @@ public class SearchFragment extends Fragment implements OnClickListener {
         }
     };
 
+    private retrofit.Callback<ReturnWS> callbackListCategory = new retrofit.Callback<ReturnWS>() {
+        @Override
+        public void success(ReturnWS retour, Response response) {
+            if (retour.statusValid()) {
+                Gson gson = new Gson();
+                Type listType = new TypeToken<ArrayList<Categorie>>() {
+                }.getType();
+                listCat = gson.fromJson(retour.getMsg(), listType);
+
+                // On réceptionne la liste des catégories dans l'instance ListeCategories
+                ListeCategories.setMyArrayList(listCat);
+                loadSpinner(listCat);
+            }
+        }
+
+        @Override
+        public void failure(RetrofitError error) {
+            Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+        }
+    };
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         View rootView = inflater.inflate(R.layout.fragment_search, container, false);
-
         ButterKnife.bind(this, rootView);
 
         btnSearch.setOnClickListener(this);
@@ -102,50 +117,20 @@ public class SearchFragment extends Fragment implements OnClickListener {
         spinnerCategory.setOnTouchListener(spinnerOnTouch);
         spinnerCategory.setOnKeyListener(spinnerOnKey);
 
-
-        // ---------------------------------------
-        // RECUPERATION de la liste des catégories
-        // ---------------------------------------
         if (ListeCategories.getInstance().getListCategorie() == null) {
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getDefaultServerEndpoint()).build().create(RetrofitService.class);
-            retrofitService.listcategorie(new retrofit.Callback<ReturnClass>() {
-                @Override
-                public void success(ReturnClass rs, Response response) {
-                    if (rs.isStatus()) {
-                        Gson gson = new Gson();
-                        Type listType = new TypeToken<ArrayList<Categorie>>() {
-                        }.getType();
-                        listCat = gson.fromJson(rs.getMsg(), listType);
-
-                        // On réceptionne la liste des catégories dans l'instance ListeCategories
-                        ListeCategories.setMyArrayList(listCat);
-
-                        loadSpinner(listCat);
-                    }
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-                }
-            });
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+            retrofitService.getListCategory(callbackListCategory);
         } else {
             loadSpinner(ListeCategories.getInstance().getListCategorie());
         }
 
-        // Permet d'appeler la création du menu dans l'action bar
         setHasOptionsMenu(true);
-
-        // Changement du titre dans l'action bar
         getActivity().setTitle(getString(R.string.action_search));
-
-        // Changement de couleur de l'action bar
         Activity myActivity = getActivity();
         if (myActivity instanceof CustomActivityInterface) {
             CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
             myCustomActivity.changeColorToolBar(Constants.colorPrimary);
         }
-
         return rootView;
     }
 
@@ -155,9 +140,6 @@ public class SearchFragment extends Fragment implements OnClickListener {
         getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
     }
 
-    /**
-     *
-     */
     private void loadSpinner(ArrayList<Categorie> listCat) {
 
         ArrayList<Categorie> listCat1 = new ArrayList<>(listCat);
@@ -167,7 +149,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
         listCat1.add(0, allCat);
 
         // Création de l'adapter de la liste catégorie
-        SpinnerAdapter adapter = new SpinnerAdapter(getActivity().getApplicationContext(), R.layout.drawer_list_category, listCat1);
+        SpinnerAdapter adapter = new SpinnerAdapter(getActivity().getApplicationContext(), R.layout.drawer_list_categorie, listCat1);
 
         // J'affecte l'adapter à ma listView
         spinnerCategory.setAdapter(adapter);
@@ -175,11 +157,6 @@ public class SearchFragment extends Fragment implements OnClickListener {
         spinnerCategory.setSelection(0);
     }
 
-    /**
-     * Méthode de vérification des données, avant d'envoyer la recherche
-     *
-     * @return
-     */
     private boolean checkSearch() {
         boolean retour = true;
         Integer min;

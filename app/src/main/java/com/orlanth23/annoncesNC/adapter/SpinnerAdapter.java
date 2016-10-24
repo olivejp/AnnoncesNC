@@ -1,9 +1,5 @@
 package com.orlanth23.annoncesNC.adapter;
 
-/**
- * Created by olivejp on 19/04/2016.
- */
-
 import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
