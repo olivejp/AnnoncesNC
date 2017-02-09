@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,23 +17,22 @@ import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.activity.MainActivity;
 import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesNC.lists.ListeStats;
-import com.orlanth23.annoncesNC.utility.Constants;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
 public class HomeFragment extends Fragment {
 
     public static final String tag = HomeFragment.class.getName();
-    @Bind(R.id.textHomeNbUser)
+    @BindView(R.id.textHomeNbUser)
     TextView textHomeNbUser;
-    @Bind(R.id.textHomeNbAnnonce)
+    @BindView(R.id.textHomeNbAnnonce)
     TextView textHomeNbAnnonce;
-    @Bind(R.id.imageHomeLogo)
+    @BindView(R.id.imageHomeLogo)
     ImageView imageHomeLogo;
 
     private View rootView;
@@ -73,7 +73,8 @@ public class HomeFragment extends Fragment {
         myActivity.setTitle(getString(R.string.app_name));
         if (myActivity instanceof CustomActivityInterface) {
             CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
-            myCustomActivity.changeColorToolBar(Constants.colorPrimary);
+            int color = ContextCompat.getColor(myActivity,R.color.ColorPrimary);
+            myCustomActivity.changeColorToolBar(color);
         }
 
         runnable = new Runnable() {

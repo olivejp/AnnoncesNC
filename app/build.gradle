@@ -1,5 +1,5 @@
 ext {
-    supportLibVersion = '24.2.1'  // variable dont on peut faire référence
+    supportLibVersion = '25.1.1'  // variable dont on peut faire référence
 }
 
 apply plugin: 'com.android.application'
@@ -17,22 +17,16 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     }
-    compileSdkVersion 24
+    compileSdkVersion 25
     buildToolsVersion "24.0.3"
     defaultConfig {
         applicationId "com.orlanth23.annoncesNC"
         minSdkVersion 16
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 15
         multiDexEnabled false
     }
     buildTypes {
-        NoShrinkRelease {
-            shrinkResources false
-            minifyEnabled false
-            signingConfig signingConfigs.config
-            debuggable false
-        }
         ShrinkRelease {
             shrinkResources true
             minifyEnabled true
@@ -40,25 +34,17 @@ android {
             signingConfig signingConfigs.config
             debuggable false
         }
-        ShrinkDebug {
-            shrinkResources true
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        debug {
+            shrinkResources false
+            minifyEnabled false
             signingConfig signingConfigs.config
             debuggable true
-        }
-        debug {
-            signingConfig signingConfigs.config
         }
     }
     productFlavors {
         serverNC {
             versionName "Alpha-3"
-            buildConfigField 'String', 'ADMIN_EMAIL', '"admin@oliweb.nc"';
-        }
-        serverFR {
-            versionName 'Version-1.0'
-            buildConfigField 'String', 'ADMIN_EMAIL', '"admin@oliweb.nc"';
+            buildConfigField 'String', 'ADMIN_EMAIL', '"admin@oliweb.nc"'
         }
     }
     useLibrary 'org.apache.http.legacy'
@@ -71,14 +57,17 @@ dependencies {
     compile "com.android.support:design:${supportLibVersion}"
     compile "com.android.support:cardview-v7:${supportLibVersion}"
     compile "com.android.support:recyclerview-v7:${supportLibVersion}"
-    compile 'com.jakewharton:butterknife:7.0.1'
-    compile 'com.squareup.retrofit:retrofit:1.9.0'
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.google.code.gson:gson:2.4'
-    compile 'com.google.android.gms:play-services-ads:9.6.1'
-    compile 'org.jetbrains:annotations-java5:15.0'
-    compile 'com.android.support:support-v4:24.2.1'
-    compile 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
+    compile "com.android.support:support-v4:${supportLibVersion}"
+    compile 'com.jakewharton:butterknife:8.5.1'
+    compile "com.squareup.retrofit:retrofit:1.9.0"
+    compile "com.squareup.picasso:picasso:2.5.2"
+    compile "com.google.code.gson:gson:2.4"
+    compile "com.google.android.gms:play-services-ads:10.0.1"
+    compile "org.jetbrains:annotations-java5:15.0"
+    compile "it.sephiroth.android.library.imagezoom:imagezoom:2.2.5"
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
+//    compile 'com.mikhaellopez:circularimageview:3.0.2'
+
 }
 
 // Modification pour le MAC, j'enleve le plug in. Pensez à le remettre pour la version Windows

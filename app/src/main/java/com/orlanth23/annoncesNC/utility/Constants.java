@@ -5,7 +5,7 @@ public class Constants {
     static final String CURRENCY = "xpf";
 
     public static final int MEDIA_TYPE_IMAGE = 1;
-    static final int MEDIA_TYPE_VIDEO = 2;
+    public static final int MEDIA_TYPE_VIDEO = 2;
 
     public static final int MAX_IMAGE_SIZE = 500;
     public static final int ID_ALL_CAT = 999;
@@ -14,15 +14,18 @@ public class Constants {
     public static final String PARAM_MAJ = "MAJ";
     public static final String PARAM_CRE = "CRE";
 
-    public static final String colorPrimary = "563c64";
-
     static final String cryptoPass = "@nn0nc3s84";
 
-    public static final String SERVER_PRIMARY_PAGE_UPLOAD = "http://annonces.noip.me/AnnoncesNC/fileUpload.php";
-    public static final String SERVER_PRIMARY_DIRECTORY_UPLOAD = "http://annonces.noip.me/AnnoncesNC/uploads";
-    public static final String SERVER_PRIMARY_ENDPOINT = "http://annonces.noip.me:8080/S-OLIWEB-ANNONCES-0.0.1-SNAPSHOT/REST";
+    private static final String LOCAL_ENDPOINT = "http://annoncesnc.ddns.net";
+    private static final String LOCAL_PORT_ENDPOINT = "8080";
+    private static final String PACKAGE_NAME = "newAccountuser";
+    private static final String DISTANT_ENDPOINT = "http://www.oliweb.nc";
 
-    public static final String SERVER_SECONDARY_PAGE_UPLOAD = "http://www.oliweb.nc/Annonces/fileUpload.php";
-    public static final String SERVER_SECONDARY_DIRECTORY_UPLOAD = "http://www.oliweb.nc/Annonces/uploads";
-    public static final String SERVER_SECONDARY_ENDPOINT = "http://www.oliweb.nc/S-OLIWEB-ANNONCES-0.0.1-SNAPSHOT/REST";
+    public static final String SERVER_PRIMARY_PAGE_UPLOAD = LOCAL_ENDPOINT + "/AnnoncesNC/fileUpload.php";
+    public static final String SERVER_PRIMARY_DIRECTORY_UPLOAD = LOCAL_ENDPOINT + "/AnnoncesNC/uploads";
+    public static final String SERVER_PRIMARY_ENDPOINT = LOCAL_ENDPOINT+":"+LOCAL_PORT_ENDPOINT+"/"+ PACKAGE_NAME +"/REST";
+
+    public static final String SERVER_SECONDARY_PAGE_UPLOAD = DISTANT_ENDPOINT+ "/Annonces/fileUpload.php";
+    public static final String SERVER_SECONDARY_DIRECTORY_UPLOAD = DISTANT_ENDPOINT + "/Annonces/uploads";
+    public static final String SERVER_SECONDARY_ENDPOINT = DISTANT_ENDPOINT + "/"+ PACKAGE_NAME +"/REST";
 }

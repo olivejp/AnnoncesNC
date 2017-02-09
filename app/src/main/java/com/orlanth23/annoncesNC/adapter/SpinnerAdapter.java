@@ -2,6 +2,7 @@ package com.orlanth23.annoncesNC.adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +11,6 @@ import android.widget.TextView;
 
 import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.dto.Categorie;
-import com.orlanth23.annoncesNC.utility.Utility;
 
 import java.util.ArrayList;
 
@@ -56,7 +56,7 @@ public class SpinnerAdapter extends BaseAdapter {
         TextView txtTitle = (TextView) convertView.findViewById(R.id.titleCategory);
 
         // Récupération de la couleur
-        int color = Utility.getColorFromString(navCategorieItems.get(position).getImageCAT());
+        int color = Color.parseColor(navCategorieItems.get(position).getCouleurCAT());
 
         txtidCategory.setText(String.valueOf(navCategorieItems.get(position).getIdCAT()));
         txtColorCategory.setBackgroundColor(color);

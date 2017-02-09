@@ -1,14 +1,9 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="@drawable/degrade"
-    tools:context="com.orlanth23.annoncesNC.fragment.HomeFragment">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -20,7 +15,8 @@
                 android:id="@+id/imageHomeLogo"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="45dp"
+                android:layout_margin="20dp"
+                android:contentDescription="@string/description_logo_image"
                 android:src="@drawable/ic_action_icon" />
         </LinearLayout>
 
@@ -28,7 +24,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.3"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
             <RelativeLayout
                 android:layout_width="0dp"
@@ -99,5 +96,3 @@
 
     </LinearLayout>
 
-
-</FrameLayout>

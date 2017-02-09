@@ -4,10 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-/**
- * Created by orlanth23 on 13/03/2016.
- */
-public class DictionaryOpenHelper extends SQLiteOpenHelper {
+class DictionaryOpenHelper extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 1;
     private static final String DATABASE_NAME = "annoncesNCSQLite.db";
@@ -20,7 +17,7 @@ public class DictionaryOpenHelper extends SQLiteOpenHelper {
                     DictionaryDAO.Dictionary.COLUMN_CLEF + " TEXT, " +
                     DictionaryDAO.Dictionary.COLUMN_CHAMP + " TEXT);";
 
-    public DictionaryOpenHelper(Context context) {
+    DictionaryOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

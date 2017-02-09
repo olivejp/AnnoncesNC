@@ -17,7 +17,7 @@ import com.orlanth23.annoncesNC.utility.Constants;
 
 import java.io.ByteArrayOutputStream;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 public class WorkImageActivity extends AppCompatActivity {
@@ -28,13 +28,13 @@ public class WorkImageActivity extends AppCompatActivity {
     public static final String BUNDLE_OUT_IMAGE = "BITMAP_OUT";
     public static final String BUNDLE_OUT_MAJ = "MAJ_IMAGE";
 
-    @Bind(R.id.work_image_button_delete_image)
+    @BindView(R.id.work_image_button_delete_image)
     Button workimagebuttondelete;
-    @Bind(R.id.work_image_button_rotate_image)
+    @BindView(R.id.work_image_button_rotate_image)
     Button workimagebuttonrotate;
-    @Bind(R.id.work_image_button_save_image)
+    @BindView(R.id.work_image_button_save_image)
     Button workimagebuttonsave;
-    @Bind(R.id.work_image_view)
+    @BindView(R.id.work_image_view)
     ImageView workimageview;
 
     private String P_MODE; // Le mode Création Modification qu'on a reçu en paramètre

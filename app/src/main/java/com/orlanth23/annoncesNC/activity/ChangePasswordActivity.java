@@ -13,7 +13,7 @@ import com.orlanth23.annoncesNC.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -23,26 +23,27 @@ import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByFragmentManag
 public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
 
     public static final String tag = ChangePasswordActivity.class.getName();
-    @Bind(R.id.oldPassword)
+
+    @BindView(R.id.oldPassword)
     EditText oldPassword;
-    @Bind(R.id.newPassword)
+    @BindView(R.id.newPassword)
     EditText newPassword;
-    @Bind(R.id.newPasswordConfirm)
+    @BindView(R.id.newPasswordConfirm)
     EditText newPasswordConfirm;
 
     private CustomRetrofitCompatActivity mActivity = this;
 
     private retrofit.Callback<ReturnWS> changePasswordCallback = new retrofit.Callback<ReturnWS>() {
         @Override
-        public void success(ReturnWS retour, Response response) {
+        public void success(ReturnWS rc, Response response) {
             prgDialog.hide();
-            if (retour.statusValid()) {
+            if (rc.statusValid()) {
                 Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
                 Utility.hideKeyboard(mActivity);
                 setResult(RESULT_OK, new Intent());
                 finish();
             } else {
-                Toast.makeText(mActivity, retour.getMsg(), Toast.LENGTH_LONG).show();
+                Toast.makeText(mActivity, rc.getMsg(), Toast.LENGTH_LONG).show();
             }
         }
 

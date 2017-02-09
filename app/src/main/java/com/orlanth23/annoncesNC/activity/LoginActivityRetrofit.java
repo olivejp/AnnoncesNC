@@ -22,7 +22,7 @@ import com.orlanth23.annoncesNC.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -35,30 +35,30 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
 
     private static final String tag = LoginActivityRetrofit.class.getName();
 
-    @Bind(R.id.email)
+    @BindView(R.id.email)
     AutoCompleteTextView mEmailView;
-    @Bind(R.id.password)
+    @BindView(R.id.password)
     EditText mPasswordView;
-    @Bind(R.id.checkBox_remember_me_login)
+    @BindView(R.id.checkBox_remember_me_login)
     CheckBox mCheckBoxRememberMe;
-    @Bind(R.id.login_error)
+    @BindView(R.id.login_error)
     TextView errorMsg;
-    @Bind(R.id.text_login_msg_accueil)
+    @BindView(R.id.text_login_msg_accueil)
     TextView textLoginMsgAccueil;
 
     private CustomRetrofitCompatActivity mActivity = this;
 
     private Callback<ReturnWS> loginCallback = new Callback<ReturnWS>() {
         @Override
-        public void success(ReturnWS retour, Response response) {
+        public void success(ReturnWS rs, Response response) {
             prgDialog.hide();
-            if (retour.statusValid()) {
+            if (rs.statusValid()) {
                 if (mCheckBoxRememberMe.isChecked()) {
                     Utility.saveAutoComplete(mActivity, mEmailView, mPasswordView, mCheckBoxRememberMe);
                 }
 
                 Gson gson = new Gson();
-                Utilisateur user = gson.fromJson(retour.getMsg(), Utilisateur.class);
+                Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
 
                 // Récupération de l'utilisateur comme étant l'utilisateur courant
                 CurrentUser.getInstance();
@@ -68,8 +68,8 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
 
                 goodFinishActivity();
             } else {
-                errorMsg.setText(retour.getMsg());
-                Toast.makeText(mActivity, retour.getMsg(), Toast.LENGTH_LONG).show();
+                errorMsg.setText(rs.getMsg());
+                Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
             }
         }
 
@@ -89,9 +89,9 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
         changeActionBarTitle(R.string.action_log_in, true);
         populateAutoComplete();
 
-        Bundle b = getIntent().getExtras();
-        if (b != null){
-            switch (b.getInt(MainActivity.PARAM_REQUEST_CODE)){
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null){
+            switch (bundle.getInt(MainActivity.PARAM_REQUEST_CODE)){
                 case MainActivity.CODE_POST_NOT_LOGGED:
                     textLoginMsgAccueil.setVisibility(View.VISIBLE);
                     break;

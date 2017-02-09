@@ -17,7 +17,7 @@ import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
 import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -31,9 +31,9 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
 
     private static final String tag = LostPasswordActivity.class.getName();
 
-    @Bind(R.id.email)
+    @BindView(R.id.email)
     AutoCompleteTextView mEmailView;
-    @Bind(R.id.login_error)
+    @BindView(R.id.login_error)
     TextView errorMsg;
 
     @Override
@@ -81,9 +81,9 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
             RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
             Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
                 @Override
-                public void success(ReturnWS retour, Response response) {
+                public void success(ReturnWS rs, Response response) {
                     prgDialog.hide();
-                    if (retour.statusValid()) {
+                    if (rs.statusValid()) {
 
                         // Display successfully registered message using Toast
                         Toast.makeText(getApplicationContext(), getString(R.string.dialog_password_send), Toast.LENGTH_LONG).show();
@@ -93,8 +93,8 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
                         setResult(Activity.RESULT_OK, resultIntent);
                         finish();
                     } else {
-                        errorMsg.setText(retour.getMsg());
-                        Toast.makeText(getApplicationContext(), retour.getMsg(), Toast.LENGTH_LONG).show();
+                        errorMsg.setText(rs.getMsg());
+                        Toast.makeText(getApplicationContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
                     }
                 }
 

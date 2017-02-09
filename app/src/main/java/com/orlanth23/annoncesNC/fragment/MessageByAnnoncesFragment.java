@@ -8,9 +8,6 @@ import com.orlanth23.annoncesNC.dto.Message;
 
 import java.util.ArrayList;
 
-/**
- * Created by stephaniedelessert on 15/07/16.
- */
 public class MessageByAnnoncesFragment extends Fragment {
 
     private static final String PARAM_LIST = "PARAM_LIST";

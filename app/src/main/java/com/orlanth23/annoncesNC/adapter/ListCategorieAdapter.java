@@ -2,15 +2,15 @@ package com.orlanth23.annoncesNC.adapter;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.orlanth23.annoncesNC.dto.Categorie;
 import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.utility.Utility;
+import com.orlanth23.annoncesNC.dto.Categorie;
 
 import java.util.ArrayList;
 
@@ -44,7 +44,7 @@ public class ListCategorieAdapter extends BaseAdapter {
         if (convertView == null) {
             LayoutInflater mInflater = (LayoutInflater)
                     context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-            convertView = mInflater.inflate(R.layout.drawer_list_categorie, parent);
+            convertView = mInflater.inflate(R.layout.drawer_list_categorie, null);
         }
 
         TextView txtColorCategory = (TextView) convertView.findViewById(R.id.colorCategory);
@@ -53,7 +53,7 @@ public class ListCategorieAdapter extends BaseAdapter {
         TextView txtCount = (TextView) convertView.findViewById(R.id.counterCategory);
         txtidCategory.setText(String.valueOf(navCategorieItems.get(position).getIdCAT()));
 
-        int color = Utility.getColorFromString(navCategorieItems.get(position).getImageCAT());
+        int color = Color.parseColor(navCategorieItems.get(position).getCouleurCAT());
         txtColorCategory.setBackgroundColor(color);
         txtTitle.setText(navCategorieItems.get(position).getNameCAT());
         txtCount.setText(String.valueOf(navCategorieItems.get(position).getNbAnnonceCAT()));

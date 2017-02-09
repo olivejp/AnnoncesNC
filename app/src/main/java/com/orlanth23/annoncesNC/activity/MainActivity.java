@@ -5,6 +5,7 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -54,8 +55,6 @@ import java.util.TimerTask;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
-
-import static com.orlanth23.annoncesNC.utility.Utility.getColorFromString;
 
 public class MainActivity extends AppCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface {
 
@@ -137,13 +136,11 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
             ActionBar actionBar = getSupportActionBar();
             if (actionBar != null) {
                 actionBar.setDisplayHomeAsUpEnabled(true);
-                actionBar.setHomeAsUpIndicator(R.drawable.ic_action_list);
+                actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
             }
         } catch (NullPointerException e) {
             Log.e(TAG, "ActionBar is NullPointerException");
         }
-
-        changeColorToolBar(Constants.colorPrimary);
 
         retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
 
@@ -156,12 +153,12 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                 // ---------------------------------------
                 retrofitService.getListCategory(new retrofit.Callback<ReturnWS>() {
                     @Override
-                    public void success(ReturnWS retour, Response response) {
-                        if (retour.statusValid()) {
+                    public void success(ReturnWS rs, Response response) {
+                        if (rs.statusValid()) {
                             Gson gson = new Gson();
                             Type listType = new TypeToken<ArrayList<Categorie>>() {
                             }.getType();
-                            ArrayList<Categorie> categories = gson.fromJson(retour.getMsg(), listType);
+                            ArrayList<Categorie> categories = gson.fromJson(rs.getMsg(), listType);
 
                             // On réceptionne la liste des catégories dans l'instance ListeCategories
                             listeCategories = ListeCategories.getInstance();
@@ -313,8 +310,8 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                 // On lance le webservice pour se désinscrire
                 retrofitService.unregisterUser(CurrentUser.getInstance().getIdUTI(), new retrofit.Callback<ReturnWS>() {
                     @Override
-                    public void success(ReturnWS retour, Response response) {
-                        if (retour.statusValid()) {
+                    public void success(ReturnWS rs, Response response) {
+                        if (rs.statusValid()) {
                             CurrentUser cu = CurrentUser.getInstance();
                             cu.setTelephoneUTI(0);
                             cu.setEmailUTI(null);
@@ -324,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                             refreshMenu();
                             getFragmentManager().popBackStackImmediate();
                         }else{
-                            Toast.makeText(getApplicationContext(), retour.getMsg(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(getApplicationContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
                         }
                     }
 
@@ -355,7 +352,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
 
         // Changement du nom dans l'ActionBar
         setTitle(cat.getNameCAT());
-        changeColorToolBar(cat.getImageCAT());
+        changeColorToolBar(Color.parseColor(cat.getCouleurCAT()));
 
         // On ferme le drawer latéral
         mDrawerLayout.closeDrawer(mDrawerList);
@@ -616,12 +613,12 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
     }
 
     @Override
-    public void changeColorToolBar(String color) {
-        if (color != null) {
+    public void changeColorToolBar(int color) {
+        if (color != 0) {
             try {
                 ActionBar actionBar = getSupportActionBar();
                 if (actionBar != null) {
-                    colorDrawable.setColor(getColorFromString(color));
+                    colorDrawable.setColor(color);
                     actionBar.setBackgroundDrawable(colorDrawable);
                 }
             } catch (NullPointerException e) {

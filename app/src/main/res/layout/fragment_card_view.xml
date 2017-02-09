@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/degrade"
+    android:background="@color/white"
     android:fitsSystemWindows="true"
     tools:context=".fragment.CardViewFragment">
 
@@ -19,7 +19,6 @@
             android:id="@+id/my_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_margin="5dp"
             android:layout_weight="1"
             android:scrollbars="vertical" />
 
@@ -29,10 +28,10 @@
         android:id="@+id/linearEmpty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="invisible">
+        android:orientation="vertical">
 
         <TextView
+            android:id="@+id/textEmpty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"

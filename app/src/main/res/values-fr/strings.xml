@@ -207,4 +207,9 @@
     <string name="section_format">Bonjour le monde d\'une section: %1$d</string>
     <string name="error_same_oldPassword_newPassword">Le nouveau mot de passe est identique à l\'ancien</string>
     <string name="error_confirmPassword_incorrect">Le mot de passe de confirmation est incorrect</string>
+    <string name="description_logo_image">logoImage</string>
+    <string name="error_confirmationPassword_incorrect">Le mot de passe de confirmation est incorrect</string>
+    <string name="choisir_depuis_la_galerie">Choisir depuis la galerie</string>
+    <string name="prendre_une_nouvelle_photo">Prendre une nouvelle photo</string>
+    <string name="cancel">Annuler</string>
 </resources>

@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Oliweb NC</string>
-
     <string name="action_settings">Settings</string>
     <string name="action_search">Search</string>
     <string name="action_post">Post</string>
@@ -12,20 +11,15 @@
     <string name="action_upload">Upload Photo</string>
     <string name="action_profile">My profile</string>
     <string name="action_my_annonces">My posts</string>
-
     <string name="searchTitle">Search</string>
-
     <string name="desc_list_item_icon">Item Icon</string>
-
     <string name="title_activity_settings">Settings</string>
     <string name="title_post_annonce_activity">Post</string>
     <string name="title_activity_login">Sign in</string>
     <string name="title_register">Sign in</string>
     <string name="title_activity_upload">Upload Photo</string>
     <string name="title_activity_preview">Preview Photo</string>
-
     <string name="iconeOliweb" translatable="false">iconeOliweb</string>
-
     <string name="dialogYes">Yes</string>
     <string name="dialogNo">No</string>
     <string name="dialogOk">OK</string>
@@ -33,8 +27,6 @@
     <string name="dialog_wait_login">Wait for logging</string>
     <string name="dialog_msg_patience">Please wait…</string>
     <string name="dialog_wait_looking_for_cat">Looking for categories…please wait</string>
-
-    // Messages d'erreur
     <string name="error_creating_fragment">Error in creating fragment</string>
     <string name="error_invalid_email">This email address is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
@@ -42,28 +34,22 @@
     <string name="error_field_required">This field is required</string>
     <string name="error_all_fields_required">Fill all the fields</string>
     <string name="error_no_wifi">No wifi connection or mobile access, shut down.</string>
-
     <string name="text_titre">Title</string>
     <string name="text_description">Description</string>
     <string name="text_prix">Price</string>
     <string name="text_save_annonce">Save</string>
     <string name="txtOr">or</string>
     <string name="text_error_no_file">Sorry, file path is missing!</string>
-
-
     <string name="pref_header_general">General</string>
     <string name="pref_title_social_recommendations">Enable social recommendations</string>
     <string name="pref_description_social_recommendations">Recommendations for people to contact
         based on your message history
     </string>
-
     <string name="pref_key_number_car">pref_key_number_car</string>
     <string name="pref_title_number_car">Number caracters</string>
     <string name="pref_default_number_car" translatable="false">100</string>
     <string name="pref_description_number_car">Number of caracters shown in the description field.</string>
-
     <string name="pref_key_timeout">pref_key_timeout</string>
-
     <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
     <string-array name="pref_example_list_titles">
         <item>Always</item>
@@ -100,14 +86,11 @@
     <string name="pref_title_ringtone">Ringtone</string>
     <string name="pref_ringtone_silent">Silent</string>
     <string name="pref_title_vibrate">Vibrate</string>
-
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
-
     <string name="btnTakePicture">Take picture</string>
     <string name="btnRecordVideo">Take video</string>
     <string name="btnUploadToServer">Upload to server</string>
-
     <string name="error_need_user_connection">You\'re not connected</string>
     <string name="error_post_description">Fill the description field</string>
     <string name="error_post_price">Fill the price field</string>
@@ -139,8 +122,6 @@
     <string name="title_details">Details</string>
     <string name="dialog_register_ok">You have been registered!</string>
     <string name="dialog_no_result">No result to show</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="text_lost_password">Password lost</string>
     <string name="action_send_new_password">Send a new password</string>
     <string name="description_lost_password">Type your email and press the button. A new password will be send to you by email.</string>
@@ -157,21 +138,17 @@
     <string name="gamme_de_prix">Price range</string>
     <string name="photo_disponible">Photo</string>
     <string name="error_no_server">No server</string>
-
     <string name="title_activity_fullscreen">FullscreenActivity</string>
-
     <string name="image_network" translatable="false">image_network</string>
     <string name="text_all_category">All categories</string>
     <string name="tiret">-</string>
     <string name="banner_ad_unit_id">ca-app-pub-9977775483546656/8087223926</string>
     <string name="text_register">Welcome to the application Oliweb NC. \nRegister only takes a few seconds. No code is sent to your email address . \nOnly fill the following fields.</string>
-    <string name="color_black" translatable="false">000000</string>
+    <string name="color_black" translatable="false">#000000</string>
     <string name="error_no_parameter">No defined parameter</string>
     <string name="error_min_sup_max">The minimum may not exceed the maximum</string>
     <string name="text_dscription_search">The search screen allows you to select ads to you based on the criteria : keywords , ad category , price range, the presence of a photo.</string>
     <string name="version" translatable="false">Alpha 1.6</string>
-
-
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="text_password">Password</string>
     <string name="text_password_confirm">Confirm password</string>
@@ -211,6 +188,10 @@
     <string name="manage_messages">Manage my messages</string>
     <string name="error_same_oldPassword_newPassword">Le nouveau mot de passe est identique à l\'ancien</string>
     <string name="error_confirmPassword_incorrect">Le mot de passe de confirmation est incorrect</string>
-    <string name="error_confirmationPassword_incorrect">Le mot de passe de confirmation est incorrect</string>
+    <string name="error_confirmationPassword_incorrect">Confirmation password is incorrect</string>
+    <string name="image_color" translatable="false">ImageColor</string>
+    <string name="choisir_depuis_la_galerie">Choose from galery</string>
+    <string name="prendre_une_nouvelle_photo">Take a new picture</string>
+    <string name="cancel">Cancel</string>
 </resources>
 

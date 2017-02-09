@@ -85,11 +85,11 @@ public class CurrentUser extends Utilisateur implements Parcelable {
                     RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
                     retrofitService.login(email, password, new Callback<ReturnWS>() {
                                 @Override
-                                public void success(ReturnWS retour, Response response) {
-                                    if (retour.statusValid()) {
+                                public void success(ReturnWS rs, Response response) {
+                                    if (rs.statusValid()) {
                                         Gson gson = new Gson();
 
-                                        Utilisateur user = gson.fromJson(retour.getMsg(), Utilisateur.class);
+                                        Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
                                         CurrentUser.getInstance().setIdUTI(user.getIdUTI());
                                         CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
                                         CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
@@ -100,7 +100,7 @@ public class CurrentUser extends Utilisateur implements Parcelable {
                                         // Display successfully registered message using Toast
                                         Toast.makeText(activity, activity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
                                     } else {
-                                        Toast.makeText(activity, retour.getMsg(), Toast.LENGTH_LONG).show();
+                                        Toast.makeText(activity, rs.getMsg(), Toast.LENGTH_LONG).show();
                                     }
                                 }
 

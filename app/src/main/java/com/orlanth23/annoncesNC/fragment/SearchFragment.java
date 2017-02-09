@@ -4,6 +4,7 @@ package com.orlanth23.annoncesNC.fragment;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -34,7 +35,7 @@ import com.orlanth23.annoncesNC.webservices.ReturnWS;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
@@ -44,21 +45,20 @@ public class SearchFragment extends Fragment implements OnClickListener {
 
     public static final String TAG = SearchFragment.class.getName();
 
-    @Bind(R.id.buttonSearch)
+    @BindView(R.id.buttonSearch)
     Button btnSearch;
-    @Bind(R.id.editTextSearch)
+    @BindView(R.id.editTextSearch)
     EditText editKeyword;
-    @Bind(R.id.checkBoxPhoto)
+    @BindView(R.id.checkBoxPhoto)
     CheckBox checkBoxPhoto;
-    @Bind(R.id.editPrixMin)
+    @BindView(R.id.editPrixMin)
     EditText editPrixMin;
-    @Bind(R.id.editPrixMax)
+    @BindView(R.id.editPrixMax)
     EditText editPrixMax;
-    @Bind(R.id.spinnerCategory)
+    @BindView(R.id.spinnerCategory)
     Spinner spinnerCategory;
-    @Bind(R.id.txtCheckBox)
+    @BindView(R.id.txtCheckBox)
     TextView txtCheckBox;
-    private ArrayList<Categorie> listCat;
 
     private static View.OnKeyListener spinnerOnKey = new View.OnKeyListener() {
         public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -92,7 +92,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
                 Gson gson = new Gson();
                 Type listType = new TypeToken<ArrayList<Categorie>>() {
                 }.getType();
-                listCat = gson.fromJson(retour.getMsg(), listType);
+                ArrayList<Categorie> listCat = gson.fromJson(retour.getMsg(), listType);
 
                 // On réceptionne la liste des catégories dans l'instance ListeCategories
                 ListeCategories.setMyArrayList(listCat);
@@ -129,7 +129,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
         Activity myActivity = getActivity();
         if (myActivity instanceof CustomActivityInterface) {
             CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
-            myCustomActivity.changeColorToolBar(Constants.colorPrimary);
+            myCustomActivity.changeColorToolBar(ContextCompat.getColor(getActivity(), R.color.ColorPrimary));
         }
         return rootView;
     }

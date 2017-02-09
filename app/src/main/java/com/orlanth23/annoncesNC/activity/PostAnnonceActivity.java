@@ -50,7 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
@@ -71,23 +71,23 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
     private static final int CODE_WORK_IMAGE_CREATION = 300;
     private static final int CODE_WORK_IMAGE_MODIFICATION = 400;
     private static final String TAG = PostAnnonceActivity.class.getName();
-    @Bind(R.id.buttonPhoto)
+    @BindView(R.id.buttonPhoto)
     Button buttonPhoto;
-    @Bind(R.id.spinner_categorie)
+    @BindView(R.id.spinner_categorie)
     Spinner spinnerCategorie;
-    @Bind(R.id.edit_description_annonce)
+    @BindView(R.id.edit_description_annonce)
     EditText descriptionText;
-    @Bind(R.id.edit_prix_annonce)
+    @BindView(R.id.edit_prix_annonce)
     EditText prixText;
-    @Bind(R.id.edit_titre_annonce)
+    @BindView(R.id.edit_titre_annonce)
     EditText titreText;
-    @Bind(R.id.post_error)
+    @BindView(R.id.post_error)
     TextView textError;
-    @Bind(R.id.button_save_annonce)
+    @BindView(R.id.button_save_annonce)
     Button btnSaveAnnonce;
-    @Bind(R.id.image_container)
+    @BindView(R.id.image_container)
     LinearLayout imageContainer;
-    @Bind(R.id.horizontalScrollView)
+    @BindView(R.id.horizontalScrollView)
     HorizontalScrollView horizontalScrollView;
     private Picasso myPicasso;
     private Annonce P_ANNONCE;
@@ -386,11 +386,11 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
         // ------------------------------------------Appel premier retrofitservice---------------------------------------------
         retrofitService.postAnnonce(idCat, idUser, idAnnonce, titre, description, prix, new retrofit.Callback<ReturnWS>() {
             @Override
-            public void success(ReturnWS retour, Response response) {
-                if (retour.statusValid()) {
+            public void success(ReturnWS rs, Response response) {
+                if (rs.statusValid()) {
 
                     prgDialog.setProgress(100);
-                    P_ANNONCE.setIdANO(retour.getId());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
+                    P_ANNONCE.setIdANO(rs.getId());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
 
                     // Suppression des photos qu'on a enlevé
                     if (!P_PHOTO_TO_DELETE.isEmpty()) {
@@ -398,7 +398,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
                             Integer idPhoto = photo.getIdPhoto();
                             retrofitService.deletePhoto(idAnnonce, idPhoto, new retrofit.Callback<ReturnWS>() {
                                 @Override
-                                public void success(ReturnWS retour, Response response) {
+                                public void success(ReturnWS rs, Response response) {
                                 }
 
                                 @Override
@@ -417,7 +417,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
                     }
                 } else {
                     // Echec de l'envoi
-                    endPostAnnonceActivity(Activity.RESULT_CANCELED, retour.getMsg());
+                    endPostAnnonceActivity(Activity.RESULT_CANCELED, rs.getMsg());
                 }
             }
             @Override

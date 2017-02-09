@@ -7,16 +7,15 @@
     <color name="counter_text_bg">#626262</color>
     <color name="background_spinner">#f4f4f4</color>
     <color name="counter_text_color">#f2f2f2</color>
-    <color name="ColorPrimary">#563c64</color>
-    <color name="ColorPrimaryDark">#3a2645</color>
-    <color name="colorHighlight">#814d9c</color>
-    <color name="colorDegradeBegin">#f9bc13</color>
-    <color name="colorDegradeEnd">#8b00ad</color>
+
+    <color name="ColorPrimary">#3f51b5</color>
+    <color name="ColorPrimaryDark">#1a237e</color>
+    <color name="colorHighlight">#7986cb</color>
+    <color name="colorBackgroundActivity">#ffffff</color>
+
+    <color name="colorDegradeBegin">#0d47a1</color>
+    <color name="colorDegradeEnd">#1565c0</color>
     <color name="colorErrorText">#e30000</color>
-    <!--<color name="background_spinner">#f4f4f4</color>-->
-    <!--<color name="ColorPrimary">#ff5722</color>-->
-    <!--<color name="ColorPrimaryDark">#E64A19</color>-->
-    <!--<color name="colorHighlight">#ff8762</color>-->
 
     <color name="ColorAccent">#272727</color>
 

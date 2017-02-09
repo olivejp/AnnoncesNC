@@ -5,6 +5,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +19,12 @@ import com.orlanth23.annoncesNC.activity.ChangePasswordActivity;
 import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
 import com.orlanth23.annoncesNC.dto.CurrentUser;
 import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.utility.Constants;
 import com.orlanth23.annoncesNC.utility.Utility;
 import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
 import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit.Callback;
 import retrofit.RestAdapter;
@@ -38,17 +38,17 @@ public class MyProfileFragment extends Fragment{
     public static final String tag = MyProfileFragment.class.getName();
     public final static int CODE_CHANGE_PASSWORD = 600;
 
-    @Bind(R.id.emailMyProfile)
+    @BindView(R.id.emailMyProfile)
     EditText emailMyProfile;
-    @Bind(R.id.telephoneMyProfile)
+    @BindView(R.id.telephoneMyProfile)
     EditText telephoneMyProfile;
-    @Bind(R.id.action_save_change)
+    @BindView(R.id.action_save_change)
     Button action_save_change;
-    @Bind(R.id.action_desinscrire)
+    @BindView(R.id.action_desinscrire)
     Button action_desinscrire;
-    @Bind(R.id.action_change_password)
+    @BindView(R.id.action_change_password)
     Button action_change_password;
-    @Bind(R.id.action_deconnexion)
+    @BindView(R.id.action_deconnexion)
     Button action_deconnexion;
 
     private RetrofitService retrofitService;
@@ -77,7 +77,8 @@ public class MyProfileFragment extends Fragment{
         getActivity().setTitle(getString(R.string.action_profile));
         if (getActivity() instanceof CustomActivityInterface) {
             CustomActivityInterface myCustomActivity = (CustomActivityInterface) getActivity();
-            myCustomActivity.changeColorToolBar(Constants.colorPrimary);
+            int color = ContextCompat.getColor(getActivity(), R.color.ColorPrimary);
+            myCustomActivity.changeColorToolBar(color);
         }
 
         retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
@@ -143,8 +144,8 @@ public class MyProfileFragment extends Fragment{
                         newTelephone = Integer.valueOf(telephoneMyProfile.getText().toString());
                         retrofitService.updateUser(CurrentUser.getInstance().getIdUTI(), newEmail, newTelephone, new Callback<ReturnWS>() {
                             @Override
-                            public void success(ReturnWS retour, Response response) {
-                                if (retour.statusValid()){
+                            public void success(ReturnWS rs, Response response) {
+                                if (rs.statusValid()){
                                     CurrentUser.getInstance().setEmailUTI(newEmail);
                                     CurrentUser.getInstance().setTelephoneUTI(newTelephone);
                                     Toast.makeText(getActivity(), getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
@@ -156,7 +157,7 @@ public class MyProfileFragment extends Fragment{
                                     }
                                     getFragmentManager().popBackStackImmediate();
                                 }else{
-                                    Toast.makeText(getActivity(), retour.getMsg(), Toast.LENGTH_LONG).show();
+                                    Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
 
                                     // Le web service a échoué, on réactive quand même le bouton
                                     action_save_change.setEnabled(true);

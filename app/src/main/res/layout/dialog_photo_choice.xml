@@ -1,70 +1,66 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_centerInParent="true"
-    android:layout_margin="10dp">
+    android:layout_margin="10dp"
+    android:orientation="vertical">
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:baselineAligned="false">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <RelativeLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_weight="0.5">
 
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5">
+            <Button
+                android:id="@+id/dialog_button_new_photo"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp"
+                android:layout_centerInParent="true"
+                android:layout_margin="5dp"
+                android:background="@drawable/mybutton"
+                android:drawableLeft="@drawable/ic_camera"
+                android:drawableStart="@drawable/ic_camera"
+                android:text="@string/prendre_une_nouvelle_photo"
+                android:textColor="#fff" />
+        </RelativeLayout>
 
-                <Button
-                    android:id="@+id/dialog_button_new_photo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="100dp"
-                    android:layout_centerInParent="true"
-                    android:layout_margin="5dp"
-                    android:background="@drawable/mybutton"
-                    android:drawableLeft="@drawable/ic_camera"
-                    android:drawableStart="@drawable/ic_camera"
-                    android:text="Prendre une nouvelle photo"
-                    android:textColor="#fff" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.5">
-
-                <Button
-                    android:id="@+id/dialog_button_gallery_photo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="100dp"
-                    android:layout_centerInParent="true"
-                    android:layout_margin="5dp"
-                    android:background="@drawable/mybutton"
-                    android:drawableLeft="@drawable/ic_action_list"
-                    android:drawableStart="@drawable/ic_action_list"
-                    android:text="Choisir depuis la galerie"
-                    android:textColor="#fff" />
-            </RelativeLayout>
-        </LinearLayout>
-
-        <Button
-            android:id="@+id/dialog_button_annuler"
-            android:layout_width="match_parent"
+        <RelativeLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:background="@drawable/mybutton"
-            android:clickable="true"
-            android:drawableLeft="@drawable/ic_remove_inverse"
-            android:drawableStart="@drawable/ic_remove_inverse"
-            android:padding="5dp"
-            android:text="Annuler"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="#fff"
-            android:textStyle="bold"
-            android:visibility="visible" />
+            android:layout_weight="0.5">
+
+            <Button
+                android:id="@+id/dialog_button_gallery_photo"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp"
+                android:layout_centerInParent="true"
+                android:layout_margin="5dp"
+                android:background="@drawable/mybutton"
+                android:drawableLeft="@drawable/ic_action_list"
+                android:drawableStart="@drawable/ic_action_list"
+                android:text="@string/choisir_depuis_la_galerie"
+                android:textColor="#fff" />
+        </RelativeLayout>
     </LinearLayout>
-</RelativeLayout>
+
+    <Button
+        android:id="@+id/dialog_button_annuler"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:background="@drawable/mybutton"
+        android:clickable="true"
+        android:drawableLeft="@drawable/ic_remove_inverse"
+        android:drawableStart="@drawable/ic_remove_inverse"
+        android:padding="5dp"
+        android:text="@string/cancel"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#fff"
+        android:textStyle="bold"
+        android:visibility="visible" />
+</LinearLayout>

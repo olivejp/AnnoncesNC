@@ -8,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
@@ -39,7 +40,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
@@ -56,31 +57,31 @@ public class DetailAnnonceFragment extends Fragment {
     private static final String ARG_PARAM_ANNONCE = "ANNONCE";
     private static String P_MODE;
     private static Annonce P_ANNONCE;
-    @Bind(R.id.value_id_annonce)
+    @BindView(R.id.value_id_annonce)
     TextView value_id_annonce;
-    @Bind(R.id.value_user)
+    @BindView(R.id.value_user)
     TextView value_user;
-    @Bind(R.id.value_titre)
+    @BindView(R.id.value_titre)
     TextView value_titre;
-    @Bind(R.id.value_description)
+    @BindView(R.id.value_description)
     TextView value_description;
-    @Bind(R.id.value_prix_annonce)
+    @BindView(R.id.value_prix_annonce)
     TextView value_prix_annonce;
-    @Bind(R.id.actionAppel)
+    @BindView(R.id.actionAppel)
     Button btnActionAppel;
-    @Bind(R.id.actionEmail)
+    @BindView(R.id.actionEmail)
     Button btnActionEmail;
-    @Bind(R.id.actionSms)
+    @BindView(R.id.actionSms)
     Button btnActionSms;
-    @Bind(R.id.actionDelete)
+    @BindView(R.id.actionDelete)
     Button btnActionDelete;
-    @Bind(R.id.actionUpdate)
+    @BindView(R.id.actionUpdate)
     Button btnActionUpdate;
-    @Bind(R.id.linearButtonMaj)
+    @BindView(R.id.linearButtonMaj)
     LinearLayout linearButtonMaj;
-    @Bind(R.id.linearButtonVis)
+    @BindView(R.id.linearButtonVis)
     LinearLayout linearButtonVis;
-    @Bind(R.id.image_container)
+    @BindView(R.id.image_container)
     LinearLayout P_IMAGE_CONTAINER;
     private Picasso myPicasso;
     private HorizontalScrollView horizontalScrollView;
@@ -323,12 +324,12 @@ public class DetailAnnonceFragment extends Fragment {
                 RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
                 retrofit.Callback<ReturnWS> myCallback = new retrofit.Callback<ReturnWS>() {
                     @Override
-                    public void success(ReturnWS retour, Response response) {
+                    public void success(ReturnWS rs, Response response) {
                         prgDialog.hide();
                         // Suppression de l'enregistrement dans la liste
-                        if (retour.statusValid()) {
+                        if (rs.statusValid()) {
                             // Retour au fragment précédent
-                            Toast.makeText(getActivity(), retour.getMsg(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
                             getFragmentManager().popBackStackImmediate();
                         }
                     }
@@ -369,9 +370,6 @@ public class DetailAnnonceFragment extends Fragment {
         populateViewForOrientation(inflater, (ViewGroup) getView());
     }
 
-    /**
-     *
-     */
     private void presentAnnonce() {
         // Récupération de toutes les valeurs de l'annonce dans les zones graphiques
         value_id_annonce.setText(P_ANNONCE.getIdANO().toString());
@@ -415,7 +413,7 @@ public class DetailAnnonceFragment extends Fragment {
         myActivity.setTitle(P_ANNONCE.getCategorieANO().getNameCAT());
         if (myActivity instanceof CustomActivityInterface) {
             CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
-            myCustomActivity.changeColorToolBar(P_ANNONCE.getCategorieANO().getImageCAT());
+            myCustomActivity.changeColorToolBar(Color.parseColor(P_ANNONCE.getCategorieANO().getCouleurCAT()));
         }
     }
 

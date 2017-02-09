@@ -17,7 +17,7 @@ import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
 import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
@@ -34,21 +34,21 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
     private static final String DIALOG_TAG_NO_STATS = "NO_STATS";
     private static final String BUNDLE_INTENT_OK = "BUNDLE_INTENT_OK";
 
-    @Bind(R.id.text_version)
+    @BindView(R.id.text_version)
     TextView text_version;
-    @Bind(R.id.textTestServer)
+    @BindView(R.id.textTestServer)
     TextView textTestServer;
-    @Bind(R.id.textGetInfos)
+    @BindView(R.id.textGetInfos)
     TextView textGetInfos;
-    @Bind(R.id.textGetStats)
+    @BindView(R.id.textGetStats)
     TextView textGetStats;
-    @Bind(R.id.imgTestNetwork)
+    @BindView(R.id.imgTestNetwork)
     ImageView imgTestNetwork;
-    @Bind(R.id.imgTestServer)
+    @BindView(R.id.imgTestServer)
     ImageView imgTestServer;
-    @Bind(R.id.imgGetInfos)
+    @BindView(R.id.imgGetInfos)
     ImageView imgGetInfos;
-    @Bind(R.id.imgGetStats)
+    @BindView(R.id.imgGetStats)
     ImageView imgGetStats;
 
     private boolean P_OK = false;

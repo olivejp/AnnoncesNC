@@ -3,14 +3,11 @@ package com.orlanth23.annoncesNC.dto;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/**
- * Created by orlanth23 on 17/08/2015.
- */
 public class Categorie implements Parcelable{
 
     private Integer idCAT;
     private String nameCAT;
-    private String imageCAT;
+    private String couleurCAT;
     private int nbAnnonceCAT;
 
     public static final Creator<Categorie> CREATOR = new Creator<Categorie>() {
@@ -25,17 +22,17 @@ public class Categorie implements Parcelable{
         }
     };
 
-    public Categorie(Integer idCAT, String nameCAT, String imageCAT, int nbAnnonceCAT) {
+    public Categorie(Integer idCAT, String nameCAT, String couleurCAT, int nbAnnonceCAT) {
         this.idCAT = idCAT;
         this.nameCAT = nameCAT;
-        this.imageCAT = imageCAT;
+        this.couleurCAT = couleurCAT;
         this.nbAnnonceCAT = nbAnnonceCAT;
     }
 
     protected Categorie(Parcel in) {
         idCAT = in.readInt();
         nameCAT = in.readString();
-        imageCAT = in.readString();
+        couleurCAT = in.readString();
         nbAnnonceCAT = in.readInt();
     }
 
@@ -55,12 +52,12 @@ public class Categorie implements Parcelable{
         this.nameCAT = nameCAT;
     }
 
-    public String getImageCAT() {
-        return imageCAT;
+    public String getCouleurCAT() {
+        return couleurCAT;
     }
 
-    public void setImageCAT(String imageCAT) {
-        this.imageCAT = imageCAT;
+    public void setCouleurCAT(String couleurCAT) {
+        this.couleurCAT = couleurCAT;
     }
 
     public int getNbAnnonceCAT() {
@@ -80,7 +77,7 @@ public class Categorie implements Parcelable{
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(idCAT);
         dest.writeString(nameCAT);
-        dest.writeString(imageCAT);
+        dest.writeString(couleurCAT);
         dest.writeInt(nbAnnonceCAT);
     }
 }

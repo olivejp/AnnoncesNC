@@ -22,7 +22,7 @@ import com.orlanth23.annoncesNC.webservices.AccessPoint;
 import com.orlanth23.annoncesNC.webservices.RetrofitService;
 import com.orlanth23.annoncesNC.webservices.ReturnWS;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
@@ -37,17 +37,17 @@ public class RegisterActivity extends AppCompatActivity {
 
     public static final int CODE_REGISTER_ACTIVITY = 100;
     private static final String tag = RegisterActivity.class.getName();
-    @Bind(R.id.register_error)
+    @BindView(R.id.register_error)
     TextView errorMsg;
-    @Bind(R.id.registerTelephone)
+    @BindView(R.id.registerTelephone)
     EditText telephoneET;
-    @Bind(R.id.registerEmail)
+    @BindView(R.id.registerEmail)
     EditText emailET;
-    @Bind(R.id.registerPassword)
+    @BindView(R.id.registerPassword)
     EditText pwdET;
-    @Bind(R.id.registerPasswordConfirm)
+    @BindView(R.id.registerPasswordConfirm)
     TextView pwdConfirmET;
-    @Bind(R.id.checkBox_register_remember_me)
+    @BindView(R.id.checkBox_register_remember_me)
     CheckBox checkBox_register_remember_me;
     private ProgressDialog prgDialog;
     private AppCompatActivity mActivity = this;
@@ -167,9 +167,9 @@ public class RegisterActivity extends AppCompatActivity {
             RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
             retrofit.Callback<ReturnWS> myCallback = new retrofit.Callback<ReturnWS>() {
                 @Override
-                public void success(ReturnWS retour, Response response) {
+                public void success(ReturnWS rs, Response response) {
                     prgDialog.hide();
-                    if (retour.statusValid()) {
+                    if (rs.statusValid()) {
 
                         // Si on a coché la case pour se souvenir de l'utilisateur
                         if (checkBox_register_remember_me.isChecked()) {
@@ -185,7 +185,7 @@ public class RegisterActivity extends AppCompatActivity {
                         // Récupération de l'utilisateur
                         Gson gson = new Gson();
 
-                        Utilisateur user = gson.fromJson(retour.getMsg(), Utilisateur.class);
+                        Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
 
                         // Récupération de l'utilisateur comme étant l'utilisateur courant
                         CurrentUser.getInstance().setIdUTI(user.getIdUTI());
@@ -199,8 +199,8 @@ public class RegisterActivity extends AppCompatActivity {
                         setResult(RESULT_OK, returnIntent);                             // On retourne un résultat RESULT_OK
                         finish();                                                       // On finit l'activité
                     } else {
-                        errorMsg.setText(retour.getMsg());
-                        Toast.makeText(mActivity, retour.getMsg(), Toast.LENGTH_LONG).show();
+                        errorMsg.setText(rs.getMsg());
+                        Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
                     }
                 }
 

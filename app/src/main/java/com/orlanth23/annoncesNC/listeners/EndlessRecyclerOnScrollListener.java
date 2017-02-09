@@ -1,9 +1,5 @@
 package com.orlanth23.annoncesNC.listeners;
 
-/**
- * Created by olivejp on 05/04/2016.
- */
-
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 

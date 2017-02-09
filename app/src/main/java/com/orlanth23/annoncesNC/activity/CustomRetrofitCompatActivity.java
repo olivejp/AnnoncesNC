@@ -22,11 +22,11 @@ public class CustomRetrofitCompatActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         prgDialog = new ProgressDialog(this);
         prgDialog.setMessage(getString(R.string.dialog_msg_patience));
-        prgDialog.setCancelable(false);
+        prgDialog.setCancelable(true);
         retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
     }
 
-    protected void changeActionBarTitle(int resIdTitle, boolean setHomeEnabled){
+    public void changeActionBarTitle(int resIdTitle, boolean setHomeEnabled){
         ActionBar tb = getSupportActionBar();
         if (tb != null) {
             tb.setTitle(resIdTitle);

@@ -3,13 +3,16 @@ package com.orlanth23.annoncesNC.fragment;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.adapter.CardViewDataAdapter;
@@ -25,6 +28,8 @@ import com.orlanth23.annoncesNC.webservices.RetrofitService;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
@@ -48,7 +53,6 @@ public class CardViewFragment extends Fragment {
     public static final String ACTION_MULTI_PARAM = "ACTION_MULTI_PARAM";
 
     private int current_page = 1;
-    private RecyclerView mRecyclerView;
     private CardViewDataAdapter mAdapter;
     private String action;
     private String mode;
@@ -60,7 +64,15 @@ public class CardViewFragment extends Fragment {
     private Integer pMinPrice;
     private Integer pMaxPrice;
     private boolean pPhoto;
-    private View rootView;
+
+    @BindView(R.id.textEmpty)
+    TextView textEmpty;
+    @BindView(R.id.linearContent)
+    LinearLayout linearContent;
+    @BindView(R.id.linearEmpty)
+    LinearLayout linearEmpty;
+    @BindView(R.id.my_recycler_view)
+    RecyclerView mRecyclerView;
 
     public CardViewFragment() {
         // Required empty public constructor
@@ -151,7 +163,9 @@ public class CardViewFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         // On inflate la vue
-        rootView = inflater.inflate(R.layout.fragement_card_view, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_card_view, container, false);
+
+        ButterKnife.bind(this, rootView);
 
         prgDialog = new ProgressDialog(getActivity());
 
@@ -186,8 +200,6 @@ public class CardViewFragment extends Fragment {
             }
         }
 
-        mRecyclerView = (RecyclerView) rootView.findViewById(R.id.my_recycler_view);
-
         // use this setting to improve performance if you know that changes
         // in content do not change the layout size of the RecyclerView
         if (mRecyclerView != null) {
@@ -195,12 +207,11 @@ public class CardViewFragment extends Fragment {
         }
 
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-
         // use a linear layout manager
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        // Changement du titre et de la couleur de l'activité selon les cas
-        String color = Constants.colorPrimary;
+        //  Changement du titre et de la couleur de l'activité selon les cas
+        int color = ContextCompat.getColor(getActivity(), R.color.ColorPrimary);
         String title = null;
 
         switch (action) {
@@ -210,7 +221,7 @@ public class CardViewFragment extends Fragment {
             case ACTION_ANNONCE_BY_CATEGORY:
                 if (category != null) {
                     title = category.getNameCAT();
-                    color = category.getImageCAT();
+                    color = Color.parseColor(category.getCouleurCAT());
                 }
                 break;
             case ACTION_ANNONCE_BY_KEYWORD:
@@ -223,9 +234,9 @@ public class CardViewFragment extends Fragment {
 
         Activity myActivity = getActivity();
         myActivity.setTitle(title);
-        if (myActivity instanceof CustomActivityInterface) {
-            CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
-            myCustomActivity.changeColorToolBar(color);
+        if (myActivity instanceof CustomActivityInterface){
+            CustomActivityInterface customActivityInterface = (CustomActivityInterface) myActivity;
+            customActivityInterface.changeColorToolBar(color);
         }
 
         mAdapter = new CardViewDataAdapter(getActivity(), gbListAnnonces, mode);
@@ -260,7 +271,6 @@ public class CardViewFragment extends Fragment {
             public void success(ArrayList<Annonce> annonces, Response response) {
                 // Récupération de notre liste locale dans la liste globale
                 prgDialog.hide();
-
                 onPostWebservice(annonces);
             }
 
@@ -312,17 +322,15 @@ public class CardViewFragment extends Fragment {
             }
         }
 
-        // Si la liste des annonces est vide, on va afficher un message comme quoi, la requête n'a ramené aucun résultat
-        LinearLayout linearContent = (LinearLayout) rootView.findViewById(R.id.linearContent);
-        LinearLayout linearEmpty = (LinearLayout) rootView.findViewById(R.id.linearEmpty);
-
         if (linearContent != null && linearEmpty != null) {
             if (gbListAnnonces.isEmpty()) {
-                linearContent.setVisibility(View.INVISIBLE);
+                linearContent.setVisibility(View.GONE);
                 linearEmpty.setVisibility(View.VISIBLE);
+                textEmpty.setVisibility(View.VISIBLE);
             } else {
                 linearContent.setVisibility(View.VISIBLE);
-                linearEmpty.setVisibility(View.INVISIBLE);
+                linearEmpty.setVisibility(View.GONE);
+                textEmpty.setVisibility(View.GONE);
             }
         }
 
