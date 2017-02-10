@@ -1,106 +1,93 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="10dp"
     tools:context=".activity.MainActivity">
 
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp">
+        android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_margin="5dp"
+            android:text="@string/text_my_profile_accueil"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
 
-            <TextView
-                android:layout_width="match_parent"
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/emailMyProfile"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp"
-                android:text="@string/text_my_profile_accueil"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+                android:drawableLeft="@drawable/ic_login"
+                android:drawableStart="@drawable/ic_login"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:hint="@string/email"
+                android:inputType="textEmailAddress" />
+        </android.support.design.widget.TextInputLayout>
 
-            <!-- Name TextField -->
-            <android.support.design.widget.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <EditText
-                    android:id="@+id/emailMyProfile"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ic_login"
-                    android:drawableStart="@drawable/ic_login"
-                    android:hint="@string/email"
-                    android:inputType="textEmailAddress"/>
-            </android.support.design.widget.TextInputLayout>
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-            <android.support.design.widget.TextInputLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <EditText
-                    android:id="@+id/telephoneMyProfile"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ic_action_phone"
-                    android:drawableStart="@drawable/ic_action_phone"
-                    android:hint="@string/telephone"
-                    android:inputType="phone"
-                    android:maxLength="9" />
-            </android.support.design.widget.TextInputLayout>
-
-            <Button
-                android:id="@+id/action_save_change"
-                android:layout_width="match_parent"
+            <EditText
+                android:id="@+id/telephoneMyProfile"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:elevation="1dp"
-                android:background="@drawable/mybutton"
-                android:text="@string/save"
-                android:textColor="@color/white"
-                android:textStyle="bold"/>
+                android:drawableLeft="@drawable/ic_action_phone"
+                android:drawableStart="@drawable/ic_action_phone"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                android:hint="@string/telephone"
+                android:inputType="phone"
+                android:maxLength="9" />
+        </android.support.design.widget.TextInputLayout>
 
-            <Button
-                android:id="@+id/action_my_ads"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:background="@drawable/mybutton"
-                android:onClick="manageAds"
-                android:text="@string/manage_my_ads"
-                android:textColor="@color/white"
-                android:textStyle="bold"/>
+        <Button
+            android:id="@+id/action_save_change"
+            style="@style/MyButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/save" />
 
-            <Button
-                android:id="@+id/action_change_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:background="@drawable/mybutton"
-                android:text="@string/change_password"
-                android:textColor="@color/white"
-                android:textStyle="bold"/>
+        <Button
+            android:id="@+id/action_my_ads"
+            style="@style/MyButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:onClick="manageAds"
+            android:text="@string/manage_my_ads" />
 
-            <Button
-                android:id="@+id/action_deconnexion"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:background="@drawable/mybutton"
-                android:text="@string/action_log_out"
-                android:textColor="@color/white"
-                android:textStyle="bold" />
+        <Button
+            android:id="@+id/action_change_password"
+            style="@style/MyButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/change_password" />
 
-            <Button
-                android:id="@+id/action_desinscrire"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:background="@drawable/mybutton"
-                android:text="@string/unregister"
-                android:textColor="@color/white"
-                android:textStyle="bold"/>
+        <Button
+            android:id="@+id/action_deconnexion"
+            style="@style/MyButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/action_log_out" />
 
-        </LinearLayout>
-    </ScrollView>
-</FrameLayout>
+        <Button
+            android:id="@+id/action_desinscrire"
+            style="@style/MyButtonStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:text="@string/unregister" />
+
+    </LinearLayout>
+</ScrollView>

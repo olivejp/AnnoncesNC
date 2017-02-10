@@ -23,8 +23,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.activity.ImageViewerActivity;
 import com.orlanth23.annoncesNC.activity.PostAnnonceActivity;
@@ -231,9 +229,9 @@ public class DetailAnnonceFragment extends Fragment {
         scrollImageView = (ScrollView) rootView.findViewById(R.id.scrollImageView);
 
         // Intégration de AdMob
-        AdView mAdView = (AdView) rootView.findViewById(R.id.adView);
-        AdRequest mAdRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(mAdRequest);
+//        AdView mAdView = (AdView) rootView.findViewById(R.id.adView);
+//        AdRequest mAdRequest = new AdRequest.Builder().build();
+//        mAdView.loadAd(mAdRequest);
 
 
         // On crée un bouton de suppression et de mise à jour

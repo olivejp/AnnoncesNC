@@ -43,6 +43,13 @@
       <sourceFolder url="file://$MODULE_DIR$/src/serverNCDebug/jni" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/serverNCDebug/rs" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/serverNCDebug/shaders" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/r/androidTest/serverNC/debug" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/aidl/androidTest/serverNC/debug" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/buildConfig/androidTest/serverNC/debug" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/rs/androidTest/serverNC/debug" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/apt/androidTest/serverNC/debug" isTestSource="true" generated="true" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/res/rs/androidTest/serverNC/debug" type="java-test-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/build/generated/res/resValues/androidTest/serverNC/debug" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/testServerNCDebug/res" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/testServerNCDebug/resources" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/testServerNCDebug/assets" type="java-test-resource" />
@@ -51,13 +58,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/testServerNCDebug/jni" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testServerNCDebug/rs" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/testServerNCDebug/shaders" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/r/androidTest/serverNC/debug" isTestSource="true" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/aidl/androidTest/serverNC/debug" isTestSource="true" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/buildConfig/androidTest/serverNC/debug" isTestSource="true" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/rs/androidTest/serverNC/debug" isTestSource="true" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/source/apt/androidTest/serverNC/debug" isTestSource="true" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/res/rs/androidTest/serverNC/debug" type="java-test-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/build/generated/res/resValues/androidTest/serverNC/debug" type="java-test-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/serverNC/res" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/serverNC/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/serverNC/assets" type="java-resource" />
