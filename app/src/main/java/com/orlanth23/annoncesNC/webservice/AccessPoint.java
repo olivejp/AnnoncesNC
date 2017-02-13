@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.webservices;
+package com.orlanth23.annoncesNC.webservice;
 
 import com.orlanth23.annoncesNC.utility.Constants;
 

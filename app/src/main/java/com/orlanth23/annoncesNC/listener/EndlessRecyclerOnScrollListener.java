@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.listeners;
+package com.orlanth23.annoncesNC.listener;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;

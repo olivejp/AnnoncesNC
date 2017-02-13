@@ -31,9 +31,9 @@ import com.orlanth23.annoncesNC.dto.Photo;
 import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesNC.utility.Constants;
 import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservices.AccessPoint;
-import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnWS;
+import com.orlanth23.annoncesNC.webservice.AccessPoint;
+import com.orlanth23.annoncesNC.webservice.RetrofitService;
+import com.orlanth23.annoncesNC.webservice.ReturnWS;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;

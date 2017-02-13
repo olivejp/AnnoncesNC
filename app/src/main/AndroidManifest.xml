@@ -118,6 +118,12 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_image_viewer"
             android:theme="@style/FullscreenTheme" />
+
+        <provider
+            android:name=".provider.AnnoncesProvider"
+            android:authorities="com.orlanth23.annoncesnc"
+            android:exported="false" />
+
     </application>
 
 </manifest>

@@ -8,10 +8,10 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.database.DictionaryDAO;
-import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.webservices.AccessPoint;
-import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnWS;
+import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesNC.webservice.AccessPoint;
+import com.orlanth23.annoncesNC.webservice.RetrofitService;
+import com.orlanth23.annoncesNC.webservice.ReturnWS;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;

@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.dialogs;
+package com.orlanth23.annoncesNC.dialog;
 
 import android.app.Activity;
 import android.app.AlertDialog;

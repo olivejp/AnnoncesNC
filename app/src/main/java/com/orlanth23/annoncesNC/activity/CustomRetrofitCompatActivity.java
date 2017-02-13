@@ -7,8 +7,8 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
 import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.webservices.AccessPoint;
-import com.orlanth23.annoncesNC.webservices.RetrofitService;
+import com.orlanth23.annoncesNC.webservice.AccessPoint;
+import com.orlanth23.annoncesNC.webservice.RetrofitService;
 
 import retrofit.RestAdapter;
 

@@ -16,15 +16,15 @@ import android.widget.TextView;
 
 import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.adapter.CardViewDataAdapter;
-import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
+import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesNC.dto.Annonce;
 import com.orlanth23.annoncesNC.dto.Categorie;
 import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.listeners.EndlessRecyclerOnScrollListener;
+import com.orlanth23.annoncesNC.listener.EndlessRecyclerOnScrollListener;
 import com.orlanth23.annoncesNC.utility.Constants;
 import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservices.AccessPoint;
-import com.orlanth23.annoncesNC.webservices.RetrofitService;
+import com.orlanth23.annoncesNC.webservice.AccessPoint;
+import com.orlanth23.annoncesNC.webservice.RetrofitService;
 
 import java.util.ArrayList;
 

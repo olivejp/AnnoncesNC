@@ -10,12 +10,12 @@ import android.widget.TextView;
 
 import com.orlanth23.annoncesNC.BuildConfig;
 import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.lists.ListeCategories;
-import com.orlanth23.annoncesNC.lists.ListeStats;
-import com.orlanth23.annoncesNC.webservices.AccessPoint;
-import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnWS;
+import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesNC.list.ListeCategories;
+import com.orlanth23.annoncesNC.list.ListeStats;
+import com.orlanth23.annoncesNC.webservice.AccessPoint;
+import com.orlanth23.annoncesNC.webservice.RetrofitService;
+import com.orlanth23.annoncesNC.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

@@ -7,11 +7,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
+import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesNC.dto.CurrentUser;
 import com.orlanth23.annoncesNC.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservices.ReturnWS;
+import com.orlanth23.annoncesNC.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -95,10 +95,7 @@ public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
         if (Utility.isTextViewOnError(!newPass.equals(newPassConfirm), newPasswordConfirm, getString(R.string.error_confirmationPassword_incorrect), true)){
             return false;
         }
-        if (Utility.isTextViewOnError(!oldPass.isEmpty() && !newPass.isEmpty() && oldPass.equals(newPass), newPassword, getString(R.string.error_same_oldPassword_newPassword), true)){
-            return false;
-        }
-        return true;
+        return !Utility.isTextViewOnError(!oldPass.isEmpty() && !newPass.isEmpty() && oldPass.equals(newPass), newPassword, getString(R.string.error_same_oldPassword_newPassword), true);
     }
 
     @Override

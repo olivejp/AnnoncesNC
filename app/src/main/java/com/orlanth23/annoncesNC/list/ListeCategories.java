@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.lists;
+package com.orlanth23.annoncesNC.list;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

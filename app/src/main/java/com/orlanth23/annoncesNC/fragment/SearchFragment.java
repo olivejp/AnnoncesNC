@@ -25,12 +25,12 @@ import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.adapter.SpinnerAdapter;
 import com.orlanth23.annoncesNC.dto.Categorie;
 import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.lists.ListeCategories;
+import com.orlanth23.annoncesNC.list.ListeCategories;
 import com.orlanth23.annoncesNC.utility.Constants;
 import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservices.AccessPoint;
-import com.orlanth23.annoncesNC.webservices.RetrofitService;
-import com.orlanth23.annoncesNC.webservices.ReturnWS;
+import com.orlanth23.annoncesNC.webservice.AccessPoint;
+import com.orlanth23.annoncesNC.webservice.RetrofitService;
+import com.orlanth23.annoncesNC.webservice.ReturnWS;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

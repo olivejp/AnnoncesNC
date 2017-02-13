@@ -24,7 +24,7 @@ import android.widget.TextView;
 
 import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.database.DictionaryDAO;
-import com.orlanth23.annoncesNC.dialogs.NoticeDialogFragment;
+import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesNC.dto.CurrentUser;
 
 import java.io.ByteArrayOutputStream;

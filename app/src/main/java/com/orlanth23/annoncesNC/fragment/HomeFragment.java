@@ -16,7 +16,7 @@ import android.widget.TextView;
 import com.orlanth23.annoncesNC.R;
 import com.orlanth23.annoncesNC.activity.MainActivity;
 import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.lists.ListeStats;
+import com.orlanth23.annoncesNC.list.ListeStats;
 
 import java.util.Timer;
 import java.util.TimerTask;
