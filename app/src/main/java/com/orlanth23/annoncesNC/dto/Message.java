@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.dto;
+package com.orlanth23.annoncesnc.dto;
 
 /**
  * Created by orlanth23 on 11/07/2016.

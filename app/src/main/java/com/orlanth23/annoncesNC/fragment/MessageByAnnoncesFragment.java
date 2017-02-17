@@ -1,10 +1,10 @@
-package com.orlanth23.annoncesNC.fragment;
+package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
 
-import com.orlanth23.annoncesNC.dto.Annonce;
-import com.orlanth23.annoncesNC.dto.Message;
+import com.orlanth23.annoncesnc.dto.Annonce;
+import com.orlanth23.annoncesnc.dto.Message;
 
 import java.util.ArrayList;
 

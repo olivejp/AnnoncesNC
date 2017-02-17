@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.adapter;
+package com.orlanth23.annoncesnc.adapter;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,8 +9,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.dto.Categorie;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.dto.Categorie;
 
 import java.util.ArrayList;
 

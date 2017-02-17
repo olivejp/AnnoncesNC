@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.activity;
+package com.orlanth23.annoncesnc.activity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,8 +12,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.utility.Constants;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.utility.Constants;
 
 import java.io.ByteArrayOutputStream;
 

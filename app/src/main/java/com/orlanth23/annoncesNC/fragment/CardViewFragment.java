@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.fragment;
+package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -14,17 +14,17 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.adapter.CardViewDataAdapter;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.dto.Annonce;
-import com.orlanth23.annoncesNC.dto.Categorie;
-import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.listener.EndlessRecyclerOnScrollListener;
-import com.orlanth23.annoncesNC.utility.Constants;
-import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.adapter.CardViewDataAdapter;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.dto.Annonce;
+import com.orlanth23.annoncesnc.dto.Categorie;
+import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesnc.listener.EndlessRecyclerOnScrollListener;
+import com.orlanth23.annoncesnc.utility.Constants;
+import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
 
 import java.util.ArrayList;
 
@@ -34,7 +34,7 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByActivity;
+import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
 public class CardViewFragment extends Fragment {
 
@@ -285,7 +285,7 @@ public class CardViewFragment extends Fragment {
         };
 
         // Création d'un RestAdapter pour le futur appel de mon RestService
-        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
 
         prgDialog.setMessage(getString(R.string.dialog_msg_patience));
         prgDialog.show();

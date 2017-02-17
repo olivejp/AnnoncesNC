@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.fragment;
+package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -14,15 +14,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.activity.ChangePasswordActivity;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.dto.CurrentUser;
-import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.activity.ChangePasswordActivity;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -31,7 +31,7 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByActivity;
+import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
 public class MyProfileFragment extends Fragment{
 
@@ -81,7 +81,7 @@ public class MyProfileFragment extends Fragment{
             myCustomActivity.changeColorToolBar(color);
         }
 
-        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+        retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
 
         // Création d'un listener pour se déconnecter
         View.OnClickListener onClickListenerDeconnexion = new View.OnClickListener() {

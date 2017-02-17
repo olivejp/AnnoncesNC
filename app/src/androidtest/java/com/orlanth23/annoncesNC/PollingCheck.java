@@ -15,11 +15,9 @@
  *
  * Note: This file copied from the Android CTS Tests
  */
-package com.orlanth23.annoncesNC;
+package com.orlanth23.annoncesnc;
 
 import junit.framework.Assert;
-
-import java.util.concurrent.Callable;
 
 public abstract class PollingCheck {
     private static final long TIME_SLICE = 50;
@@ -41,11 +39,6 @@ public abstract class PollingCheck {
 
         long timeout = mTimeout;
         while (timeout > 0) {
-            try {
-                Thread.sleep(TIME_SLICE);
-            } catch (InterruptedException e) {
-                Assert.fail("unexpected InterruptedException");
-            }
 
             if (check()) {
                 return;
@@ -55,19 +48,5 @@ public abstract class PollingCheck {
         }
 
         Assert.fail("unexpected timeout");
-    }
-
-    public static void check(CharSequence message, long timeout, Callable<Boolean> condition)
-            throws Exception {
-        while (timeout > 0) {
-            if (condition.call()) {
-                return;
-            }
-
-            Thread.sleep(TIME_SLICE);
-            timeout -= TIME_SLICE;
-        }
-
-        Assert.fail(message.toString());
     }
 }

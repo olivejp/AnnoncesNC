@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.database;
+package com.orlanth23.annoncesnc.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -106,10 +106,10 @@ public class DictionaryDAO {
     /* Inner class that defines the table contents */
     public static abstract class Dictionary implements BaseColumns {
         public static final String TABLE_NAME = "dictionary";
-        public static final String COLUMN_CLEF = "CLEF";
-        public static final String COLUMN_CHAMP = "CHAMP";
+        static final String COLUMN_CLEF = "CLEF";
+        static final String COLUMN_CHAMP = "CHAMP";
         public static final String DB_CLEF_LOGIN = "LOGIN";
-        public static final String DB_CLEF_PASSWORD = "PASSWORD";
+        public static final String DB_CLEF_MOT_PASSE = "MOT_DE_PASSE";
         public static final String DB_CLEF_AUTO_CONNECT = "CONNECTION_AUTO";
     }
 }

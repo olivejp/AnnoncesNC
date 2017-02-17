@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC;
+package com.orlanth23.annoncesnc;
 
 import android.content.ContentValues;
 import android.database.ContentObserver;
@@ -7,7 +7,8 @@ import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 
-import com.orlanth23.annoncesNC.provider.contract.CategorieContract;
+import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.provider.contract.CategorieContract;
 
 import java.util.Map;
 import java.util.Set;
@@ -45,14 +46,22 @@ public class TestUtilities {
         return testValues;
     }
 
-    /*
-        Students: The functions we provide inside of TestProvider use this utility class to test
-        the ContentObserver callbacks using the PollingCheck class that we grabbed from the Android
-        CTS tests.
+    static ContentValues createAnnonceValues(long annonceId) {
+        ContentValues testValues = new ContentValues();
+        testValues.put(AnnonceContract._ID, annonceId);
+        testValues.put(AnnonceContract.COL_CONTACT_MEL,"O");
+        testValues.put(AnnonceContract.COL_CONTACT_MSG,"O");
+        testValues.put(AnnonceContract.COL_CONTACT_TEL,"O");
+        testValues.put(AnnonceContract.COL_TITRE_ANNONCE,"Titre d'annonce");
+        testValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE,"Description d'annonce");
+        testValues.put(AnnonceContract.COL_PRIX_ANNONCE,"123456");
+        testValues.put(AnnonceContract.COL_ID_UTILISATEUR,"1");
+        testValues.put(AnnonceContract.COL_ID_CATEGORY,"1");
+        testValues.put(AnnonceContract.COL_STATUT_ANNONCE,"V");
+        testValues.put(AnnonceContract.COL_DATE_PUBLICATION,"CURRENT_TIME()");
+        return testValues;
+    }
 
-        Note that this only tests that the onChange function is called; it does not test that the
-        correct Uri is returned.
-     */
     static class TestContentObserver extends ContentObserver {
         final HandlerThread mHT;
         boolean mContentChanged;

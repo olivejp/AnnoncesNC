@@ -1,6 +1,7 @@
-package com.orlanth23.annoncesNC.utility;
+package com.orlanth23.annoncesnc.utility;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -13,12 +14,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-/**
- * Created by orlanth23 on 27/02/2016.
- */
 public abstract class UploadFileToServer  extends AsyncTask<Void, Integer, String>{
-    // Constructor
-    public UploadFileToServer() {
+
+    protected UploadFileToServer() {
     }
 
     /**
@@ -26,7 +24,7 @@ public abstract class UploadFileToServer  extends AsyncTask<Void, Integer, Strin
      *     // urlDirUpload = "http://annonces.noip.me/AnnoncesNC/uploads"
      *     // urlPageUpload = "http://annonces.noip.me/AnnoncesNC/fileUpload.php"
      */
-    public static String postHttpRequest(String sourceString, String urlPageUpload, String urlDirUpload) {
+    protected static String postHttpRequest(String sourceString, String urlPageUpload, String urlDirUpload) {
 
         String response = "";
 
@@ -128,7 +126,7 @@ public abstract class UploadFileToServer  extends AsyncTask<Void, Integer, Strin
                 connection.disconnect();
 
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("postHttpRequest", e.getMessage(), e);
             }
         }
         return response;

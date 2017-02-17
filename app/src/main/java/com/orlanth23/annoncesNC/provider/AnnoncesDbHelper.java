@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.orlanth23.annoncesNC.provider;
+package com.orlanth23.annoncesnc.provider;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.orlanth23.annoncesNC.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesNC.provider.contract.CategorieContract;
-import com.orlanth23.annoncesNC.provider.contract.MessageContract;
-import com.orlanth23.annoncesNC.provider.contract.PhotoContract;
-import com.orlanth23.annoncesNC.provider.contract.UtilisateurContract;
+import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.provider.contract.CategorieContract;
+import com.orlanth23.annoncesnc.provider.contract.MessageContract;
+import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
 
 public class AnnoncesDbHelper extends SQLiteOpenHelper {
 

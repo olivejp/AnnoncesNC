@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.utility;
+package com.orlanth23.annoncesnc.utility;
 
 import android.app.Activity;
 import android.app.FragmentManager;
@@ -22,10 +22,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.database.DictionaryDAO;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.dto.CurrentUser;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.database.DictionaryDAO;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -50,8 +50,6 @@ public class Utility {
     private static final String EMAIL_PATTERN =
             "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
                     + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
-    private static final SimpleDateFormat originalDateFormat = new SimpleDateFormat("yyyyMMddHHmm", Locale.FRENCH);
-    private static final SimpleDateFormat newDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRENCH);
 
     public static boolean isTextViewOnError(boolean condition, TextView textView, String msgError, boolean requestFocus){
         if (condition) {
@@ -126,7 +124,7 @@ public class Utility {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e("saveBitmap", e.getMessage(), e);
         }
 
         return retour;
@@ -145,7 +143,7 @@ public class Utility {
             imageStream = context.getContentResolver().openInputStream(uri);
             bitmap = BitmapFactory.decodeStream(imageStream);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.e("getBitmapFromUri", e.getMessage(), e);
         }
         return bitmap;
     }
@@ -179,7 +177,7 @@ public class Utility {
         return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
     }
 
-    public static int getColorFromString(String color){
+    private static int getColorFromString(String color){
         String colorComplete = "#".concat(color);
         return Color.parseColor(colorComplete);
     }
@@ -255,11 +253,13 @@ public class Utility {
     }
 
     public static String convertDate(String dateYMDHM){
+        SimpleDateFormat originalDateFormat = new SimpleDateFormat("yyyyMMddHHmm", Locale.FRENCH);
+        SimpleDateFormat newDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRENCH);
         Date dateOriginal = null;
         try {
             dateOriginal = originalDateFormat.parse(dateYMDHM);
         } catch (ParseException e) {
-            e.printStackTrace();
+            Log.e("convertDate",e.getMessage());
         }
         return newDateFormat.format(dateOriginal);
     }
@@ -300,12 +300,12 @@ public class Utility {
 
         // Encryptage du mot de passe
         String motDePasseEncrypted = PasswordEncryptionService.desEncryptIt(passwordText.getText().toString());
-        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD)) {
+        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE)) {
             // L'enregistrement existe bien, on va juste le mettre à jour
-            retourPassword = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD, motDePasseEncrypted);
+            retourPassword = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE, motDePasseEncrypted);
         } else {
             // Création de l'enregistrement
-            retourPassword = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD, motDePasseEncrypted);
+            retourPassword = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE, motDePasseEncrypted);
         }
 
         if (checkBox.isChecked()) {

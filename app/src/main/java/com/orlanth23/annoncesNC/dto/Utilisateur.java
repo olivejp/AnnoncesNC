@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.dto;
+package com.orlanth23.annoncesnc.dto;
 
 import android.os.Parcel;
 import android.os.Parcelable;

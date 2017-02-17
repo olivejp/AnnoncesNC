@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC;
+package com.orlanth23.annoncesnc;
 
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -8,7 +8,7 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.orlanth23.annoncesNC.provider.ProviderContract;
+import com.orlanth23.annoncesnc.provider.ProviderContract;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,22 +22,65 @@ public class ProviderTest {
 
     private Context mContext;
 
-    private void deleteRecords(){
+    private void deleteRecords(Uri uri){
         mContext.getContentResolver().delete(
-                ProviderContract.CategorieEntry.CONTENT_URI,
+                uri,
                 null,
                 null
         );
 
         Cursor cursor = mContext.getContentResolver().query(
-                ProviderContract.CategorieEntry.CONTENT_URI,
+                uri,
                 null,
                 null,
                 null,
                 null
         );
-        assertEquals("Error: Records not deleted from Categorie table during delete", 0, cursor.getCount());
-        cursor.close();
+        if (cursor != null) {
+            assertEquals("Error: Records from URI " + uri.toString() + " not deleted table during delete", 0, cursor.getCount());
+            cursor.close();
+        } else {
+            assertTrue(false);
+        }
+    }
+
+    private void testInsertReadCategorieProvider(Uri uri, ContentValues contentValues) {
+
+        /* Suppression des enregistrements précédents */
+        deleteRecords(uri);
+
+        /* add a ContentObserver */
+        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
+        mContext.getContentResolver().registerContentObserver(uri, true, tco);
+
+        /* try to insert */
+        Uri categorieUri = mContext.getContentResolver().insert(uri, contentValues);
+
+        /* verify that the notifyChange has been called */
+        tco.waitForNotificationOrFail();
+
+        /* unregister the contentObserver */
+        mContext.getContentResolver().unregisterContentObserver(tco);
+
+        long rowId = ContentUris.parseId(categorieUri);
+
+        // Verify we got a row back.
+        assertTrue(rowId != -1);
+
+        // Data's inserted.  IN THEORY.  Now pull some out to stare at it and verify it made
+        // the round trip.
+
+        // A cursor is your primary interface to the query results.
+        Cursor cursor = mContext.getContentResolver().query(
+                uri,
+                null, // leaving "columns" null just returns all the columns.
+                null, // cols for "where" clause
+                null, // values for "where" clause
+                null  // sort order
+        );
+
+        TestUtilities.validateCursor("testInsertReadProvider. Error validating URI ".concat(uri.toString()),
+                cursor, contentValues);
     }
 
     @Before
@@ -46,49 +89,39 @@ public class ProviderTest {
     }
 
     @Test
-    public void deleteAllRecordsFromProvider() {
-        deleteRecords();
+    public void deleteAllRecordsFromCategorieProvider() {
+        deleteRecords(ProviderContract.CategorieEntry.CONTENT_URI);
     }
 
     @Test
-    public void testInsertReadProvider() {
+    public void deleteAllRecordsFromAnnonceProvider() {
+        deleteRecords(ProviderContract.AnnonceEntry.CONTENT_URI);
+    }
 
-        /* Suppression des enregistrements précédents */
-        deleteRecords();
+    @Test
+    public void deleteAllRecordsFromPhotoProvider() {
+        deleteRecords(ProviderContract.PhotoEntry.CONTENT_URI);
+    }
 
-        ContentValues testValues = TestUtilities.createCategorieValues(1234);
+    @Test
+    public void deleteAllRecordsFromMessageProvider() {
+        deleteRecords(ProviderContract.MessageEntry.CONTENT_URI);
+    }
 
-        /* add a ContentObserver */
-        TestUtilities.TestContentObserver tco = TestUtilities.getTestContentObserver();
-        mContext.getContentResolver().registerContentObserver(ProviderContract.CategorieEntry.CONTENT_URI, true, tco);
+    @Test
+    public void deleteAllRecordsFromUtilisateurProvider() {
+        deleteRecords(ProviderContract.UtilisateurEntry.CONTENT_URI);
+    }
 
-        /* try to insert */
-        Uri categorieUri = mContext.getContentResolver().insert(ProviderContract.CategorieEntry.CONTENT_URI, testValues);
+    @Test
+    public void testInsertReadCategorieProvider(){
+        ContentValues testValuesCategorie = TestUtilities.createCategorieValues(1);
+        testInsertReadCategorieProvider(ProviderContract.CategorieEntry.CONTENT_URI, testValuesCategorie);
+    }
 
-        /* verify that the notifyChange has been called */
-        tco.waitForNotificationOrFail();
-
-        /* unregister the contentObserver */
-        mContext.getContentResolver().unregisterContentObserver(tco);
-
-        long movieRowId = ContentUris.parseId(categorieUri);
-
-        // Verify we got a row back.
-        assertTrue(movieRowId != -1);
-
-        // Data's inserted.  IN THEORY.  Now pull some out to stare at it and verify it made
-        // the round trip.
-
-        // A cursor is your primary interface to the query results.
-        Cursor cursor = mContext.getContentResolver().query(
-                ProviderContract.CategorieEntry.CONTENT_URI,
-                null, // leaving "columns" null just returns all the columns.
-                null, // cols for "where" clause
-                null, // values for "where" clause
-                null  // sort order
-        );
-
-        TestUtilities.validateCursor("testInsertReadProvider. Error validating MovieEntry.",
-                cursor, testValues);
+    @Test
+    public void testInsertReadAnnonceProvider(){
+        ContentValues testValuesAnnonce = TestUtilities.createAnnonceValues(1234);
+        testInsertReadCategorieProvider(ProviderContract.AnnonceEntry.CONTENT_URI, testValuesAnnonce);
     }
 }

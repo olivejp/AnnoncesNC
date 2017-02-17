@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.provider.contract;
+package com.orlanth23.annoncesnc.provider.contract;
 
 import android.provider.BaseColumns;
 

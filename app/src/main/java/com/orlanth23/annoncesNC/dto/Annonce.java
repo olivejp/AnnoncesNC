@@ -1,13 +1,10 @@
-package com.orlanth23.annoncesNC.dto;
+package com.orlanth23.annoncesnc.dto;
 
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.ArrayList;
 
-/**
- * Created by orlanth23 on 17/08/2015.
- */
 public class Annonce implements Parcelable {
 
     public static final Parcelable.Creator<Annonce> CREATOR = new Parcelable.Creator<Annonce>() {
@@ -33,24 +30,8 @@ public class Annonce implements Parcelable {
     private Long datePublished;          // La date de la parution
     private ArrayList<Photo> photos;     // Les photos de l'annonce
 
-    // Nouvelle liste pour les photos
-    // private ArrayList listPhoto;   // La liste des photos de l'annonce
-
-    /* Constructeurs */
-    public Annonce(Integer idANO, Categorie categorieANO, Utilisateur ownerANO, Integer priceANO, String descriptionANO, String titreANO, boolean publishedANO, Long datePublished, ArrayList<Photo> listPhoto) {
-        this.idANO = idANO;
-        this.categorieANO = categorieANO;
-        this.ownerANO = ownerANO;
-        this.priceANO = priceANO;
-        this.descriptionANO = descriptionANO;
-        this.titreANO = titreANO;
-        this.publishedANO = publishedANO;
-        this.datePublished = datePublished;
-        this.photos = listPhoto;
-    }
-
     /* Constructeur à partir d'un Parcel*/
-    public Annonce(Parcel in) {
+    private Annonce(Parcel in) {
         idANO = in.readInt();
         categorieANO = in.readParcelable(Categorie.class.getClassLoader());
         ownerANO = in.readParcelable(Utilisateur.class.getClassLoader());
@@ -74,7 +55,7 @@ public class Annonce implements Parcelable {
         this.titreANO = "";
         this.publishedANO = false;
         this.datePublished = (long) 0;
-        this.photos = new ArrayList();
+        this.photos = new ArrayList<>();
     }
 
     public Integer getIdANO() {

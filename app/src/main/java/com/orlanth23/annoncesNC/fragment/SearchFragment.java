@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.fragment;
+package com.orlanth23.annoncesnc.fragment;
 
 
 import android.app.Activity;
@@ -21,16 +21,16 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.adapter.SpinnerAdapter;
-import com.orlanth23.annoncesNC.dto.Categorie;
-import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.list.ListeCategories;
-import com.orlanth23.annoncesNC.utility.Constants;
-import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
+import com.orlanth23.annoncesnc.dto.Categorie;
+import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.utility.Constants;
+import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -118,7 +118,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
         spinnerCategory.setOnKeyListener(spinnerOnKey);
 
         if (ListeCategories.getInstance().getListCategorie() == null) {
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
             retrofitService.getListCategory(callbackListCategory);
         } else {
             loadSpinner(ListeCategories.getInstance().getListCategorie());

@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.activity;
+package com.orlanth23.annoncesnc.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -12,15 +12,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.dto.CurrentUser;
-import com.orlanth23.annoncesNC.dto.Utilisateur;
-import com.orlanth23.annoncesNC.utility.PasswordEncryptionService;
-import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.dto.Utilisateur;
+import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
+import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,7 +28,7 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByFragmentManager;
+import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 /**
  * Register Activity Class
@@ -164,7 +164,7 @@ public class RegisterActivity extends AppCompatActivity {
             final String motDePasseEncrypted = PasswordEncryptionService.desEncryptIt(password);
 
             // Appel du RETROFIT Webservice
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
             retrofit.Callback<ReturnWS> myCallback = new retrofit.Callback<ReturnWS>() {
                 @Override
                 public void success(ReturnWS rs, Response response) {

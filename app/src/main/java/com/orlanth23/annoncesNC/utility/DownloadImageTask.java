@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.utility;
+package com.orlanth23.annoncesnc.utility;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -8,9 +8,6 @@ import android.widget.ImageView;
 
 import java.io.InputStream;
 
-/**
- * Created by olivejp on 18/03/2016.
- */
 public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
     private ImageView bmImage;
 
@@ -25,8 +22,7 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
             InputStream in = new java.net.URL(urldisplay).openStream();
             mIcon11 = BitmapFactory.decodeStream(in);
         } catch (Exception e) {
-            Log.e("Error", e.getMessage());
-            e.printStackTrace();
+            Log.e("Error", e.getMessage(), e);
         }
         return mIcon11;
     }

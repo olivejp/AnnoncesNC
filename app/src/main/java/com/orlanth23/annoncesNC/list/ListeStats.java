@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.list;
+package com.orlanth23.annoncesnc.list;
 
 public class ListeStats {
 

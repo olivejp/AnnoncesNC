@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.activity;
+package com.orlanth23.annoncesnc.activity;
 
 
 import android.app.DialogFragment;
@@ -28,24 +28,24 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.orlanth23.annoncesNC.BuildConfig;
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.adapter.ListCategorieAdapter;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.dto.Categorie;
-import com.orlanth23.annoncesNC.dto.CurrentUser;
-import com.orlanth23.annoncesNC.fragment.CardViewFragment;
-import com.orlanth23.annoncesNC.fragment.HomeFragment;
-import com.orlanth23.annoncesNC.fragment.MyProfileFragment;
-import com.orlanth23.annoncesNC.fragment.SearchFragment;
-import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.list.ListeCategories;
-import com.orlanth23.annoncesNC.list.ListeStats;
-import com.orlanth23.annoncesNC.utility.Constants;
-import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.BuildConfig;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.adapter.ListCategorieAdapter;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.dto.Categorie;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.fragment.CardViewFragment;
+import com.orlanth23.annoncesnc.fragment.HomeFragment;
+import com.orlanth23.annoncesnc.fragment.MyProfileFragment;
+import com.orlanth23.annoncesnc.fragment.SearchFragment;
+import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.list.ListeStats;
+import com.orlanth23.annoncesnc.utility.Constants;
+import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
 
     public final static String PARAM_REQUEST_CODE = "REQUEST_CODE";
 
-    public static final long NOTIFY_INTERVAL = 15 * 1000; // toutes les 10 seconds on va récupérer la liste des catégories
+    public static final int NOTIFY_INTERVAL = 15 * 1000; // toutes les 10 seconds on va récupérer la liste des catégories
 
     private static final String TAG = MainActivity.class.getName();
     private static final String DIALOG_TAG_EXIT = "EXIT";
@@ -139,10 +139,10 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                 actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
             }
         } catch (NullPointerException e) {
-            Log.e(TAG, "ActionBar is NullPointerException");
+            Log.e(TAG, e.getMessage(), e);
         }
 
-        retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+        retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
 
         // Création d'un exécutable qui va récupérer les informations sur le serveur
         runnable = new Runnable() {
@@ -372,7 +372,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                     actionBar.setTitle(mTitle);
                 }
             } catch (NullPointerException e) {
-                Log.e(TAG, "ActionBar is NullPointerException");
+                Log.e(TAG, e.getMessage(), e);
             }
         }
     }
@@ -392,19 +392,10 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
         return super.onPrepareOptionsMenu(menu);
     }
 
-    /**
-     *
-     * @param view
-     */
     public void mainSearch(View view) {
         changeToSearch();
     }
 
-    /**
-     * Méthode privée qui permet de lancer un post d'annonce
-     * @param view
-     * @return
-     */
     public void mainPost(View view){
         Intent intent = new Intent();
         Bundle b = new Bundle();
@@ -429,11 +420,6 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
         }
     }
 
-    /**
-     * Méthode pour changer le fragment actuel, en SearchFragment
-     *
-     * @return
-     */
     private boolean changeToSearch() {
         // On va rechercher le fragment qui est en cours d'utilisation
         if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof SearchFragment)) {
@@ -457,10 +443,6 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
     }
 
 
-    /**
-     *
-     * @param view
-     */
     public void manageAds(View view) {
         // On va rechercher le fragment qui est en cours d'utilisation
         if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof CardViewFragment) || (!getFragmentManager().findFragmentById(R.id.frame_container).getTag().equals(CardViewFragment.ACTION_ANNONCE_BY_USER))) {
@@ -509,6 +491,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                     startActivityForResult(Intent.createChooser(emailIntent, "Envoyer un email d'amélioration"), 0);
                 } catch (android.content.ActivityNotFoundException ex) {
                     Toast.makeText(this, "There is no email client installed.", Toast.LENGTH_LONG).show();
+                    Log.e("NotFoundException", ex.getMessage(), ex);
                 }
                 return true;
 
@@ -558,13 +541,6 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
         }
     }
 
-    /**
-     * Méthode qui récupère les résultats des activités filles
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         Utility.hideKeyboard(this);
@@ -585,9 +561,6 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
         }
     }
 
-    /**
-     * Permet de revenir en arrière sur des fragments
-     */
     @Override
     public void onBackPressed() {
         // Fermeture du drawer latéral s'il est ouvert
@@ -622,14 +595,11 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                     actionBar.setBackgroundDrawable(colorDrawable);
                 }
             } catch (NullPointerException e) {
-                Log.e(TAG, "ActionBar is NullPointerException");
+                Log.e(TAG, e.getMessage(), e);
             }
         }
     }
 
-    /**
-     * On a sélectionné une valeur dans le Drawer
-     */
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView parent, View view, int position, long id) {

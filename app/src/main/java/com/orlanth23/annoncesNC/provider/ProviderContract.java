@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.provider;
+package com.orlanth23.annoncesnc.provider;
 
 import android.content.ContentResolver;
 import android.net.Uri;

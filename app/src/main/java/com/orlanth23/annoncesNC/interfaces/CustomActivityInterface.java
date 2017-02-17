@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.interfaces;
+package com.orlanth23.annoncesnc.interfaces;
 
 
 public interface CustomActivityInterface {

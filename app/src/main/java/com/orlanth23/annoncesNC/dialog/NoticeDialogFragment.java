@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.dialog;
+package com.orlanth23.annoncesnc.dialog;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -6,12 +6,13 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.orlanth23.annoncesNC.R;
+import com.orlanth23.annoncesnc.R;
 
 public class NoticeDialogFragment extends DialogFragment {
 
@@ -35,6 +36,7 @@ public class NoticeDialogFragment extends DialogFragment {
             // Instantiate the NoticeDialogListener so we can send events to the host
             mListener = (NoticeDialogListener) activity;
         } catch (ClassCastException e) {
+            Log.e("ClassCastException", e.getMessage(), e);
             // The activity doesn't implement the interface, throw exception
             throw new ClassCastException(activity.toString()
                     + " doit implementer l'interface NoticeDialogListener");

@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.activity;
+package com.orlanth23.annoncesnc.activity;
 
 import android.app.DialogFragment;
 import android.content.Intent;
@@ -8,14 +8,14 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.orlanth23.annoncesNC.BuildConfig;
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.list.ListeCategories;
-import com.orlanth23.annoncesNC.list.ListeStats;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.BuildConfig;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.list.ListeStats;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,8 +23,8 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByFragmentManager;
-import static com.orlanth23.annoncesNC.utility.Utility.checkWifiAndMobileData;
+import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
+import static com.orlanth23.annoncesnc.utility.Utility.checkWifiAndMobileData;
 
 public class FullscreenActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
 
@@ -52,23 +52,6 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
     ImageView imgGetStats;
 
     private boolean P_OK = false;
-    private AccessPoint mAccessPoint = AccessPoint.getInstance();
-
-    private void startMainActivity(){
-        Intent intent = new Intent();
-        intent.setClass(getApplicationContext(), MainActivity.class);
-        startActivity(intent);
-    }
-
-    private void tryConnectToBackUpServer(TextView textView, ImageView imageView,  int resIdMsgError){
-        imageView.setImageResource(R.drawable.ic_remove_inverse);
-        textView.setText(resIdMsgError);
-        if (goToBackupServer()){
-            retrofitService.checkConnection(checkConnection1Callback);
-        }else{
-            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
-        }
-    }
 
     private retrofit.Callback<ReturnWS> checkConnection1Callback = new retrofit.Callback<ReturnWS>() {
         @Override
@@ -77,14 +60,11 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
                 imgTestServer.setImageResource(R.drawable.ic_action_accept);
                 imgGetInfos.setVisibility(View.VISIBLE);
                 retrofitService.getListCategory(listCategorie2Callback);
-            } else {
-                tryConnectToBackUpServer(textTestServer, imgTestServer, R.string.error_no_server);
             }
         }
 
         @Override
         public void failure(RetrofitError error) {
-            tryConnectToBackUpServer(textTestServer, imgTestServer, R.string.error_no_server);
         }
     };
 
@@ -92,18 +72,17 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
         @Override
         public void success(ReturnWS retour, Response response) {
             if (retour.statusValid()) {
+                Intent intent = new Intent();
                 P_OK = true;
                 ListeStats.setNbAnnonces(Integer.valueOf(retour.getMsg()));
                 imgGetStats.setImageResource(R.drawable.ic_action_accept);
-                startMainActivity();
-            } else {
-                tryConnectToBackUpServer(textGetStats, imgGetStats, R.string.error_no_stats);
+                intent.setClass(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
             }
         }
 
         @Override
         public void failure(RetrofitError error) {
-            tryConnectToBackUpServer(textGetStats, imgGetStats, R.string.error_no_stats);
         }
     };
     private retrofit.Callback<ReturnWS> getNbUser3Callback = new retrofit.Callback<ReturnWS>() {
@@ -112,14 +91,11 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
             if (retour.statusValid()) {
                 ListeStats.setNbUsers(Integer.valueOf(retour.getMsg()));
                 retrofitService.getNbAnnonce(getNbAnnonce4Callback);
-            } else {
-                tryConnectToBackUpServer(textGetInfos, imgGetInfos, R.string.error_no_stats);
             }
         }
 
         @Override
         public void failure(RetrofitError error) {
-            tryConnectToBackUpServer(textGetInfos, imgGetInfos, R.string.error_no_stats);
         }
     };
     private retrofit.Callback<ReturnWS> listCategorie2Callback = new retrofit.Callback<ReturnWS>() {
@@ -130,29 +106,16 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
                 ListeCategories.setMyArrayListFromJson(retour.getMsg());
                 imgGetStats.setVisibility(View.VISIBLE);
                 retrofitService.getNbUser(getNbUser3Callback);
-            } else {
-                tryConnectToBackUpServer(textGetInfos, imgGetInfos, R.string.error_no_cat_list);
             }
         }
 
         @Override
         public void failure(RetrofitError error) {
-            tryConnectToBackUpServer(textGetInfos, imgGetInfos, R.string.error_no_cat_list);
         }
     };
 
     private void initRetrofitAccessPoint(){
-        retrofitService = new RestAdapter.Builder().setEndpoint(mAccessPoint.getServerEndpoint()).build().create(RetrofitService.class);
-    }
-
-    private boolean goToBackupServer(){
-        if (!mAccessPoint.isBackUp()) {
-            mAccessPoint.changeToBackUpServer();
-            initRetrofitAccessPoint();
-            return true;
-        } else {
-            return false;
-        }
+        retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
     }
 
     private void testAllWebservices() {
@@ -191,11 +154,6 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
         ListeStats.getInstance();
         ListeCategories.getInstance();
 
-        // A la création de l'activity, il faut toujours aller sur le serveur principal en priorité
-        if (mAccessPoint.isBackUp()) {
-            mAccessPoint.changeToPrincipalServer();
-        }
-
         // Appel de tous les webservices
         testAllWebservices();
     }
@@ -215,10 +173,13 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
             case DIALOG_TAG_NO_STATS:
                 finish();
                 break;
+            default:
+                break;
         }
     }
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
+        throw new UnsupportedOperationException();
     }
 }

@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.activity;
+package com.orlanth23.annoncesnc.activity;
 
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -9,13 +9,13 @@ import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.database.DictionaryDAO;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.database.DictionaryDAO;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -24,7 +24,7 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByFragmentManager;
+import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 
 public class LostPasswordActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
@@ -78,7 +78,7 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
         } else {
 
             // Création d'un RestAdapter pour le futur appel de mon RestService
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
             Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
                 @Override
                 public void success(ReturnWS rs, Response response) {

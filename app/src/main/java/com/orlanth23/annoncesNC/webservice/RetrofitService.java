@@ -1,6 +1,6 @@
-package com.orlanth23.annoncesNC.webservice;
+package com.orlanth23.annoncesnc.webservice;
 
-import com.orlanth23.annoncesNC.dto.Annonce;
+import com.orlanth23.annoncesnc.dto.Annonce;
 
 import java.util.ArrayList;
 

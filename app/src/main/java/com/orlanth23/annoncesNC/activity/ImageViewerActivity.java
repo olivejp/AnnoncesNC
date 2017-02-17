@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.activity;
+package com.orlanth23.annoncesnc.activity;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -6,7 +6,7 @@ import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
-import com.orlanth23.annoncesNC.R;
+import com.orlanth23.annoncesnc.R;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -34,7 +34,11 @@ public class ImageViewerActivity extends AppCompatActivity {
     private final Runnable mHideRunnable = new Runnable() {
         @Override
         public void run() {
-            hide();
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.hide();
+            }
+            mHideHandler.removeCallbacks(mShowPart2Runnable);
         }
     };
     @BindView(R.id.imageViewer)
@@ -79,15 +83,6 @@ public class ImageViewerActivity extends AppCompatActivity {
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         delayedHide(100);
-    }
-
-    private void hide() {
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
-
-        mHideHandler.removeCallbacks(mShowPart2Runnable);
     }
 
     private void delayedHide(int delayMillis) {

@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.utility;
+package com.orlanth23.annoncesnc.utility;
 
 /**
  * Created by olivejp on 21/06/2016.

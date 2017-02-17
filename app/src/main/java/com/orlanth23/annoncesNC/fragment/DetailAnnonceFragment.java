@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.fragment;
+package com.orlanth23.annoncesnc.fragment;
 
 import android.Manifest;
 import android.app.Activity;
@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,17 +24,17 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.activity.ImageViewerActivity;
-import com.orlanth23.annoncesNC.activity.PostAnnonceActivity;
-import com.orlanth23.annoncesNC.dto.Annonce;
-import com.orlanth23.annoncesNC.dto.Photo;
-import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.utility.Constants;
-import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.activity.ImageViewerActivity;
+import com.orlanth23.annoncesnc.activity.PostAnnonceActivity;
+import com.orlanth23.annoncesnc.dto.Annonce;
+import com.orlanth23.annoncesnc.dto.Photo;
+import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesnc.utility.Constants;
+import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -53,8 +54,8 @@ public class DetailAnnonceFragment extends Fragment {
     public final static int SEND_MAIL_FROM_DETAIL = 800;
     public final static int UPDATE_DETAIL = 900;
     private static final String ARG_PARAM_ANNONCE = "ANNONCE";
-    private static String P_MODE;
-    private static Annonce P_ANNONCE;
+    private String P_MODE;
+    private Annonce P_ANNONCE;
     @BindView(R.id.value_id_annonce)
     TextView value_id_annonce;
     @BindView(R.id.value_user)
@@ -144,6 +145,7 @@ public class DetailAnnonceFragment extends Fragment {
             try {
                 startActivityForResult(Intent.createChooser(emailIntent, "Envoi de mail..."), SEND_MAIL_FROM_DETAIL);
             } catch (android.content.ActivityNotFoundException ex) {
+                Log.e("clickListenerEmailBouto", ex.getMessage(), ex);
                 Toast.makeText(getActivity(), "There is no email client installed.", Toast.LENGTH_LONG).show();
             }
         }
@@ -319,7 +321,7 @@ public class DetailAnnonceFragment extends Fragment {
 
                 // Envoi d'un webservice pour supprimer l'annonce en question
                 // Définition d'un nouveau callback
-                RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+                RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
                 retrofit.Callback<ReturnWS> myCallback = new retrofit.Callback<ReturnWS>() {
                     @Override
                     public void success(ReturnWS rs, Response response) {
@@ -370,7 +372,7 @@ public class DetailAnnonceFragment extends Fragment {
 
     private void presentAnnonce() {
         // Récupération de toutes les valeurs de l'annonce dans les zones graphiques
-        value_id_annonce.setText(P_ANNONCE.getIdANO().toString());
+        value_id_annonce.setText(String.valueOf(P_ANNONCE.getIdANO()));
         value_titre.setText(P_ANNONCE.getTitreANO());
         value_description.setText(P_ANNONCE.getDescriptionANO());
         value_prix_annonce.setText(Utility.convertPrice(P_ANNONCE.getPriceANO()));

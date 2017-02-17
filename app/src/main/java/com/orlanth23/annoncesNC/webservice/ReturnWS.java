@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.webservice;
+package com.orlanth23.annoncesnc.webservice;
 
 public class ReturnWS {
 

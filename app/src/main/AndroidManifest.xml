@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.orlanth23.annoncesNC">
+    package="com.orlanth23.annoncesnc">
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission
@@ -27,7 +27,7 @@
         android:label="@string/app_name"
         android:theme="@style/MyMaterialTheme">
         <activity
-            android:name=".activity.MainActivity"
+            android:name="com.orlanth23.annoncesnc.activity.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:windowSoftInputMode="adjustResize|stateHidden"
@@ -44,66 +44,66 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.LoginActivityRetrofit"
+            android:name="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit"
             android:label="@string/title_activity_login"
-            android:parentActivityName=".activity.MainActivity"
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesNC.activity.MainActivity" />
+                android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.PostAnnonceActivity"
+            android:name="com.orlanth23.annoncesnc.activity.PostAnnonceActivity"
             android:label="@string/action_post"
-            android:parentActivityName=".activity.MainActivity"
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesNC.activity.MainActivity" />
+                android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.RegisterActivity"
+            android:name="com.orlanth23.annoncesnc.activity.RegisterActivity"
             android:label="@string/title_register"
-            android:parentActivityName=".activity.LoginActivityRetrofit"
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesNC.activity.LoginActivityRetrofit" />
+                android:value="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit" />
         </activity>
         <activity
-            android:name=".activity.SettingsActivity"
+            android:name="com.orlanth23.annoncesnc.activity.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesNC.activity.MainActivity" />
+                android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.LostPasswordActivity"
+            android:name="com.orlanth23.annoncesnc.activity.LostPasswordActivity"
             android:label="@string/action_lost_password"
-            android:parentActivityName=".activity.LoginActivityRetrofit">
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesNC.activity.LoginActivityRetrofit" />
+                android:value="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit" />
         </activity>
         <activity
-            android:name=".activity.ChangePasswordActivity"
+            android:name="com.orlanth23.annoncesnc.activity.ChangePasswordActivity"
             android:label="@string/change_password"
-            android:parentActivityName=".activity.MainActivity">
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesNC.activity.MainActivity" />
+                android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.WorkImageActivity"
+            android:name="com.orlanth23.annoncesnc.activity.WorkImageActivity"
             android:label="@string/title_activity_work_image"
-            android:parentActivityName=".activity.PostAnnonceActivity">
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.PostAnnonceActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesNC.activity.PostAnnonceActivity" />
+                android:value="com.orlanth23.annoncesnc.activity.PostAnnonceActivity" />
         </activity>
         <activity
-            android:name=".activity.FullscreenActivity"
+            android:name="com.orlanth23.annoncesnc.activity.FullscreenActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:noHistory="true"
@@ -114,13 +114,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activity.ImageViewerActivity"
+            android:name="com.orlanth23.annoncesnc.activity.ImageViewerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_image_viewer"
             android:theme="@style/FullscreenTheme" />
 
         <provider
-            android:name=".provider.AnnoncesProvider"
+            android:name="com.orlanth23.annoncesnc.provider.AnnoncesProvider"
             android:authorities="com.orlanth23.annoncesnc"
             android:exported="false" />
 

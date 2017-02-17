@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.activity;
+package com.orlanth23.annoncesnc.activity;
 
 import android.app.Activity;
 import android.app.DialogFragment;
@@ -13,22 +13,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.database.DictionaryDAO;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.dto.CurrentUser;
-import com.orlanth23.annoncesNC.dto.Utilisateur;
-import com.orlanth23.annoncesNC.utility.PasswordEncryptionService;
-import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.database.DictionaryDAO;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.dto.Utilisateur;
+import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
+import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit.Callback;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByFragmentManager;
+import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 
 public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
@@ -56,7 +57,6 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
                 if (mCheckBoxRememberMe.isChecked()) {
                     Utility.saveAutoComplete(mActivity, mEmailView, mPasswordView, mCheckBoxRememberMe);
                 }
-
                 Gson gson = new Gson();
                 Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
 
@@ -65,7 +65,6 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
                 CurrentUser.setUser(user);
 
                 Toast.makeText(mActivity, "Connecté avec le compte " + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
-
                 goodFinishActivity();
             } else {
                 errorMsg.setText(rs.getMsg());
@@ -101,18 +100,6 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
         }
     }
 
-    public void callLostPasswordActivity(View view) {
-        Intent lostPasswordIntent = new Intent(getApplicationContext(), LostPasswordActivity.class);
-        lostPasswordIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivityForResult(lostPasswordIntent, 0);
-    }
-
-    public void callRegisterActivity(View view) {
-        Intent registerIntent = new Intent(getApplicationContext(), RegisterActivity.class);
-        registerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivityForResult(registerIntent, RegisterActivity.CODE_REGISTER_ACTIVITY);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -131,7 +118,7 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
     }
 
     private void populateAutoComplete() {
-        String encryptedPassword = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD);
+        String encryptedPassword = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
         if (encryptedPassword != null) {
             String decryptedPassword = PasswordEncryptionService.desDecryptIt(encryptedPassword);
             mPasswordView.setText(decryptedPassword);
@@ -176,7 +163,8 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
         return !Utility.isTextViewOnError(condition, mEmailView, getString(R.string.error_invalid_email), true);
     }
 
-    public void attemptLogin(View view) {
+    @OnClick(R.id.login_btnLogin)
+    public void attemptLogin() {
         String email = mEmailView.getText().toString().replace("'", "''");
         String decryptedPassword = mPasswordView.getText().toString().replace("'", "''");
 
@@ -187,6 +175,21 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
         }
     }
 
+    @OnClick(R.id.lostPassword)
+    public void callLostPasswordActivity() {
+        Intent lostPasswordIntent = new Intent(getApplicationContext(), LostPasswordActivity.class);
+        lostPasswordIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivityForResult(lostPasswordIntent, 0);
+    }
+
+    @OnClick(R.id.login_btnRegister)
+    public void callRegisterActivity() {
+        Intent registerIntent = new Intent(getApplicationContext(), RegisterActivity.class);
+        registerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivityForResult(registerIntent, RegisterActivity.CODE_REGISTER_ACTIVITY);
+    }
+
+
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         finish();
@@ -194,7 +197,6 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
-
     }
 
     @Override

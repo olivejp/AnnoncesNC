@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.activity;
+package com.orlanth23.annoncesnc.activity;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -25,21 +26,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.adapter.SpinnerAdapter;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.dto.Annonce;
-import com.orlanth23.annoncesNC.dto.Categorie;
-import com.orlanth23.annoncesNC.dto.CurrentUser;
-import com.orlanth23.annoncesNC.dto.Photo;
-import com.orlanth23.annoncesNC.list.ListeCategories;
-import com.orlanth23.annoncesNC.utility.Constants;
-import com.orlanth23.annoncesNC.utility.ReturnClassUFTS;
-import com.orlanth23.annoncesNC.utility.UploadFileToServer;
-import com.orlanth23.annoncesNC.utility.Utility;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.dto.Annonce;
+import com.orlanth23.annoncesnc.dto.Categorie;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.dto.Photo;
+import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.utility.Constants;
+import com.orlanth23.annoncesnc.utility.ReturnClassUFTS;
+import com.orlanth23.annoncesnc.utility.UploadFileToServer;
+import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
@@ -52,13 +52,12 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByFragmentManager;
+import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
-public class PostAnnonceActivity extends AppCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
+public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
     // Activity request codes
     public static final int DIALOG_REQUEST_IMAGE = 100;
     public static final String BUNDLE_KEY_ANNONCE = "ANNONCE";
@@ -95,7 +94,6 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
     private String P_MODE;
     private String P_TITRE_ACTIVITY;
     private ProgressDialog prgDialog;
-    private RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
     private Dialog dialogImageChoice;
     private AppCompatActivity mActivity = this;
     private UploadFileToServer P_UFTS;
@@ -220,7 +218,7 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
                 Gson gson = new Gson();
                 String reponse = null;
                 for (String sourceFile : P_PHOTO_TO_SEND) {
-                    reponse = postHttpRequest(sourceFile, AccessPoint.getInstance().getServerPageUpload(), AccessPoint.getInstance().getServerDirectoryUploads());
+                    reponse = postHttpRequest(sourceFile, Proprietes.getServerPageUpload(), Proprietes.getServerDirectoryUploads());
                     if (reponse != null) {
                         if (!reponse.isEmpty()) {
                             ReturnClassUFTS rs = gson.fromJson(reponse, ReturnClassUFTS.class);
@@ -473,10 +471,6 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
 
     }
 
-    /**
-     * Méthode de fin d'activité
-     * @param p_activityResult
-     */
     private void endPostAnnonceActivity(int p_activityResult, String message){
         prgDialog.hide();
 
@@ -496,9 +490,6 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
 
     }
 
-    /**
-     * Méthode de vérification avant la création de l'annonce
-     */
     private Boolean checkAnnonceCreate() {
         textError.setVisibility(View.GONE);
         // Récupération des views
@@ -592,8 +583,6 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
         }
     }
 
-
-
     /**
      * Méthode qui va récupérer une image et la retailler et ensuite va l'attacher à l'annonce
      */
@@ -622,29 +611,21 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
                         // Si le fichier temporaire existe, il faut le supprimer
                         File file = new File(String.valueOf(P_FILE_URI_TEMP));
                         if (file.exists()) {
-                            boolean delete = file.delete();
+                            file.delete();
                         }
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e("IOException", e.getMessage(), e);
             }
         }
     }
 
-    /**
-     * Cette méthode va appeler l'activité WorkImageActivity en mode création
-     *
-     * @param uri
-     */
     private void callWorkingImageActivity(Uri uri, String mode, int requestCode) {
-
         Bitmap bitmap;
         Bitmap bitmapResized;
         byte[] byteArray;
 
-        // Il faut renvoyer le Bitmap à notre nouvelle activity WorkImageActivity
-        // Et seulement à son retour on pourra appeler travailImage()
         Intent intent = new Intent();
         intent.setClass(this, WorkImageActivity.class);
         Bundle bundle = new Bundle();
@@ -661,16 +642,13 @@ public class PostAnnonceActivity extends AppCompatActivity implements NoticeDial
             byteArray = stream.toByteArray();
             bundle.putByteArray(WorkImageActivity.BUNDLE_IN_IMAGE, byteArray);
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            Log.e(e.getClass().getName(), e.getMessage(), e);
         }
 
         intent.putExtras(bundle);
         startActivityForResult(intent, requestCode);
     }
 
-    /**
-     * Receiving activity result method will be called after closing the camera
-     */
     @Override
     protected void onActivityResult(int code_request, int resultCode, Intent data) {
         // if the result is capturing Image

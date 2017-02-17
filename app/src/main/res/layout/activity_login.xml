@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.orlanth23.annoncesNC.activity.LoginActivityRetrofit">
+    tools:context="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit">
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -70,7 +70,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dip"
                 android:background="@drawable/mybutton"
-                android:onClick="attemptLogin"
                 android:text="@string/action_sign_in"
                 android:textColor="@color/white"
                 android:textStyle="bold" />
@@ -80,7 +79,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="5dip"
                 android:background="@drawable/mybutton"
-                android:onClick="callRegisterActivity"
                 android:text="@string/action_sign_up"
                 android:textColor="@color/white" />
             <Button
@@ -91,7 +89,6 @@
                 android:background="@drawable/mybutton"
                 android:clickable="true"
                 android:gravity="center"
-                android:onClick="callLostPasswordActivity"
                 android:text="@string/text_lost_password"
                 android:textColor="@color/white"
                 android:textStyle="bold" />

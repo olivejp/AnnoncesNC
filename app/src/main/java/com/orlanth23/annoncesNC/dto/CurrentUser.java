@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.dto;
+package com.orlanth23.annoncesnc.dto;
 
 import android.app.Activity;
 import android.os.Parcel;
@@ -6,19 +6,19 @@ import android.os.Parcelable;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.database.DictionaryDAO;
-import com.orlanth23.annoncesNC.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesNC.webservice.AccessPoint;
-import com.orlanth23.annoncesNC.webservice.RetrofitService;
-import com.orlanth23.annoncesNC.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.database.DictionaryDAO;
+import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import retrofit.Callback;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.Response;
 
-import static com.orlanth23.annoncesNC.utility.Utility.SendDialogByActivity;
+import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
 public class CurrentUser extends Utilisateur implements Parcelable {
 
@@ -78,11 +78,11 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         if (connexion_auto != null && connexion_auto.equals("O")) {
             if (!CurrentUser.isConnected()) {
                 String email = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
-                String password = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_PASSWORD);
+                String password = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
 
                 // Si les données d'identification ont été saisies
                 if (email != null && password != null) {
-                    RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(AccessPoint.getInstance().getServerEndpoint()).build().create(RetrofitService.class);
+                    RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
                     retrofitService.login(email, password, new Callback<ReturnWS>() {
                                 @Override
                                 public void success(ReturnWS rs, Response response) {
@@ -95,7 +95,8 @@ public class CurrentUser extends Utilisateur implements Parcelable {
                                         CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
                                         CurrentUser.setConnected(true);
 
-                                        runnable.run();
+                                        Thread myThread = new Thread(runnable);
+                                        myThread.start();
 
                                         // Display successfully registered message using Toast
                                         Toast.makeText(activity, activity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();

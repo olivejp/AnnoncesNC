@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.database;
+package com.orlanth23.annoncesnc.database;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

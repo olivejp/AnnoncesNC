@@ -1,8 +1,8 @@
-package com.orlanth23.annoncesNC.list;
+package com.orlanth23.annoncesnc.list;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.orlanth23.annoncesNC.dto.Categorie;
+import com.orlanth23.annoncesnc.dto.Categorie;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

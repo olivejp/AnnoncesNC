@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC;
+package com.orlanth23.annoncesnc;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -6,12 +6,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.orlanth23.annoncesNC.provider.AnnoncesDbHelper;
-import com.orlanth23.annoncesNC.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesNC.provider.contract.CategorieContract;
-import com.orlanth23.annoncesNC.provider.contract.MessageContract;
-import com.orlanth23.annoncesNC.provider.contract.PhotoContract;
-import com.orlanth23.annoncesNC.provider.contract.UtilisateurContract;
+import com.orlanth23.annoncesnc.provider.AnnoncesDbHelper;
+import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.provider.contract.CategorieContract;
+import com.orlanth23.annoncesnc.provider.contract.MessageContract;
+import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
 
 import org.junit.Before;
 import org.junit.Test;

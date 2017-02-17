@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.provider;
+package com.orlanth23.annoncesnc.provider;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -9,8 +9,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
-import com.orlanth23.annoncesNC.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesNC.provider.contract.CategorieContract;
+import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.provider.contract.CategorieContract;
+import com.orlanth23.annoncesnc.provider.contract.MessageContract;
+import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
 
 public class AnnoncesProvider extends ContentProvider {
 
@@ -34,9 +37,6 @@ public class AnnoncesProvider extends ContentProvider {
         return matcher;
     }
 
-    public static final String sSelectionAnnonceById =
-            AnnonceContract.TABLE_NAME + "." + AnnonceContract._ID + " = ?";
-
     @Override
     public boolean onCreate() {
         mOpenHelper = new AnnoncesDbHelper(getContext());
@@ -47,6 +47,42 @@ public class AnnoncesProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
+            case MESSAGE: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        MessageContract.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case UTILISATEUR: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        UtilisateurContract.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
+            case PHOTO: {
+                retCursor = mOpenHelper.getReadableDatabase().query(
+                        PhotoContract.TABLE_NAME,
+                        projection,
+                        selection,
+                        selectionArgs,
+                        null,
+                        null,
+                        sortOrder
+                );
+                break;
+            }
             case ANNONCE: {
                 retCursor = mOpenHelper.getReadableDatabase().query(
                         AnnonceContract.TABLE_NAME,
@@ -122,6 +158,30 @@ public class AnnoncesProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
+            case MESSAGE: {
+                long _id = db.insert(MessageContract.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ContentUris.withAppendedId(ProviderContract.MessageEntry.CONTENT_URI, _id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            case UTILISATEUR: {
+                long _id = db.insert(UtilisateurContract.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ContentUris.withAppendedId(ProviderContract.UtilisateurEntry.CONTENT_URI, _id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
+            case PHOTO: {
+                long _id = db.insert(PhotoContract.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ContentUris.withAppendedId(ProviderContract.PhotoEntry.CONTENT_URI, _id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -143,6 +203,18 @@ public class AnnoncesProvider extends ContentProvider {
             case CATEGORIE:
                 rowsDeleted = db.delete(
                         CategorieContract.TABLE_NAME, selection, selectionArgs);
+                break;
+            case UTILISATEUR:
+                rowsDeleted = db.delete(
+                        UtilisateurContract.TABLE_NAME, selection, selectionArgs);
+                break;
+            case PHOTO:
+                rowsDeleted = db.delete(
+                        PhotoContract.TABLE_NAME, selection, selectionArgs);
+                break;
+            case MESSAGE:
+                rowsDeleted = db.delete(
+                        MessageContract.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -166,6 +238,18 @@ public class AnnoncesProvider extends ContentProvider {
                 break;
             case CATEGORIE:
                 rowsUpdated = db.update(CategorieContract.TABLE_NAME, values, selection,
+                        selectionArgs);
+                break;
+            case MESSAGE:
+                rowsUpdated = db.update(MessageContract.TABLE_NAME, values, selection,
+                        selectionArgs);
+                break;
+            case PHOTO:
+                rowsUpdated = db.update(PhotoContract.TABLE_NAME, values, selection,
+                        selectionArgs);
+                break;
+            case UTILISATEUR:
+                rowsUpdated = db.update(UtilisateurContract.TABLE_NAME, values, selection,
                         selectionArgs);
                 break;
             default:

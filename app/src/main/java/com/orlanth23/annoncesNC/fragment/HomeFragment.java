@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.fragment;
+package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
@@ -13,10 +13,10 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.activity.MainActivity;
-import com.orlanth23.annoncesNC.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesNC.list.ListeStats;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.activity.MainActivity;
+import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesnc.list.ListeStats;
 
 import java.util.Timer;
 import java.util.TimerTask;

@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesNC.adapter;
+package com.orlanth23.annoncesnc.adapter;
 
 import android.app.Activity;
 import android.app.FragmentTransaction;
@@ -11,10 +11,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.orlanth23.annoncesNC.R;
-import com.orlanth23.annoncesNC.dto.Annonce;
-import com.orlanth23.annoncesNC.fragment.DetailAnnonceFragment;
-import com.orlanth23.annoncesNC.utility.Utility;
+import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.dto.Annonce;
+import com.orlanth23.annoncesnc.fragment.DetailAnnonceFragment;
+import com.orlanth23.annoncesnc.utility.Utility;
 
 import java.util.List;
 

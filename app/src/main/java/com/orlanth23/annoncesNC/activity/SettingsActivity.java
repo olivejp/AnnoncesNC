@@ -1,7 +1,8 @@
-package com.orlanth23.annoncesNC.activity;
+package com.orlanth23.annoncesnc.activity;
 
 
 import android.annotation.TargetApi;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -21,7 +22,7 @@ import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
 import android.view.MenuItem;
 
-import com.orlanth23.annoncesNC.R;
+import com.orlanth23.annoncesnc.R;
 
 import java.util.List;
 
@@ -169,11 +170,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      * This method stops fragment injection in malicious applications.
      * Make sure to deny any unknown fragments here.
      */
-    protected boolean isValidFragment(String fragmentName) {
-        return PreferenceFragment.class.getName().equals(fragmentName)
-                || GeneralPreferenceFragment.class.getName().equals(fragmentName)
-                || DataSyncPreferenceFragment.class.getName().equals(fragmentName)
-                || NotificationPreferenceFragment.class.getName().equals(fragmentName);
+    protected boolean isValidFragment(Fragment fragment) {
+        return fragment instanceof PreferenceFragment
+                || fragment instanceof GeneralPreferenceFragment
+                || fragment instanceof DataSyncPreferenceFragment
+                || fragment instanceof NotificationPreferenceFragment;
     }
 
     /**
