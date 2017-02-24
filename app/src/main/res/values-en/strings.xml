@@ -153,7 +153,6 @@
     <string name="error_min_sup_max">The minimum may not exceed the maximum</string>
     <string name="text_dscription_search">The search screen allows you to select ads to you based on the criteria : keywords , ad category , price range, the presence of a photo.</string>
     <string name="tiret">-</string>
-    <string name="app_name">Oliweb NC</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="text_password">Password</string>
     <string name="text_password_confirm">Confirm password</string>

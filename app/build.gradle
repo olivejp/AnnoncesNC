@@ -1,5 +1,5 @@
 ext {
-    supportLibVersion = '25.1.1'  // variable dont on peut faire référence
+    supportLibVersion = '25.2.0'  // variable dont on peut faire référence
     ButterKnifeVersion = '8.5.1'
 }
 
@@ -56,6 +56,12 @@ android {
         }
     }
     useLibrary 'org.apache.http.legacy'
+
+    // Pour éviter les Method ... not mocked dans les tests unitaires
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
+
 }
 
 dependencies {
@@ -85,12 +91,15 @@ dependencies {
     compile "com.android.support:recyclerview-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.jakewharton:butterknife:${ButterKnifeVersion}"
-    compile "com.squareup.retrofit:retrofit:1.9.0"
-    compile "com.squareup.picasso:picasso:2.5.2"
+    compile "com.squareup.retrofit2:retrofit:2.2.0"
+    compile "com.squareup.retrofit2:converter-gson:2.1.0"
+    // compile "com.squareup.retrofit:retrofit:1.9.0"
+    compile "com.github.bumptech.glide:glide:3.5.2"
     compile "com.google.code.gson:gson:2.4"
     compile "com.google.android.gms:play-services-ads:10.2.0"
     compile "org.jetbrains:annotations-java5:15.0"
     compile "it.sephiroth.android.library.imagezoom:imagezoom:2.2.5"
+    compile "io.reactivex:rxandroid:0.25.0" // test de la librairie RxJava
     annotationProcessor "com.jakewharton:butterknife-compiler:${ButterKnifeVersion}"
     androidTestCompile "com.android.support:support-v4:${supportLibVersion}"
 //    compile 'com.mikhaellopez:circularimageview:3.0.2'

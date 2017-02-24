@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Oliweb NC</string>
+    <string name="app_name" translatable="false">Annonces NC</string>
     <string name="action_settings">Settings</string>
     <string name="action_search">Search</string>
     <string name="action_post">Post</string>
@@ -194,5 +194,7 @@
     <string name="prendre_une_nouvelle_photo">Take a new picture</string>
     <string name="cancel">Cancel</string>
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ornare volutpat lobortis. Maecenas tempor tortor nec felis maximus accumsan. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Ut elit mauris, pretium iaculis felis vel, venenatis placerat lorem. In ut suscipit odio. Maecenas scelerisque massa ac sapien ullamcorper venenatis. In maximus, neque vitae viverra hendrerit, erat metus faucibus ex, ut laoreet lorem tortor et dolor. Mauris scelerisque fermentum quam, ac tincidunt quam varius eget.</string>
+    <string name="sync_account_type" translatable="false">annoncesnc.orlanth23.com</string>
+    <string name="content_authority" translatable="false">com.orlanth23.annoncesnc</string>
 </resources>
 

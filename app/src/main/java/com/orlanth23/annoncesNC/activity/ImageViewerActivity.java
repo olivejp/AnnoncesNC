@@ -6,8 +6,9 @@ import android.os.Handler;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
+import com.bumptech.glide.Glide;
 import com.orlanth23.annoncesnc.R;
-import com.squareup.picasso.Picasso;
+import com.orlanth23.annoncesnc.utility.Constants;
 
 import java.io.File;
 
@@ -60,18 +61,17 @@ public class ImageViewerActivity extends AppCompatActivity {
 
         if (bundle != null) {
             P_FILE_URI_TEMP = bundle.getString(BUNDLE_KEY_URI);
-
-            Picasso myPicasso = Picasso.with(this);
-            if (P_FILE_URI_TEMP.contains("http://") || P_FILE_URI_TEMP.contains("https://")) {
-                myPicasso.load(P_FILE_URI_TEMP).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(imageViewer);
-            } else {
-                Uri uri = Uri.parse(P_FILE_URI_TEMP);
-                myPicasso.load(new File(String.valueOf(uri))).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(imageViewer);
-            }
-
-            imageViewer.setDisplayType(ImageViewTouchBase.DisplayType.FIT_TO_SCREEN);
+            if (P_FILE_URI_TEMP != null)
+                if (P_FILE_URI_TEMP.contains(Constants.PROTOCOL_HTTP) || P_FILE_URI_TEMP.contains(Constants.PROTOCOL_HTTPS)) {
+                    Glide.with(this).load(P_FILE_URI_TEMP).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(imageViewer);
+                } else {
+                    Uri uri = Uri.parse(P_FILE_URI_TEMP);
+                    Glide.with(this).load(new File(String.valueOf(uri))).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(imageViewer);
+                }
         }
+        imageViewer.setDisplayType(ImageViewTouchBase.DisplayType.FIT_TO_SCREEN);
     }
+
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {

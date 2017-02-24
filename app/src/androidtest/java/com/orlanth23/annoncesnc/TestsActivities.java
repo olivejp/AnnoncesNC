@@ -24,6 +24,10 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 @RunWith(AndroidJUnit4.class)
 public class TestsActivities {
 
+    @Rule
+    public ActivityTestRule<ChangePasswordActivity> mActivityRule =
+            new ActivityTestRule<>(ChangePasswordActivity.class, false, false);
+
     @Contract("_ -> !null")
     private static Matcher<View> withError(final String expected) {
         return new TypeSafeMatcher<View>() {
@@ -43,12 +47,8 @@ public class TestsActivities {
         };
     }
 
-    @Rule
-    public ActivityTestRule<ChangePasswordActivity> mActivityRule =
-            new ActivityTestRule<>(ChangePasswordActivity.class, false, false);
-
     @Test
-    public void ensureTextChangesWork() {
+    public void ensureConnectionNeeded() {
         final ChangePasswordActivity activity = mActivityRule.launchActivity(null);
 
         // Test que l'ancien mot de passe est obligatoire

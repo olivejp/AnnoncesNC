@@ -14,7 +14,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.activity.MainActivity;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeStats;
 
@@ -26,6 +25,8 @@ import butterknife.ButterKnife;
 
 
 public class HomeFragment extends Fragment {
+
+    public static final int INTERVAL = 60 * 1000; // toutes les minutes on va mettre à jour le nombre d'annonce et d'usagers de l'application
 
     public static final String tag = HomeFragment.class.getName();
     @BindView(R.id.textHomeNbUser)
@@ -105,19 +106,13 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
         mTimer = new Timer();
-
-        // Création d'un timerTask pour aller récupérer la liste des catégories toutes les 20 secondes
         timerTask = new TimerTask() {
             @Override
             public void run() {
-                // run on another thread
                 mHandler.post(runnable);
             }
         };
-
-        // On va récupérer les catégories toutes les 20 secondes.
-        mTimer.scheduleAtFixedRate(timerTask, 0, MainActivity.NOTIFY_INTERVAL);
+        mTimer.scheduleAtFixedRate(timerTask, 0, INTERVAL);
     }
 }

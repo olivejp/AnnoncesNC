@@ -168,7 +168,6 @@
     <string name="error_min_sup_max">Le minimum ne peut pas être supérieur au maximum</string>
     <string name="text_dscription_search">L\'écran de recherche vous permet de sélectionner les annonces qui vous intéressent selon les critères : mots clef, catégorie de l\'annonce, gamme de prix, présence d\'une photo.</string>
     <string name="tiret">-</string>
-    <string name="app_name">Oliweb NC</string>
     <string name="hello_blank_fragment">Bonjour fragment vide</string>
     <string name="text_password">Mot de passe</string>
     <string name="text_password_confirm">Confirmer mot de passe</string>

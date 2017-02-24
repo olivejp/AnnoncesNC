@@ -13,10 +13,11 @@ import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
@@ -36,6 +37,37 @@ public class CurrentUser extends Utilisateur implements Parcelable {
     };
     private static CurrentUser INSTANCE = null;
     private static boolean connected = false;
+    private static Activity activity;
+    private static Runnable runnable;
+    private static Callback<ReturnWS> callbackLogin = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    Gson gson = new Gson();
+
+                    Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+                    CurrentUser.getInstance().setIdUTI(user.getIdUTI());
+                    CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
+                    CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
+                    CurrentUser.setConnected(true);
+
+                    Thread myThread = new Thread(runnable);
+                    myThread.start();
+
+                    // Display successfully registered message using Toast
+                    Toast.makeText(activity, activity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(activity, rs.getMsg(), Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            SendDialogByActivity(activity, activity.getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, null);
+        }
+    };
 
     private CurrentUser(Parcel in) {
         INSTANCE = in.readParcelable(CurrentUser.class.getClassLoader());
@@ -71,7 +103,11 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         setConnected(true);
     }
 
-    public static void retrieveConnection(final Activity activity, final Runnable runnable) {
+    public static void retrieveConnection(final Activity p_activity, final Runnable p_runnable) {
+
+        runnable = p_runnable;
+        activity = p_activity;
+
         // Récupération de l'utilisateur par défaut
         // Création d'un RestAdapter pour le futur appel de mon RestService
         String connexion_auto = DictionaryDAO.getValueByKey(activity, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT);
@@ -82,35 +118,9 @@ public class CurrentUser extends Utilisateur implements Parcelable {
 
                 // Si les données d'identification ont été saisies
                 if (email != null && password != null) {
-                    RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
-                    retrofitService.login(email, password, new Callback<ReturnWS>() {
-                                @Override
-                                public void success(ReturnWS rs, Response response) {
-                                    if (rs.statusValid()) {
-                                        Gson gson = new Gson();
-
-                                        Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
-                                        CurrentUser.getInstance().setIdUTI(user.getIdUTI());
-                                        CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
-                                        CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
-                                        CurrentUser.setConnected(true);
-
-                                        Thread myThread = new Thread(runnable);
-                                        myThread.start();
-
-                                        // Display successfully registered message using Toast
-                                        Toast.makeText(activity, activity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
-                                    } else {
-                                        Toast.makeText(activity, rs.getMsg(), Toast.LENGTH_LONG).show();
-                                    }
-                                }
-
-                                @Override
-                                public void failure(RetrofitError error) {
-                                    SendDialogByActivity(activity, activity.getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, null);
-                                }
-                            }
-                    );
+                    RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+                    Call<ReturnWS> callLogin = retrofitService.login(email, password);
+                    callLogin.enqueue(callbackLogin);
                 }
             }
         }

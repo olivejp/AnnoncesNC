@@ -17,14 +17,15 @@ import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
 
 public class AnnoncesProvider extends ContentProvider {
 
-    private AnnoncesDbHelper mOpenHelper;
-    private static final UriMatcher sUriMatcher = buildUriMatcher();
-
+    public static final String sSelectionAnnonceById =
+            AnnonceContract.TABLE_NAME + "." + AnnonceContract._ID + " = ?";
     static final int CATEGORIE = 100;
     static final int ANNONCE = 200;
     static final int UTILISATEUR = 300;
     static final int MESSAGE = 400;
     static final int PHOTO = 500;
+    private static final UriMatcher sUriMatcher = buildUriMatcher();
+    private AnnoncesDbHelper mOpenHelper;
 
     static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);

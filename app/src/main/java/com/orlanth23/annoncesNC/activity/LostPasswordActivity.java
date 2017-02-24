@@ -13,16 +13,13 @@ import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.utility.Utility;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
@@ -35,6 +32,36 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
     AutoCompleteTextView mEmailView;
     @BindView(R.id.login_error)
     TextView errorMsg;
+
+    // Création d'un RestAdapter pour le futur appel de mon RestService
+    private Callback<ReturnWS> callbackLostPassword = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                prgDialog.hide();
+                if (rs.statusValid()) {
+
+                    // Display successfully registered message using Toast
+                    Toast.makeText(getApplicationContext(), getString(R.string.dialog_password_send), Toast.LENGTH_LONG).show();
+
+                    // Si l'authentification a fonctionné, je peux quitter l'activité
+                    Intent resultIntent = new Intent();
+                    setResult(Activity.RESULT_OK, resultIntent);
+                    finish();
+                } else {
+                    errorMsg.setText(rs.getMsg());
+                    Toast.makeText(getApplicationContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            prgDialog.hide();
+            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,35 +104,11 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
             focusView.requestFocus();
         } else {
 
-            // Création d'un RestAdapter pour le futur appel de mon RestService
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
-            Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
-                @Override
-                public void success(ReturnWS rs, Response response) {
-                    prgDialog.hide();
-                    if (rs.statusValid()) {
 
-                        // Display successfully registered message using Toast
-                        Toast.makeText(getApplicationContext(), getString(R.string.dialog_password_send), Toast.LENGTH_LONG).show();
-
-                        // Si l'authentification a fonctionné, je peux quitter l'activité
-                        Intent resultIntent = new Intent();
-                        setResult(Activity.RESULT_OK, resultIntent);
-                        finish();
-                    } else {
-                        errorMsg.setText(rs.getMsg());
-                        Toast.makeText(getApplicationContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
-                    }
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    prgDialog.hide();
-                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
-                }
-            };
             prgDialog.show();
-            retrofitService.doLostPassword(email, myCallback);
+            Call<ReturnWS> call = retrofitService.doLostPassword(email);
+            call.enqueue(callbackLostPassword);
+
         }
     }
 

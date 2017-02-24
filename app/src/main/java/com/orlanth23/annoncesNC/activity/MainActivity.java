@@ -15,7 +15,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -43,8 +42,6 @@ import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.list.ListeStats;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import java.lang.reflect.Type;
@@ -52,11 +49,11 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface {
+public class MainActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface {
 
     public final static int CODE_POST_ANNONCE = 100;
     public final static int CODE_CONNECT_USER = 200;
@@ -84,7 +81,6 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
     private Handler mHandler = new Handler();
     private Runnable runnable;
     private Timer mTimer;
-    private RetrofitService retrofitService;
     private TimerTask timerTask;
 
     // Ce runnable va nous permettre de lancer le rafraichissement du menu
@@ -92,6 +88,96 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
         @Override
         public void run() {
             refreshMenu();
+        }
+    };
+
+    private Callback<ReturnWS> callbackUnregisterUser = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    CurrentUser cu = CurrentUser.getInstance();
+                    cu.setTelephoneUTI(0);
+                    cu.setEmailUTI(null);
+                    cu.setIdUTI(0);
+                    CurrentUser.setConnected(false);
+                    Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
+                    refreshMenu();
+                    getFragmentManager().popBackStackImmediate();
+                } else {
+                    Toast.makeText(getApplicationContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+        }
+    };
+
+    private Callback<ReturnWS> callbackGetListCategorie = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<ArrayList<Categorie>>() {
+                    }.getType();
+                    ArrayList<Categorie> categories = gson.fromJson(rs.getMsg(), listType);
+
+                    // On réceptionne la liste des catégories dans l'instance ListeCategories
+                    listeCategories = ListeCategories.getInstance();
+                    ListeCategories.setMyArrayList(categories);
+
+                    // Création de l'adapter de la liste catégorie
+                    ListCategorieAdapter adapter = new ListCategorieAdapter(getApplicationContext(), categories);
+
+                    // J'affecte l'adapter à ma listView
+                    mDrawerList.setAdapter(adapter);
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+        }
+    };
+
+    private Callback<ReturnWS> callbackGetNbAnnonce = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    ListeStats.setNbAnnonces(Integer.valueOf(rs.getMsg()));
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+
+        }
+    };
+
+    private Callback<ReturnWS> callbackGetNbUtilisateur = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    ListeStats.setNbUsers(Integer.valueOf(rs.getMsg()));
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
         }
     };
 
@@ -142,7 +228,6 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
             Log.e(TAG, e.getMessage(), e);
         }
 
-        retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
 
         // Création d'un exécutable qui va récupérer les informations sur le serveur
         runnable = new Runnable() {
@@ -151,62 +236,16 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                 // ---------------------------------------
                 // RECUPERATION de la liste des catégories
                 // ---------------------------------------
-                retrofitService.getListCategory(new retrofit.Callback<ReturnWS>() {
-                    @Override
-                    public void success(ReturnWS rs, Response response) {
-                        if (rs.statusValid()) {
-                            Gson gson = new Gson();
-                            Type listType = new TypeToken<ArrayList<Categorie>>() {
-                            }.getType();
-                            ArrayList<Categorie> categories = gson.fromJson(rs.getMsg(), listType);
-
-                            // On réceptionne la liste des catégories dans l'instance ListeCategories
-                            listeCategories = ListeCategories.getInstance();
-                            ListeCategories.setMyArrayList(categories);
-
-                            // Création de l'adapter de la liste catégorie
-                            ListCategorieAdapter adapter = new ListCategorieAdapter(getApplicationContext(), categories);
-
-                            // J'affecte l'adapter à ma listView
-                            mDrawerList.setAdapter(adapter);
-                        }
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-                        Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-                    }
-                });
+                Call<ReturnWS> callGetListCategorie = retrofitService.getListCategory();
+                callGetListCategorie.enqueue(callbackGetListCategorie);
 
                 // Récupération du nombre d'annonces
-                retrofitService.getNbAnnonce(new retrofit.Callback<ReturnWS>() {
-                    @Override
-                    public void success(ReturnWS rs, Response response) {
-                        if (rs.statusValid()) {
-                            ListeStats.setNbAnnonces(Integer.valueOf(rs.getMsg()));
-                        }
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-
-                    }
-                });
+                Call<ReturnWS> callGetNbAnnonce = retrofitService.getNbAnnonce();
+                callGetNbAnnonce.enqueue(callbackGetNbAnnonce);
 
                 // Récupération du nombre d'utilisateur
-                retrofitService.getNbUser(new retrofit.Callback<ReturnWS>() {
-                    @Override
-                    public void success(ReturnWS rs, Response response) {
-                        if (rs.statusValid()) {
-                            ListeStats.setNbUsers(Integer.valueOf(rs.getMsg()));
-                        }
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-
-                    }
-                });
+                Call<ReturnWS> callGetNbUtilisateur = retrofitService.getNbUser();
+                callGetNbUtilisateur.enqueue(callbackGetNbUtilisateur);
 
                 refreshMenu();
             }
@@ -301,35 +340,15 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         switch (dialog.getTag()) {
-            case DIALOG_TAG_EXIT :
+            case DIALOG_TAG_EXIT:
                 timerTask.cancel();
                 mHandler.removeCallbacks(runnable);
                 finish();
                 break;
-            case Utility.DIALOG_TAG_UNREGISTER :
+            case Utility.DIALOG_TAG_UNREGISTER:
                 // On lance le webservice pour se désinscrire
-                retrofitService.unregisterUser(CurrentUser.getInstance().getIdUTI(), new retrofit.Callback<ReturnWS>() {
-                    @Override
-                    public void success(ReturnWS rs, Response response) {
-                        if (rs.statusValid()) {
-                            CurrentUser cu = CurrentUser.getInstance();
-                            cu.setTelephoneUTI(0);
-                            cu.setEmailUTI(null);
-                            cu.setIdUTI(0);
-                            CurrentUser.setConnected(false);
-                            Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
-                            refreshMenu();
-                            getFragmentManager().popBackStackImmediate();
-                        }else{
-                            Toast.makeText(getApplicationContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
-                        }
-                    }
-
-                    @Override
-                    public void failure(RetrofitError error) {
-                        Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-                    }
-                });
+                Call<ReturnWS> callUnregisterUser = retrofitService.unregisterUser(CurrentUser.getInstance().getIdUTI());
+                callUnregisterUser.enqueue(callbackUnregisterUser);
                 break;
         }
     }
@@ -337,7 +356,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
         switch (dialog.getTag()) {
-            case DIALOG_TAG_EXIT :
+            case DIALOG_TAG_EXIT:
                 break;
         }
     }
@@ -396,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
         changeToSearch();
     }
 
-    public void mainPost(View view){
+    public void mainPost(View view) {
         Intent intent = new Intent();
         Bundle b = new Bundle();
 
@@ -504,10 +523,10 @@ public class MainActivity extends AppCompatActivity implements NoticeDialogFragm
                         // On va remplacer le fragment par celui de la liste d'annonce
                         getFragmentManager().beginTransaction().replace(R.id.frame_container, myProfileFragment, MyProfileFragment.tag).addToBackStack(null).commit();
                         return true;
-                    }else{
+                    } else {
                         return false;
                     }
-                }else{
+                } else {
                     return false;
                 }
 

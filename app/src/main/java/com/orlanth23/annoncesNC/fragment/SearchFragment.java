@@ -37,14 +37,25 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SearchFragment extends Fragment implements OnClickListener {
 
     public static final String TAG = SearchFragment.class.getName();
-
+    private static View.OnKeyListener spinnerOnKey = new View.OnKeyListener() {
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
+                Utility.hideKeyboard(v.getContext());
+                return true;
+            } else {
+                return false;
+            }
+        }
+    };
     @BindView(R.id.buttonSearch)
     Button btnSearch;
     @BindView(R.id.editTextSearch)
@@ -59,17 +70,6 @@ public class SearchFragment extends Fragment implements OnClickListener {
     Spinner spinnerCategory;
     @BindView(R.id.txtCheckBox)
     TextView txtCheckBox;
-
-    private static View.OnKeyListener spinnerOnKey = new View.OnKeyListener() {
-        public boolean onKey(View v, int keyCode, KeyEvent event) {
-            if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER) {
-                Utility.hideKeyboard(v.getContext());
-                return true;
-            } else {
-                return false;
-            }
-        }
-    };
     private View.OnClickListener textCheckBoxclickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -85,23 +85,26 @@ public class SearchFragment extends Fragment implements OnClickListener {
         }
     };
 
-    private retrofit.Callback<ReturnWS> callbackListCategory = new retrofit.Callback<ReturnWS>() {
+    private Callback<ReturnWS> callbackListCategory = new Callback<ReturnWS>() {
         @Override
-        public void success(ReturnWS retour, Response response) {
-            if (retour.statusValid()) {
-                Gson gson = new Gson();
-                Type listType = new TypeToken<ArrayList<Categorie>>() {
-                }.getType();
-                ArrayList<Categorie> listCat = gson.fromJson(retour.getMsg(), listType);
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS retour = response.body();
+                if (retour.statusValid()) {
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<ArrayList<Categorie>>() {
+                    }.getType();
+                    ArrayList<Categorie> listCat = gson.fromJson(retour.getMsg(), listType);
 
-                // On réceptionne la liste des catégories dans l'instance ListeCategories
-                ListeCategories.setMyArrayList(listCat);
-                loadSpinner(listCat);
+                    // On réceptionne la liste des catégories dans l'instance ListeCategories
+                    ListeCategories.setMyArrayList(listCat);
+                    loadSpinner(listCat);
+                }
             }
         }
 
         @Override
-        public void failure(RetrofitError error) {
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
             Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
         }
     };
@@ -118,8 +121,9 @@ public class SearchFragment extends Fragment implements OnClickListener {
         spinnerCategory.setOnKeyListener(spinnerOnKey);
 
         if (ListeCategories.getInstance().getListCategorie() == null) {
-            RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
-            retrofitService.getListCategory(callbackListCategory);
+            RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+            Call<ReturnWS> call = retrofitService.getListCategory();
+            call.enqueue(callbackListCategory);
         } else {
             loadSpinner(ListeCategories.getInstance().getListCategorie());
         }

@@ -30,13 +30,15 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
-public class CardViewFragment extends Fragment {
+public class CardViewFragment extends Fragment implements Callback<ArrayList<Annonce>> {
 
     public static final String tag = CardViewFragment.class.getName();
 
@@ -51,7 +53,14 @@ public class CardViewFragment extends Fragment {
     public static final String ACTION_ANNONCE_BY_CATEGORY = "ACTION_ANNONCE_BY_CATEGORY";
     public static final String ACTION_ANNONCE_BY_USER = "ACTION_ANNONCE_BY_USER";
     public static final String ACTION_MULTI_PARAM = "ACTION_MULTI_PARAM";
-
+    @BindView(R.id.textEmpty)
+    TextView textEmpty;
+    @BindView(R.id.linearContent)
+    LinearLayout linearContent;
+    @BindView(R.id.linearEmpty)
+    LinearLayout linearEmpty;
+    @BindView(R.id.my_recycler_view)
+    RecyclerView mRecyclerView;
     private int current_page = 1;
     private CardViewDataAdapter mAdapter;
     private String action;
@@ -64,15 +73,6 @@ public class CardViewFragment extends Fragment {
     private Integer pMinPrice;
     private Integer pMaxPrice;
     private boolean pPhoto;
-
-    @BindView(R.id.textEmpty)
-    TextView textEmpty;
-    @BindView(R.id.linearContent)
-    LinearLayout linearContent;
-    @BindView(R.id.linearEmpty)
-    LinearLayout linearEmpty;
-    @BindView(R.id.my_recycler_view)
-    RecyclerView mRecyclerView;
 
     public CardViewFragment() {
         // Required empty public constructor
@@ -234,7 +234,7 @@ public class CardViewFragment extends Fragment {
 
         Activity myActivity = getActivity();
         myActivity.setTitle(title);
-        if (myActivity instanceof CustomActivityInterface){
+        if (myActivity instanceof CustomActivityInterface) {
             CustomActivityInterface customActivityInterface = (CustomActivityInterface) myActivity;
             customActivityInterface.changeColorToolBar(color);
         }
@@ -264,28 +264,9 @@ public class CardViewFragment extends Fragment {
 
 
     private void loadData(int currentPage) {
-
-        // Définition d'un nouveau callback
-        retrofit.Callback<ArrayList<Annonce>> myCallback = new retrofit.Callback<ArrayList<Annonce>>() {
-            @Override
-            public void success(ArrayList<Annonce> annonces, Response response) {
-                // Récupération de notre liste locale dans la liste globale
-                prgDialog.hide();
-                onPostWebservice(annonces);
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-                prgDialog.hide();
-                Activity activity = getActivity();
-                if (activity != null) {
-                    SendDialogByActivity(activity, getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
-                }
-            }
-        };
-
         // Création d'un RestAdapter pour le futur appel de mon RestService
-        RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
+        RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+        Call<ArrayList<Annonce>> call = null;
 
         prgDialog.setMessage(getString(R.string.dialog_msg_patience));
         prgDialog.show();
@@ -293,21 +274,24 @@ public class CardViewFragment extends Fragment {
             case ACTION_ANNONCE_BY_CATEGORY:
                 // Appel du service RETROFIT
                 if (category != null) {
-                    retrofitService.getListAnnonceByCategoryWithPage(category.getIdCAT(), currentPage, myCallback);
+                    call = retrofitService.getListAnnonceByCategoryWithPage(category.getIdCAT(), currentPage);
                 }
                 break;
             case ACTION_ANNONCE_BY_KEYWORD:
                 // Appel du service RETROFIT
-                retrofitService.searchAnnonceWithPage(keyword, currentPage, myCallback);
+                call = retrofitService.searchAnnonceWithPage(keyword, currentPage);
                 break;
             case ACTION_ANNONCE_BY_USER:
                 // Appel du service RETROFIT
-                retrofitService.getListAnnonceByUser(idUser, currentPage, myCallback);
+                call = retrofitService.getListAnnonceByUser(idUser, currentPage);
                 break;
             case ACTION_MULTI_PARAM:
                 // Appel du service RETROFIT multiparamètre
-                retrofitService.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage, myCallback);
+                call = retrofitService.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage);
                 break;
+        }
+        if(call != null){
+            call.enqueue(this);
         }
     }
 
@@ -351,5 +335,26 @@ public class CardViewFragment extends Fragment {
         if (prgDialog != null) {
             prgDialog.dismiss();
         }
+    }
+
+    @Override
+    public void onResponse(Call<ArrayList<Annonce>> call, Response<ArrayList<Annonce>> response) {
+        if (response.isSuccessful()) {
+            // Récupération de notre liste locale dans la liste globale
+            ArrayList<Annonce> mListAnnonces = response.body();
+            prgDialog.hide();
+            onPostWebservice(mListAnnonces);
+        } else {
+            prgDialog.hide();
+            Activity activity = getActivity();
+            if (activity != null) {
+                SendDialogByActivity(activity, getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
+            }
+        }
+    }
+
+    @Override
+    public void onFailure(Call<ArrayList<Annonce>> call, Throwable t) {
+        t.printStackTrace();
     }
 }

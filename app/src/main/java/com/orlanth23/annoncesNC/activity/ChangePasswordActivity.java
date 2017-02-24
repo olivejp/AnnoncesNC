@@ -15,8 +15,9 @@ import com.orlanth23.annoncesnc.webservice.ReturnWS;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
@@ -33,22 +34,25 @@ public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
 
     private CustomRetrofitCompatActivity mActivity = this;
 
-    private retrofit.Callback<ReturnWS> changePasswordCallback = new retrofit.Callback<ReturnWS>() {
+    private Callback<ReturnWS> changePasswordCallback = new Callback<ReturnWS>() {
         @Override
-        public void success(ReturnWS rc, Response response) {
-            prgDialog.hide();
-            if (rc.statusValid()) {
-                Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
-                Utility.hideKeyboard(mActivity);
-                setResult(RESULT_OK, new Intent());
-                finish();
-            } else {
-                Toast.makeText(mActivity, rc.getMsg(), Toast.LENGTH_LONG).show();
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rc = response.body();
+                prgDialog.hide();
+                if (rc.statusValid()) {
+                    Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
+                    Utility.hideKeyboard(mActivity);
+                    setResult(RESULT_OK, new Intent());
+                    finish();
+                } else {
+                    Toast.makeText(mActivity, rc.getMsg(), Toast.LENGTH_LONG).show();
+                }
             }
         }
 
         @Override
-        public void failure(RetrofitError error) {
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
             prgDialog.hide();
             SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
         }
@@ -71,7 +75,8 @@ public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
             String newPasswordEncrypted = PasswordEncryptionService.desEncryptIt(newPass);
 
             prgDialog.show();
-            retrofitService.changePassword(CurrentUser.getInstance().getIdUTI(), oldPasswordEncrypted, newPasswordEncrypted, changePasswordCallback);
+            Call<ReturnWS> call = retrofitService.changePassword(CurrentUser.getInstance().getIdUTI(), oldPasswordEncrypted, newPasswordEncrypted);
+            call.enqueue(changePasswordCallback);
         }
     }
 

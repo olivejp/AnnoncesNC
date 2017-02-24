@@ -25,6 +25,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
@@ -40,7 +41,6 @@ import com.orlanth23.annoncesnc.utility.UploadFileToServer;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
-import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -52,8 +52,9 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
@@ -88,7 +89,6 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     LinearLayout imageContainer;
     @BindView(R.id.horizontalScrollView)
     HorizontalScrollView horizontalScrollView;
-    private Picasso myPicasso;
     private Annonce P_ANNONCE;
     private Uri P_FILE_URI_TEMP;
     private String P_MODE;
@@ -102,6 +102,80 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     private ArrayList<Photo> P_PHOTO_TO_UPDATE = new ArrayList<>();
     private int CPT_PHOTO_TOTAL;
 
+    private Callback<ReturnWS> callbackDeletePhoto = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                Log.d("callbackDeletePhoto", "Suppression achevée avec succès");
+            } else {
+                Log.d("callbackDeletePhoto", response.body().getMsg());
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            t.printStackTrace();
+            SendDialogByFragmentManager(getFragmentManager(), "Erreur lors de l'appel d'un Webservice", NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
+        }
+    };
+    private Callback<ReturnWS> callbackPostUploadPhoto = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                CPT_PHOTO_TOTAL++;
+                if (rs.statusValid()) {
+                    // Si la photo n'existe pas encore, on l'ajoute à la liste des photos à envoyer
+                    if (!rs.getMsg().equals("PHOTO_ALREADY_EXIST")) {
+                        P_PHOTO_TO_SEND.add(rs.getMsg()); // Ajout de la photo à la liste des photos à envoyer
+                    }
+
+                    // Quand on a parcouru toutes les photos, on les envoie.
+                    if (CPT_PHOTO_TOTAL == P_ANNONCE.getPhotos().size()) {
+                        P_UFTS.execute();
+                    }
+                } else {
+                    SendDialogByFragmentManager(getFragmentManager(), rs.getMsg(), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            CPT_PHOTO_TOTAL++;
+            if (CPT_PHOTO_TOTAL == P_ANNONCE.getPhotos().size()) {
+                P_UFTS.execute();
+            }
+            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
+        }
+    };
+    private Callback<ReturnWS> callbackPostAnnonce = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    prgDialog.setProgress(100);
+                    P_ANNONCE.setIdANO(rs.getId());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
+
+                    deletePhotos(); // S'il y a des photos à supprimer on le fait ici
+
+                    if (!P_ANNONCE.getPhotos().isEmpty()) { // On a réussi à sauver l'annonce, on va maintenant uploader les photos
+                        postPhotos();
+                    } else {
+                        endPostAnnonceActivity(Activity.RESULT_OK, getString(R.string.dialog_success_post));
+                    }
+                } else {
+                    endPostAnnonceActivity(Activity.RESULT_CANCELED, rs.getMsg());
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
+        }
+    };
     // Création du listener sur chaque image du scrollView
     private View.OnClickListener clickListenerImageView = new View.OnClickListener() {
         @Override
@@ -125,7 +199,6 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             startActivityForResult(intent, CODE_WORK_IMAGE_MODIFICATION);
         }
     };
-
     /**
      * Création du listener pour sauver l'annonce
      * Appel des webServices pour poster l'annonce et pour poster la photo
@@ -147,7 +220,6 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             }
         }
     };
-
     // Création du listener pour appeler la capture d'image
     private View.OnClickListener clickListenerButtonPhoto = new View.OnClickListener() {
         @Override
@@ -160,6 +232,16 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     public PostAnnonceActivity() {
     }
 
+    private void deletePhotos() {
+        // In update case, user could have delete some photos. So we call deletePhoto WS.
+        if (!P_PHOTO_TO_DELETE.isEmpty()) {
+            for (Photo photo : P_PHOTO_TO_DELETE) {
+                Integer idPhoto = photo.getIdPhoto();
+                Call<ReturnWS> callDeletePhoto = retrofitService.deletePhoto(P_ANNONCE.getIdANO(), idPhoto);
+                callDeletePhoto.enqueue(callbackDeletePhoto);
+            }
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -170,9 +252,6 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
         // Récupération des zones graphiques
         ButterKnife.bind(this);
-
-        // Affectation du picasso
-        myPicasso = Picasso.with(this);
 
         dialogImageChoice = new Dialog(this);
 
@@ -213,6 +292,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 prgDialog.setMessage("Envoi des photos...");
                 prgDialog.setMax(P_PHOTO_TO_SEND.size());
             }
+
             @Override
             protected String doInBackground(Void... params) {
                 Gson gson = new Gson();
@@ -232,6 +312,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 }
                 return reponse;
             }
+
             @Override
             protected void onPostExecute(String result) {
                 super.onPostExecute(result);
@@ -382,47 +463,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         Integer prix = P_ANNONCE.getPriceANO();
 
         // ------------------------------------------Appel premier retrofitservice---------------------------------------------
-        retrofitService.postAnnonce(idCat, idUser, idAnnonce, titre, description, prix, new retrofit.Callback<ReturnWS>() {
-            @Override
-            public void success(ReturnWS rs, Response response) {
-                if (rs.statusValid()) {
-
-                    prgDialog.setProgress(100);
-                    P_ANNONCE.setIdANO(rs.getId());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
-
-                    // Suppression des photos qu'on a enlevé
-                    if (!P_PHOTO_TO_DELETE.isEmpty()) {
-                        for (Photo photo : P_PHOTO_TO_DELETE) {
-                            Integer idPhoto = photo.getIdPhoto();
-                            retrofitService.deletePhoto(idAnnonce, idPhoto, new retrofit.Callback<ReturnWS>() {
-                                @Override
-                                public void success(ReturnWS rs, Response response) {
-                                }
-
-                                @Override
-                                public void failure(RetrofitError error) {
-                                }
-                            });
-                        }
-                    }
-
-                    if (!P_ANNONCE.getPhotos().isEmpty()) {                           // On a réussi à sauver l'annonce, on va maintenant uploader les photos
-                        // ------------------------------------------Appel second retrofitService pour envoyer les photo---------------------------------------------
-                        postPhotos();
-                    } else {
-                        // Il n'y a pas de photo à uploader...On peut finir l'activité maintenant
-                        endPostAnnonceActivity(Activity.RESULT_OK, getString(R.string.dialog_success_post));
-                    }
-                } else {
-                    // Echec de l'envoi
-                    endPostAnnonceActivity(Activity.RESULT_CANCELED, rs.getMsg());
-                }
-            }
-            @Override
-            public void failure(RetrofitError error) {
-                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
-            }
-        });
+        Call<ReturnWS> call = retrofitService.postAnnonce(idCat, idUser, idAnnonce, titre, description, prix);
+        call.enqueue(callbackPostAnnonce);
     }
 
 
@@ -434,44 +476,16 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
      * -si on ne trouve rien, c'est qu'on a une nouvelle image, on envoie donc les infos de cette photo plus le Bitmap
      */
     private void postPhotos() {
-        final int taille = P_ANNONCE.getPhotos().size();
         prgDialog.setProgress(0);
         CPT_PHOTO_TOTAL = 0;
-        for (Photo photo : P_ANNONCE.getPhotos()) {     // On va lire toutes les photos de notre annonce...
-            // ------------------------------------------Appel second retrofitService pour envoyer les données des photos---------------------------------------------
-            retrofitService.postPhoto(P_ANNONCE.getIdANO(), photo.getIdPhoto(), photo.getNamePhoto(), new retrofit.Callback<ReturnWS>() {
-                @Override
-                public void success(ReturnWS rs, Response response) {
-                    CPT_PHOTO_TOTAL++;
-                    if (rs.statusValid()) {
-                        // Si la photo n'existe pas encore, on l'ajoute à la liste des photos à envoyer
-                        if (!rs.getMsg().equals("PHOTO_ALREADY_EXIST")) {
-                            P_PHOTO_TO_SEND.add(rs.getMsg()); // Ajout de la photo à la liste des photos à envoyer
-                        }
-
-                        // Quand on a parcouru toutes les photos, on les envoie.
-                        if (CPT_PHOTO_TOTAL == taille) {
-                            P_UFTS.execute();
-                        }
-                    } else {
-                        SendDialogByFragmentManager(getFragmentManager(), rs.getMsg(), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
-                    }
-                }
-
-                @Override
-                public void failure(RetrofitError error) {
-                    CPT_PHOTO_TOTAL++;
-                    if (CPT_PHOTO_TOTAL == taille) {
-                        P_UFTS.execute();
-                    }
-                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
-                }
-            });
+        for (Photo photo : P_ANNONCE.getPhotos()) {
+            Call<ReturnWS> callPostUploadPhoto = retrofitService.postPhoto(P_ANNONCE.getIdANO(), photo.getIdPhoto(), photo.getNamePhoto());
+            callPostUploadPhoto.enqueue(callbackPostUploadPhoto);
         }
 
     }
 
-    private void endPostAnnonceActivity(int p_activityResult, String message){
+    private void endPostAnnonceActivity(int p_activityResult, String message) {
         prgDialog.hide();
 
         Utility.hideKeyboard(this);
@@ -484,7 +498,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             }
             Toast.makeText(PostAnnonceActivity.this, message, Toast.LENGTH_LONG).show();
             finish();
-        }else {
+        } else {
             SendDialogByFragmentManager(getFragmentManager(), message, NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_INFORMATION, null);
         }
 
@@ -506,18 +520,18 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             if (descriptionText.getText().toString().length() == 0) {
                 descriptionText.setError(getString(R.string.error_post_description));
                 focus = descriptionText;
-                save =  false;
+                save = false;
             }
             if (prixText.getText().toString().length() == 0) {
                 prixText.setError(getString(R.string.error_post_price));
                 focus = descriptionText;
-                save =  false;
+                save = false;
             }
             if (P_ANNONCE.getCategorieANO() == null) {
                 textError.setVisibility(View.VISIBLE);
                 textError.setText(getString(R.string.error_choose_category));
                 focus = spinnerCategorie;
-                save =  false;
+                save = false;
             }
 
             // on sauve l'annonce
@@ -526,7 +540,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 P_ANNONCE.setPriceANO(Integer.parseInt(prixText.getText().toString()));
                 P_ANNONCE.setTitreANO(titreText.getText().toString());
                 P_ANNONCE.setOwnerANO(CurrentUser.getInstance());
-            }else{
+            } else {
                 focus.requestFocus();
             }
 
@@ -565,11 +579,11 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
                 if (photo.getNamePhoto().contains("http://") || photo.getNamePhoto().contains("https://")) {
                     // Chargement d'une photo à partir d'internet
-                    myPicasso.load(photo.getNamePhoto()).placeholder(R.drawable.ic_camera).error(R.drawable.ic_camera_black).into(image);
+                    Glide.with(this).load(photo.getNamePhoto()).placeholder(R.drawable.ic_camera).error(R.drawable.ic_camera_black).into(image);
                 } else {
                     // Chargement à partir du local
                     Uri uri = Uri.parse(photo.getNamePhoto());
-                    myPicasso.load(new File(String.valueOf(uri))).placeholder(R.drawable.ic_camera).error(R.drawable.ic_camera_black).into(image);
+                    Glide.with(this).load(new File(String.valueOf(uri))).placeholder(R.drawable.ic_camera).error(R.drawable.ic_camera_black).into(image);
                 }
                 imageContainer.addView(image);
 
@@ -745,7 +759,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     }
 
     @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {}
+    public void onDialogNegativeClick(DialogFragment dialog) {
+    }
 
     @Override
     protected void onDestroy() {

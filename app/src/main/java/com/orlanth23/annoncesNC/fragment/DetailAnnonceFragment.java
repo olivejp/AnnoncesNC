@@ -24,6 +24,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.activity.ImageViewerActivity;
 import com.orlanth23.annoncesnc.activity.PostAnnonceActivity;
@@ -35,15 +36,16 @@ import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
-import com.squareup.picasso.Picasso;
 
 import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class DetailAnnonceFragment extends Fragment {
 
@@ -54,8 +56,6 @@ public class DetailAnnonceFragment extends Fragment {
     public final static int SEND_MAIL_FROM_DETAIL = 800;
     public final static int UPDATE_DETAIL = 900;
     private static final String ARG_PARAM_ANNONCE = "ANNONCE";
-    private String P_MODE;
-    private Annonce P_ANNONCE;
     @BindView(R.id.value_id_annonce)
     TextView value_id_annonce;
     @BindView(R.id.value_user)
@@ -82,7 +82,8 @@ public class DetailAnnonceFragment extends Fragment {
     LinearLayout linearButtonVis;
     @BindView(R.id.image_container)
     LinearLayout P_IMAGE_CONTAINER;
-    private Picasso myPicasso;
+    private String P_MODE;
+    private Annonce P_ANNONCE;
     private HorizontalScrollView horizontalScrollView;
     private ScrollView scrollImageView;
 
@@ -208,8 +209,6 @@ public class DetailAnnonceFragment extends Fragment {
             P_ANNONCE = getArguments().getParcelable(ARG_PARAM_ANNONCE);
         }
 
-        myPicasso = Picasso.with(getActivity());
-        myPicasso.setIndicatorsEnabled(true);
 
         // Fenêtre de confirmation avant de supprimer une annonce
         dialogDeleteChoice = new Dialog(getActivity());
@@ -283,11 +282,11 @@ public class DetailAnnonceFragment extends Fragment {
 
                 if (photo.getNamePhoto().contains("http://") || photo.getNamePhoto().contains("https://")) {
                     // Chargement d'une photo à partir d'internet
-                    myPicasso.load(photo.getNamePhoto()).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(image);
+                    Glide.with(this).load(photo.getNamePhoto()).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(image);
                 } else {
                     // Chargement à partir du local
                     Uri uri = Uri.parse(photo.getNamePhoto());
-                    myPicasso.load(new File(String.valueOf(uri))).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(image);
+                    Glide.with(this).load(new File(String.valueOf(uri))).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(image);
                 }
                 P_IMAGE_CONTAINER.addView(image);
 
@@ -321,27 +320,31 @@ public class DetailAnnonceFragment extends Fragment {
 
                 // Envoi d'un webservice pour supprimer l'annonce en question
                 // Définition d'un nouveau callback
-                RetrofitService retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
-                retrofit.Callback<ReturnWS> myCallback = new retrofit.Callback<ReturnWS>() {
+                RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+                Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
                     @Override
-                    public void success(ReturnWS rs, Response response) {
-                        prgDialog.hide();
-                        // Suppression de l'enregistrement dans la liste
-                        if (rs.statusValid()) {
-                            // Retour au fragment précédent
-                            Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
-                            getFragmentManager().popBackStackImmediate();
+                    public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+                        if (response.isSuccessful()) {
+                            ReturnWS rs = response.body();
+                            prgDialog.hide();
+                            // Suppression de l'enregistrement dans la liste
+                            if (rs.statusValid()) {
+                                // Retour au fragment précédent
+                                Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
+                                getFragmentManager().popBackStackImmediate();
+                            }
                         }
                     }
 
                     @Override
-                    public void failure(RetrofitError error) {
+                    public void onFailure(Call<ReturnWS> call, Throwable t) {
                         prgDialog.hide();
                         Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
                     }
                 };
                 prgDialog.show();
-                retrofitService.deleteAnnonce(P_ANNONCE.getIdANO(), myCallback);
+                Call<ReturnWS> call = retrofitService.deleteAnnonce(P_ANNONCE.getIdANO());
+                call.enqueue(myCallback);
             }
         });
 

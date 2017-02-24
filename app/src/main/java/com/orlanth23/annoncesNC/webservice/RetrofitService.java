@@ -4,69 +4,99 @@ import com.orlanth23.annoncesnc.dto.Annonce;
 
 import java.util.ArrayList;
 
-import retrofit.Callback;
-import retrofit.http.DELETE;
-import retrofit.http.GET;
-import retrofit.http.Query;
+import retrofit2.Call;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+
 
 public interface RetrofitService {
 
-    @GET("/register/doregister")
-    void register(@Query("email") String email, @Query("password") String password, @Query("telephone") Integer telephone, Callback<ReturnWS> cb);
+    @POST("/services/checkconnection")
+    Call<ReturnWS> checkConnection();
 
-    @GET("/list/listcategory")
-    void getListCategory(Callback<ReturnWS> cb);
+    @GET("/annonces/count")
+    Call<ReturnWS> getNbAnnonce();
 
-    @GET("/list/listannoncebyuserwithpage")
-    void getListAnnonceByUser(@Query("idUser") Integer idUser, @Query("page") Integer page, Callback<ArrayList<Annonce>> cb);
+    @GET("/utilisateurs/count")
+    Call<ReturnWS> getNbUser();
 
-    @GET("/list/listannoncebycategorywithpage")
-    void getListAnnonceByCategoryWithPage(@Query("idCategory") Integer idCategory, @Query("page") Integer page, Callback<ArrayList<Annonce>> cb);
+    @GET("/categories")
+    Call<ReturnWS> getListCategory();
 
-    @GET("/search/dosearchwithpage")
-    void searchAnnonceWithPage(@Query("keyword") String keyword, @Query("page") Integer page, Callback<ArrayList<Annonce>> cb);
+    @GET("/categories/{idCagtegory}/annonces")
+    Call<ArrayList<Annonce>> getListAnnonceByCategoryWithPage(@Path("idCategory") Integer idCategory,
+                                                              @Query("page") Integer page);
 
-    @GET("/post/dopostphoto")
-    void postPhoto(@Query("idAnnonce") Integer idAnnonce, @Query("idPhoto") Integer idPhoto, @Query("nomPhoto") String nomPhoto, Callback<ReturnWS> cb);
+    @GET("/annonces/dosearchmultiparam")
+    Call<ArrayList<Annonce>> searchAnnonceWithPage(@Query("keyword") String keyword,
+                                                   @Query("page") Integer page);
 
-    @GET("/post/dopostannonce")
-    void postAnnonce(@Query("idCat") Integer idCat, @Query("idUser") Integer idUser, @Query("idAnnonce") Integer idAnnonce, @Query("titre") String titre, @Query("description") String description, @Query("prix") Integer prix, Callback<ReturnWS> cb);
 
-    @GET("/login/dologin")
-    void login(@Query("email") String email, @Query("password") String password, Callback<ReturnWS> cb);
+    @GET("/utilisateurs/{idUser}/annonces")
+    Call<ArrayList<Annonce>> getListAnnonceByUser(@Path("idUser") Integer idUser,
+                                                  @Query("page") Integer page);
 
-    @DELETE("/post/deleteannonce")
-    void deleteAnnonce(@Query("idAnnonce") Integer idAnnonce, Callback<ReturnWS> cb);
 
-    @GET("/post/lostpassword")
-    void doLostPassword(@Query("email") String email, Callback<ReturnWS> cb);
+    @GET("/annonces/dosearchmultiparam")
+    Call<ArrayList<Annonce>> searchAnnonceWithMultiparam(@Query("idCat") Integer idCat,
+                                                         @Query("minPrice") Integer minPrice,
+                                                         @Query("maxPrice") Integer maxPrice,
+                                                         @Query("keyword") String keyword,
+                                                         @Query("photo") boolean photo,
+                                                         @Query("page") Integer page);
 
-    @GET("/search/dosearchmultiparam")
-    void searchAnnonceWithMultiparam(@Query("idCat") Integer idCat, @Query("minPrice") Integer minPrice,
-                                     @Query("maxPrice") Integer maxPrice, @Query("keyword") String keyword,
-                                     @Query("photo") boolean photo, @Query("page") Integer page, Callback<ArrayList<Annonce>> cb);
 
-    @GET("/get/checkconnection")
-    void checkConnection(Callback<ReturnWS> cb);
+    @POST("/utilisateurs")
+    Call<ReturnWS> register(@Query("email") String email,
+                                @Query("password") String password,
+                                @Query("telephone") Integer telephone);
 
-    @GET("/get/getnbuser")
-    void getNbUser(Callback<ReturnWS> cb);
 
-    @GET("/get/getnbannonce")
-    void getNbAnnonce(Callback<ReturnWS> cb);
+    @POST("/photos")
+    Call<ReturnWS> postPhoto(@Query("idAnnonce") Integer idAnnonce,
+                                 @Query("idPhoto") Integer idPhoto,
+                                 @Query("nomPhoto") String nomPhoto);
 
-    @GET("/post/updateuser")
-    void updateUser(@Query("idUser") Integer idUser, @Query("emailUser") String emailUser, @Query("telephoneUser") Integer telephoneUser, Callback<ReturnWS> cb);
+    @POST("/annonces")
+    Call<ReturnWS> postAnnonce(@Query("idCat") Integer idCat,
+                                   @Query("idUser") Integer idUser,
+                                   @Query("idAnnonce") Integer idAnnonce,
+                                   @Query("titre") String titre,
+                                   @Query("description") String description,
+                                   @Query("prix") Integer prix);
 
-    @GET("/post/unregister")
-    void unregisterUser(@Query("idUser") Integer idUser, Callback<ReturnWS> cb);
+    @POST("/utilisateurs/login")
+    Call<ReturnWS> login(@Query("email") String email,
+                             @Query("password") String password);
 
-    @GET("/post/changepassword")
-    void changePassword(@Query("idUser") Integer idUser, @Query("oldPassword") String oldPassword, @Query("newPassword") String newPassword, Callback<ReturnWS> cb);
+    @DELETE("/annonces/{idAnnonce}")
+    Call<ReturnWS> deleteAnnonce(@Path("idAnnonce") Integer idAnnonce);
 
-    @GET("/post/dodeletephoto")
-    void deletePhoto(@Query("idAnnonce") Integer idAnnonce, @Query("idPhoto") Integer idPhoto, Callback<ReturnWS> cb);
+    @DELETE("/annonces/{idAnnonce}/photos")
+    Call<ReturnWS> deletePhoto(@Path("idAnnonce") Integer idAnnonce,
+                                   @Query("idPhoto") Integer idPhoto);
 
-    @GET("/list/listmessage")
-    void getListMessage(@Query("idUser") Integer idUser, Callback<ReturnWS> cb);
+
+    @POST("/utilisateurs/lostpassword")
+    Call<ReturnWS> doLostPassword(@Query("email") String email);
+
+    @PUT("/utilisateurs/{idUser}")
+    Call<ReturnWS> updateUser(@Path("idUser") Integer idUser,
+                                  @Query("emailUser") String emailUser,
+                                  @Query("telephoneUser") Integer telephoneUser);
+
+    @DELETE("/utilisateurs/{idUser}")
+    Call<ReturnWS> unregisterUser(@Path("idUser") Integer idUser);
+
+    @POST("/utilisateurs/{idUser}/change-password")
+    Call<ReturnWS> changePassword(@Path("idUser") Integer idUser,
+                                  @Query("oldPassword") String oldPassword,
+                                  @Query("newPassword") String newPassword);
+
+    @GET("/utilisateurs/{idUser}/messages")
+    Call<ReturnWS> getListMessage(@Path("idUser") Integer idUser);
 }

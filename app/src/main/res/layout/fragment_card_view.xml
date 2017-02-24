@@ -8,7 +8,7 @@
     android:fitsSystemWindows="true"
     tools:context=".fragment.CardViewFragment">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:id="@+id/linearContent"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -24,7 +24,7 @@
 
     </LinearLayout>
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:id="@+id/linearEmpty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

@@ -10,7 +10,8 @@ import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.RetrofitService;
 
-import retrofit.RestAdapter;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CustomRetrofitCompatActivity extends AppCompatActivity {
 
@@ -23,7 +24,7 @@ public class CustomRetrofitCompatActivity extends AppCompatActivity {
         prgDialog = new ProgressDialog(this);
         prgDialog.setMessage(getString(R.string.dialog_msg_patience));
         prgDialog.setCancelable(true);
-        retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
+        retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
     }
 
     public void changeActionBarTitle(int resIdTitle, boolean setHomeEnabled){

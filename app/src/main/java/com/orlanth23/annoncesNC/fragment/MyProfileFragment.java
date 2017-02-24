@@ -26,10 +26,11 @@ import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
@@ -54,6 +55,36 @@ public class MyProfileFragment extends Fragment{
     private RetrofitService retrofitService;
     private String newEmail;
     private Integer newTelephone;
+    private Callback<ReturnWS> callback = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    CurrentUser.getInstance().setEmailUTI(newEmail);
+                    CurrentUser.getInstance().setTelephoneUTI(newTelephone);
+                    Toast.makeText(getActivity(), getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
+
+                    View view = getView();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
+                    getFragmentManager().popBackStackImmediate();
+                } else {
+                    Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
+
+                    // Le web service a échoué, on réactive quand même le bouton
+                    action_save_change.setEnabled(true);
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+        }
+    };
 
     public static MyProfileFragment newInstance() {
         return new MyProfileFragment();
@@ -81,7 +112,7 @@ public class MyProfileFragment extends Fragment{
             myCustomActivity.changeColorToolBar(color);
         }
 
-        retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
+        retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
 
         // Création d'un listener pour se déconnecter
         View.OnClickListener onClickListenerDeconnexion = new View.OnClickListener() {
@@ -142,33 +173,8 @@ public class MyProfileFragment extends Fragment{
 
                         newEmail = emailMyProfile.getText().toString();
                         newTelephone = Integer.valueOf(telephoneMyProfile.getText().toString());
-                        retrofitService.updateUser(CurrentUser.getInstance().getIdUTI(), newEmail, newTelephone, new Callback<ReturnWS>() {
-                            @Override
-                            public void success(ReturnWS rs, Response response) {
-                                if (rs.statusValid()){
-                                    CurrentUser.getInstance().setEmailUTI(newEmail);
-                                    CurrentUser.getInstance().setTelephoneUTI(newTelephone);
-                                    Toast.makeText(getActivity(), getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
-
-                                    View view = getView();
-                                    if (view!=null) {
-                                        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                                    }
-                                    getFragmentManager().popBackStackImmediate();
-                                }else{
-                                    Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
-
-                                    // Le web service a échoué, on réactive quand même le bouton
-                                    action_save_change.setEnabled(true);
-                                }
-                            }
-
-                            @Override
-                            public void failure(RetrofitError error) {
-                                Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        Call<ReturnWS> call = retrofitService.updateUser(CurrentUser.getInstance().getIdUTI(), newEmail, newTelephone);
+                        call.enqueue(callback);
                     }
                 } else {
                     Toast.makeText(getActivity(), R.string.dialog_no_update, Toast.LENGTH_LONG).show();

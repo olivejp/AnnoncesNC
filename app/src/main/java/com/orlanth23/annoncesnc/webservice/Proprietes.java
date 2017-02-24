@@ -9,6 +9,7 @@ import java.util.Properties;
 
 public class Proprietes {
 
+    public static final String FICHIER_CONF = "config.properties";
     public static String LOCAL_ENDPOINT = "LOCAL_ENDPOINT";
     public static String LOCAL_PORT_ENDPOINT = "LOCAL_PORT_ENDPOINT";
     public static String PACKAGE_NAME = "PACKAGE_NAME";
@@ -16,9 +17,6 @@ public class Proprietes {
     public static String SERVER_PRIMARY_DIRECTORY_UPLOAD = "SERVER_PRIMARY_DIRECTORY_UPLOAD";
     public static String SERVER_PRIMARY_ENDPOINT = "SERVER_PRIMARY_ENDPOINT";
     public static String CRYPTO_PASS = "CRYPTO_PASS";
-
-    public static final String FICHIER_CONF = "config.properties";
-
     private static Properties properties;
 
     public static String getProperty(String key) {
@@ -55,6 +53,7 @@ public class Proprietes {
 
     @NonNull
     public static String getServerEndpoint() {
-        return getProperty(LOCAL_ENDPOINT).concat(":").concat(getProperty(LOCAL_PORT_ENDPOINT)).concat("/").concat(getProperty(PACKAGE_NAME)).concat(getProperty(SERVER_PRIMARY_ENDPOINT));
+        String retour = getProperty(LOCAL_ENDPOINT).concat(":").concat(getProperty(LOCAL_PORT_ENDPOINT)).concat(getProperty(SERVER_PRIMARY_ENDPOINT));
+        return retour;
     }
 }

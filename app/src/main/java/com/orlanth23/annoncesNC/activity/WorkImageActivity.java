@@ -74,11 +74,11 @@ public class WorkImageActivity extends AppCompatActivity {
             // En mode MAJ, on récupère l'ID dans l'arraylist du bitmap
             switch (P_MODE) {
                 case Constants.PARAM_CRE:
-                    workimagebuttondelete.setText("Annuler");
+                    workimagebuttondelete.setText(getString(R.string.cancel));
                     break;
                 case Constants.PARAM_MAJ:
                     P_ID = bundle.getInt(BUNDLE_KEY_ID);
-                    workimagebuttondelete.setText("Supprimer");
+                    workimagebuttondelete.setText(getString(R.string.action_delete));
                     break;
             }
 

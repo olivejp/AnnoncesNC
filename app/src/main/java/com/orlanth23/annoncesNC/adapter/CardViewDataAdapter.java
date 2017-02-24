@@ -74,11 +74,6 @@ public class CardViewDataAdapter extends
     }
 
     @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
-    }
-
-    @Override
     public int getItemCount() {
         return listAnnonces.size();
     }

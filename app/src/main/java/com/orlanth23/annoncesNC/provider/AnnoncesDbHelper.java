@@ -27,9 +27,8 @@ import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
 
 public class AnnoncesDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 1;
-
     public static final String DATABASE_NAME = "annonces.db";
+    private static final int DATABASE_VERSION = 2;
 
     public AnnoncesDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

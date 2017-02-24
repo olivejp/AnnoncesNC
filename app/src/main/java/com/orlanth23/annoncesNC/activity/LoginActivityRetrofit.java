@@ -25,9 +25,9 @@ import com.orlanth23.annoncesnc.webservice.ReturnWS;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import retrofit.Callback;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
@@ -51,29 +51,32 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
 
     private Callback<ReturnWS> loginCallback = new Callback<ReturnWS>() {
         @Override
-        public void success(ReturnWS rs, Response response) {
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
             prgDialog.hide();
-            if (rs.statusValid()) {
-                if (mCheckBoxRememberMe.isChecked()) {
-                    Utility.saveAutoComplete(mActivity, mEmailView, mPasswordView, mCheckBoxRememberMe);
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    if (mCheckBoxRememberMe.isChecked()) {
+                        Utility.saveAutoComplete(mActivity, mEmailView, mPasswordView, mCheckBoxRememberMe);
+                    }
+                    Gson gson = new Gson();
+                    Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+
+                    // Récupération de l'utilisateur comme étant l'utilisateur courant
+                    CurrentUser.getInstance();
+                    CurrentUser.setUser(user);
+
+                    Toast.makeText(mActivity, "Connecté avec le compte " + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
+                    goodFinishActivity();
+                } else {
+                    errorMsg.setText(rs.getMsg());
+                    Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
                 }
-                Gson gson = new Gson();
-                Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
-
-                // Récupération de l'utilisateur comme étant l'utilisateur courant
-                CurrentUser.getInstance();
-                CurrentUser.setUser(user);
-
-                Toast.makeText(mActivity, "Connecté avec le compte " + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
-                goodFinishActivity();
-            } else {
-                errorMsg.setText(rs.getMsg());
-                Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
             }
         }
 
         @Override
-        public void failure(RetrofitError error) {
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
             prgDialog.hide();
             SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
         }
@@ -89,13 +92,13 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
         populateAutoComplete();
 
         Bundle bundle = getIntent().getExtras();
-        if (bundle != null){
-            switch (bundle.getInt(MainActivity.PARAM_REQUEST_CODE)){
+        if (bundle != null) {
+            switch (bundle.getInt(MainActivity.PARAM_REQUEST_CODE)) {
                 case MainActivity.CODE_POST_NOT_LOGGED:
                     textLoginMsgAccueil.setVisibility(View.VISIBLE);
                     break;
             }
-        }else{
+        } else {
             textLoginMsgAccueil.setVisibility(View.GONE);
         }
     }
@@ -137,20 +140,20 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
         }
     }
 
-    private void goodFinishActivity(){
+    private void goodFinishActivity() {
         Utility.hideKeyboard(mActivity);
         Intent resultIntent = new Intent();
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
     }
 
-    private boolean checkLogin(String email, String decryptedPassword){
+    private boolean checkLogin(String email, String decryptedPassword) {
         boolean condition;
         mEmailView.setError(null);
         mPasswordView.setError(null);
 
         condition = !TextUtils.isEmpty(decryptedPassword) && !Utility.isPasswordValid(decryptedPassword);
-        if (Utility.isTextViewOnError(condition, mPasswordView, getString(R.string.error_invalid_password), true)){
+        if (Utility.isTextViewOnError(condition, mPasswordView, getString(R.string.error_invalid_password), true)) {
             return false;
         }
 
@@ -168,10 +171,11 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
         String email = mEmailView.getText().toString().replace("'", "''");
         String decryptedPassword = mPasswordView.getText().toString().replace("'", "''");
 
-        if (checkLogin(email, decryptedPassword)){
+        if (checkLogin(email, decryptedPassword)) {
             prgDialog.show();
             String encryptedPassword = PasswordEncryptionService.desEncryptIt(decryptedPassword);
-            retrofitService.login(email, encryptedPassword, loginCallback);
+            Call<ReturnWS> callLogin = retrofitService.login(email, encryptedPassword);
+            callLogin.enqueue(loginCallback);
         }
     }
 

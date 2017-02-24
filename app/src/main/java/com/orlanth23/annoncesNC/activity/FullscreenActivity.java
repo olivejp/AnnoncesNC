@@ -13,20 +13,20 @@ import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.list.ListeStats;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 import static com.orlanth23.annoncesnc.utility.Utility.checkWifiAndMobileData;
 
 public class FullscreenActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
+
+    private static final String TAG = FullscreenActivity.class.getName();
 
     private static final String DIALOG_TAG_NO_CONNECTION = "NO_CONNECTION";
     private static final String DIALOG_TAG_NO_SERVER = "NO_SERVER";
@@ -52,80 +52,95 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
     ImageView imgGetStats;
 
     private boolean P_OK = false;
-
-    private retrofit.Callback<ReturnWS> checkConnection1Callback = new retrofit.Callback<ReturnWS>() {
+    private Callback<ReturnWS> getNbAnnonce4Callback = new Callback<ReturnWS>() {
         @Override
-        public void success(ReturnWS retour, Response response) {
-            if (retour.statusValid()) {
-                imgTestServer.setImageResource(R.drawable.ic_action_accept);
-                imgGetInfos.setVisibility(View.VISIBLE);
-                retrofitService.getListCategory(listCategorie2Callback);
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS retour = response.body();
+                if (retour.statusValid()) {
+                    Intent intent = new Intent();
+                    P_OK = true;
+                    ListeStats.setNbAnnonces(Integer.valueOf(retour.getMsg()));
+                    imgGetStats.setImageResource(R.drawable.ic_action_accept);
+                    intent.setClass(getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
+                }
             }
         }
 
         @Override
-        public void failure(RetrofitError error) {
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            imgGetStats.setImageResource(R.drawable.ic_remove_inverse);
+            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
         }
     };
-
-    private retrofit.Callback<ReturnWS> getNbAnnonce4Callback = new retrofit.Callback<ReturnWS>() {
+    private Callback<ReturnWS> getNbUser3Callback = new Callback<ReturnWS>() {
         @Override
-        public void success(ReturnWS retour, Response response) {
-            if (retour.statusValid()) {
-                Intent intent = new Intent();
-                P_OK = true;
-                ListeStats.setNbAnnonces(Integer.valueOf(retour.getMsg()));
-                imgGetStats.setImageResource(R.drawable.ic_action_accept);
-                intent.setClass(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS retour = response.body();
+                if (retour.statusValid()) {
+                    ListeStats.setNbUsers(Integer.valueOf(retour.getMsg()));
+                    Call<ReturnWS> callGetNbAnnonce = retrofitService.getNbAnnonce();
+                    callGetNbAnnonce.enqueue(getNbAnnonce4Callback);
+                }
             }
         }
 
         @Override
-        public void failure(RetrofitError error) {
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
         }
     };
-    private retrofit.Callback<ReturnWS> getNbUser3Callback = new retrofit.Callback<ReturnWS>() {
+    private Callback<ReturnWS> listCategorie2Callback = new Callback<ReturnWS>() {
         @Override
-        public void success(ReturnWS retour, Response response) {
-            if (retour.statusValid()) {
-                ListeStats.setNbUsers(Integer.valueOf(retour.getMsg()));
-                retrofitService.getNbAnnonce(getNbAnnonce4Callback);
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS retour = response.body();
+
+                if (retour.statusValid()) {
+                    imgGetInfos.setImageResource(R.drawable.ic_action_accept);
+                    ListeCategories.setMyArrayListFromJson(retour.getMsg());
+                    imgGetStats.setVisibility(View.VISIBLE);
+                    Call<ReturnWS> callGetNbUser = retrofitService.getNbUser();
+                    callGetNbUser.enqueue(getNbUser3Callback);
+                }
             }
         }
 
         @Override
-        public void failure(RetrofitError error) {
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            imgGetInfos.setImageResource(R.drawable.ic_remove_inverse);
+            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_cat_list), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_CAT_LIST);
         }
     };
-    private retrofit.Callback<ReturnWS> listCategorie2Callback = new retrofit.Callback<ReturnWS>() {
+    private Callback<ReturnWS> checkConnection1Callback = new Callback<ReturnWS>() {
         @Override
-        public void success(ReturnWS retour, Response response) {
-            if (retour.statusValid()) {
-                imgGetInfos.setImageResource(R.drawable.ic_action_accept);
-                ListeCategories.setMyArrayListFromJson(retour.getMsg());
-                imgGetStats.setVisibility(View.VISIBLE);
-                retrofitService.getNbUser(getNbUser3Callback);
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS retour = response.body();
+                if (retour.statusValid()) {
+                    imgTestServer.setImageResource(R.drawable.ic_action_accept);
+                    imgGetInfos.setVisibility(View.VISIBLE);
+                    Call<ReturnWS> callGetListCategorie = retrofitService.getListCategory();
+                    callGetListCategorie.enqueue(listCategorie2Callback);
+                }
             }
         }
 
         @Override
-        public void failure(RetrofitError error) {
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            imgTestServer.setImageResource(R.drawable.ic_remove_inverse);
+            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
         }
     };
-
-    private void initRetrofitAccessPoint(){
-        retrofitService = new RestAdapter.Builder().setEndpoint(Proprietes.getServerEndpoint()).build().create(RetrofitService.class);
-    }
 
     private void testAllWebservices() {
-        initRetrofitAccessPoint();
-
         imgTestNetwork.setVisibility(View.VISIBLE);
         if (checkWifiAndMobileData(this)) {
             imgTestNetwork.setImageResource(R.drawable.ic_action_accept);
             imgTestServer.setVisibility(View.VISIBLE);
-            retrofitService.checkConnection(checkConnection1Callback);
+            retrofitService.checkConnection().enqueue(checkConnection1Callback);
         } else {
             imgTestNetwork.setImageResource(R.drawable.ic_remove_inverse);
             SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_wifi), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_CONNECTION);
@@ -171,9 +186,8 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
             case DIALOG_TAG_NO_SERVER:
             case DIALOG_TAG_NO_CAT_LIST:
             case DIALOG_TAG_NO_STATS:
-                finish();
-                break;
             default:
+                finish();
                 break;
         }
     }
