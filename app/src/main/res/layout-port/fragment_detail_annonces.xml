@@ -58,7 +58,8 @@
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_margin="5dp"
         android:scrollbarAlwaysDrawVerticalTrack="true">
 
@@ -73,7 +74,8 @@
     <HorizontalScrollView
         android:id="@+id/horizontalScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_margin="5dp">
 
         <LinearLayout
@@ -87,18 +89,20 @@
     <TextView
         android:id="@+id/value_prix_annonce"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_gravity="right"
-        android:gravity="center_horizontal"
+        android:gravity="center_horizontal|bottom"
         android:text="125 000 xpf"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
 
     <!-- Liste des boutons quand on est visiteur -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="vertical"
-        android:gravity="bottom">
+        android:gravity="center|bottom">
 
         <LinearLayout
             android:id="@+id/linearButtonVis"

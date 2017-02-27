@@ -28,9 +28,6 @@ import retrofit2.Response;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
-/**
- * Register Activity Class
- */
 public class RegisterActivity extends CustomRetrofitCompatActivity {
 
     public static final int CODE_REGISTER_ACTIVITY = 100;
@@ -69,9 +66,69 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
         prgDialog.setCancelable(false);
     }
 
-    /**
-     * Set degault values for Edit View controls
-     */
+    private void onFailureCallback() {
+        prgDialog.hide();
+        SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
+    }
+
+    // Appel du RETROFIT Webservice
+    private Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            String errorString="";
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                prgDialog.hide();
+                if (rs.statusValid()) {
+
+                    // Si on a coché la case pour se souvenir de l'utilisateur
+                    if (checkBox_register_remember_me.isChecked()) {
+                        Utility.saveAutoComplete(mActivity, emailET, pwdET, checkBox_register_remember_me);
+                    }
+
+                    // On remet les zones à blank
+                    setDefaultValues();
+
+                    // Display successfully registered message using Toast
+                    Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
+
+                    // Récupération de l'utilisateur
+                    Gson gson = new Gson();
+
+                    Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+
+                    // Récupération de l'utilisateur comme étant l'utilisateur courant
+                    CurrentUser.getInstance().setIdUTI(user.getIdUTI());
+                    CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
+                    CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
+                    CurrentUser.setConnected(true);
+
+                    Utility.hideKeyboard(mActivity);
+
+                    Intent returnIntent = new Intent();
+                    setResult(RESULT_OK, returnIntent);                             // On retourne un résultat RESULT_OK
+                    finish();                                                       // On finit l'activité
+                } else {
+                    switch (rs.getMsg()) {
+                        case "ERROR_MAIL_ALREADY_EXIST":
+                            errorString = getString(R.string.error_mail_already_exist);
+                            emailET.setError(errorString);
+                            emailET.requestFocus();
+                            break;
+                    }
+                    errorMsg.setText(errorString);
+                }
+            } else {
+                onFailureCallback();
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            onFailureCallback();
+        }
+    };
+
     public void setDefaultValues() {
         emailET.setText("");
         pwdET.setText("");
@@ -87,7 +144,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
         // Récupération des variables présentes sur le layout
         // Téléphone, email et password
         String monTelephone = telephoneET.getText().toString();
-        if (!monTelephone.equals("")){
+        if (!monTelephone.equals("")) {
             telephone = Integer.parseInt(monTelephone);
         }
         String email = emailET.getText().toString().replace("'", "''");
@@ -156,55 +213,6 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
             String password = pwdET.getText().toString().replace("'", "''");
             final String motDePasseEncrypted = PasswordEncryptionService.desEncryptIt(password);
 
-            // Appel du RETROFIT Webservice
-            Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
-                @Override
-                public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-                    if (response.isSuccessful()) {
-                        ReturnWS rs = response.body();
-                        prgDialog.hide();
-                        if (rs.statusValid()) {
-
-                            // Si on a coché la case pour se souvenir de l'utilisateur
-                            if (checkBox_register_remember_me.isChecked()) {
-                                Utility.saveAutoComplete(mActivity, emailET, pwdET, checkBox_register_remember_me);
-                            }
-
-                            // On remet les zones à blank
-                            setDefaultValues();
-
-                            // Display successfully registered message using Toast
-                            Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
-
-                            // Récupération de l'utilisateur
-                            Gson gson = new Gson();
-
-                            Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
-
-                            // Récupération de l'utilisateur comme étant l'utilisateur courant
-                            CurrentUser.getInstance().setIdUTI(user.getIdUTI());
-                            CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
-                            CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
-                            CurrentUser.setConnected(true);
-
-                            Utility.hideKeyboard(mActivity);
-
-                            Intent returnIntent = new Intent();
-                            setResult(RESULT_OK, returnIntent);                             // On retourne un résultat RESULT_OK
-                            finish();                                                       // On finit l'activité
-                        } else {
-                            errorMsg.setText(rs.getMsg());
-                            Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<ReturnWS> call, Throwable t) {
-                    prgDialog.hide();
-                    SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
-                }
-            };
             prgDialog.show();
 
             Call<ReturnWS> call = retrofitService.register(email, motDePasseEncrypted, telephone);

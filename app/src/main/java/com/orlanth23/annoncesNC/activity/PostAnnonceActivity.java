@@ -89,18 +89,17 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     LinearLayout imageContainer;
     @BindView(R.id.horizontalScrollView)
     HorizontalScrollView horizontalScrollView;
-    private Annonce P_ANNONCE;
-    private Uri P_FILE_URI_TEMP;
-    private String P_MODE;
-    private String P_TITRE_ACTIVITY;
-    private ProgressDialog prgDialog;
+    private Annonce mAnnonce;
+    private Uri mFileUriTemp;
+    private String mMode;
+    private String mTitreActivity;
     private Dialog dialogImageChoice;
     private AppCompatActivity mActivity = this;
-    private UploadFileToServer P_UFTS;
+    private UploadFileToServer mUploadFileToServer;
     private ArrayList<String> P_PHOTO_TO_SEND = new ArrayList<>();
     private ArrayList<Photo> P_PHOTO_TO_DELETE = new ArrayList<>();
     private ArrayList<Photo> P_PHOTO_TO_UPDATE = new ArrayList<>();
-    private int CPT_PHOTO_TOTAL;
+    private int mCptPhotoTotal;
 
     private Callback<ReturnWS> callbackDeletePhoto = new Callback<ReturnWS>() {
         @Override
@@ -118,12 +117,20 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             SendDialogByFragmentManager(getFragmentManager(), "Erreur lors de l'appel d'un Webservice", NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
         }
     };
+
+    private void onFailurePostUploadPhoto(){
+        mCptPhotoTotal++;
+        if (mCptPhotoTotal == mAnnonce.getPhotos().size()) {
+            mUploadFileToServer.execute();
+        }
+        SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
+    }
     private Callback<ReturnWS> callbackPostUploadPhoto = new Callback<ReturnWS>() {
         @Override
         public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
             if (response.isSuccessful()) {
                 ReturnWS rs = response.body();
-                CPT_PHOTO_TOTAL++;
+                mCptPhotoTotal++;
                 if (rs.statusValid()) {
                     // Si la photo n'existe pas encore, on l'ajoute à la liste des photos à envoyer
                     if (!rs.getMsg().equals("PHOTO_ALREADY_EXIST")) {
@@ -131,22 +138,20 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                     }
 
                     // Quand on a parcouru toutes les photos, on les envoie.
-                    if (CPT_PHOTO_TOTAL == P_ANNONCE.getPhotos().size()) {
-                        P_UFTS.execute();
+                    if (mCptPhotoTotal == mAnnonce.getPhotos().size()) {
+                        mUploadFileToServer.execute();
                     }
                 } else {
                     SendDialogByFragmentManager(getFragmentManager(), rs.getMsg(), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
                 }
+            } else{
+                onFailurePostUploadPhoto();
             }
         }
 
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            CPT_PHOTO_TOTAL++;
-            if (CPT_PHOTO_TOTAL == P_ANNONCE.getPhotos().size()) {
-                P_UFTS.execute();
-            }
-            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
+            onFailurePostUploadPhoto();
         }
     };
     private Callback<ReturnWS> callbackPostAnnonce = new Callback<ReturnWS>() {
@@ -156,11 +161,11 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 ReturnWS rs = response.body();
                 if (rs.statusValid()) {
                     prgDialog.setProgress(100);
-                    P_ANNONCE.setIdANO(rs.getId());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
+                    mAnnonce.setIdANO(rs.getId());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
 
                     deletePhotos(); // S'il y a des photos à supprimer on le fait ici
 
-                    if (!P_ANNONCE.getPhotos().isEmpty()) { // On a réussi à sauver l'annonce, on va maintenant uploader les photos
+                    if (!mAnnonce.getPhotos().isEmpty()) { // On a réussi à sauver l'annonce, on va maintenant uploader les photos
                         postPhotos();
                     } else {
                         endPostAnnonceActivity(Activity.RESULT_OK, getString(R.string.dialog_success_post));
@@ -211,7 +216,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 prgDialog.setMessage(getString(R.string.dialog_sending_post));
                 prgDialog.show();
 
-                switch (P_MODE) {
+                switch (mMode) {
                     case Constants.PARAM_CRE:
                     case Constants.PARAM_MAJ:
                         doPost();
@@ -237,7 +242,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         if (!P_PHOTO_TO_DELETE.isEmpty()) {
             for (Photo photo : P_PHOTO_TO_DELETE) {
                 Integer idPhoto = photo.getIdPhoto();
-                Call<ReturnWS> callDeletePhoto = retrofitService.deletePhoto(P_ANNONCE.getIdANO(), idPhoto);
+                Call<ReturnWS> callDeletePhoto = retrofitService.deletePhoto(mAnnonce.getIdANO(), idPhoto);
                 callDeletePhoto.enqueue(callbackDeletePhoto);
             }
         }
@@ -264,11 +269,9 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
         // Récupération de la liste des catégories
         ArrayList<Categorie> myListCategorie = listeCategories.getListCategorie();
-        if (myListCategorie != null) {
-            if (!myListCategorie.isEmpty()) {
-                SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.drawer_list_categorie, myListCategorie);
-                spinnerCategorie.setAdapter(adapter);
-            }
+        if (myListCategorie != null && !myListCategorie.isEmpty()) {
+            SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.drawer_list_categorie, myListCategorie);
+            spinnerCategorie.setAdapter(adapter);
         }
 
         // Evenement sur le spinner
@@ -276,7 +279,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Categorie cat = (Categorie) parent.getItemAtPosition(position);
-                P_ANNONCE.setCategorieANO(cat);
+                mAnnonce.setCategorieANO(cat);
             }
 
             @Override
@@ -286,7 +289,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
 
         // Création d'un UploadFileToServer
-        P_UFTS = new UploadFileToServer() {
+        mUploadFileToServer = new UploadFileToServer() {
 
             @Override
             protected void onPreExecute() {
@@ -328,37 +331,37 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
         // Récupération des paramètres
         if (savedInstanceState != null) {
-            P_ANNONCE = savedInstanceState.getParcelable(BUNDLE_KEY_ANNONCE);
-            P_FILE_URI_TEMP = savedInstanceState.getParcelable(BUNDLE_KEY_URI);
-            P_MODE = savedInstanceState.getString(BUNDLE_KEY_MODE);
-            P_TITRE_ACTIVITY = savedInstanceState.getString(BUNDLE_KEY_TITRE);
+            mAnnonce = savedInstanceState.getParcelable(BUNDLE_KEY_ANNONCE);
+            mFileUriTemp = savedInstanceState.getParcelable(BUNDLE_KEY_URI);
+            mMode = savedInstanceState.getString(BUNDLE_KEY_MODE);
+            mTitreActivity = savedInstanceState.getString(BUNDLE_KEY_TITRE);
             P_PHOTO_TO_DELETE = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_PHOTO_TO_DELETE);
-            if (P_ANNONCE != null) {
-                spinnerCategorie.setSelection(listeCategories.getIndexByName(P_ANNONCE.getCategorieANO().getNameCAT()));
+            if (mAnnonce != null) {
+                spinnerCategorie.setSelection(listeCategories.getIndexByName(mAnnonce.getCategorieANO().getNameCAT()));
             }
         } else {
 
             // Récupération des paramètres
             Bundle bundle = getIntent().getExtras();
             if (bundle != null) {
-                P_MODE = bundle.getString(BUNDLE_KEY_MODE);
+                mMode = bundle.getString(BUNDLE_KEY_MODE);
 
-                if (P_MODE != null) {
-                    switch (P_MODE) {
+                if (mMode != null) {
+                    switch (mMode) {
                         case Constants.PARAM_CRE:
-                            // On est en P_MODE Création
-                            P_ANNONCE = new Annonce();
-                            P_TITRE_ACTIVITY = getString(R.string.action_post);
+                            // On est en mMode Création
+                            mAnnonce = new Annonce();
+                            mTitreActivity = getString(R.string.action_post);
                             break;
                         case Constants.PARAM_MAJ:
-                            // On est en P_MODE Mise à jour, on va récupérer l'annonce qu'on veut mettre à jour
-                            P_ANNONCE = bundle.getParcelable(BUNDLE_KEY_ANNONCE);
-                            P_TITRE_ACTIVITY = getString(R.string.action_update);
-                            if (P_ANNONCE != null) {
-                                titreText.setText(P_ANNONCE.getTitreANO());
-                                descriptionText.setText(P_ANNONCE.getDescriptionANO());
-                                prixText.setText(String.valueOf(P_ANNONCE.getPriceANO()));
-                                spinnerCategorie.setSelection(listeCategories.getIndexByName(P_ANNONCE.getCategorieANO().getNameCAT()));
+                            // On est en mMode Mise à jour, on va récupérer l'annonce qu'on veut mettre à jour
+                            mAnnonce = bundle.getParcelable(BUNDLE_KEY_ANNONCE);
+                            mTitreActivity = getString(R.string.action_update);
+                            if (mAnnonce != null) {
+                                titreText.setText(mAnnonce.getTitreANO());
+                                descriptionText.setText(mAnnonce.getDescriptionANO());
+                                prixText.setText(String.valueOf(mAnnonce.getPriceANO()));
+                                spinnerCategorie.setSelection(listeCategories.getIndexByName(mAnnonce.getCategorieANO().getNameCAT()));
                             }
                             break;
                     }
@@ -375,12 +378,12 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         // Recherche de la toolbar et changement du titre
         ActionBar tb = getSupportActionBar();
         if (tb != null) {
-            tb.setTitle(P_TITRE_ACTIVITY);
+            tb.setTitle(mTitreActivity);
         }
 
-        // Changement du texte du bouton selon le P_MODE avec lequel on rentre
-        if (P_MODE != null) {
-            switch (P_MODE) {
+        // Changement du texte du bouton selon le mMode avec lequel on rentre
+        if (mMode != null) {
+            switch (mMode) {
                 case Constants.PARAM_MAJ:
                     btnSaveAnnonce.setText(getString(R.string.text_update_annonce));
                     break;
@@ -421,8 +424,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 // start the image capture Intent
                 CurrentUser user = CurrentUser.getInstance();
                 Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                P_FILE_URI_TEMP = Utility.getOutputMediaFileUri(Constants.MEDIA_TYPE_IMAGE, user.getIdUTI(), TAG);
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, P_FILE_URI_TEMP);
+                mFileUriTemp = Utility.getOutputMediaFileUri(Constants.MEDIA_TYPE_IMAGE, user.getIdUTI(), TAG);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, mFileUriTemp);
                 startActivityForResult(intent, DIALOG_REQUEST_IMAGE);
             }
         });
@@ -443,10 +446,10 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
      */
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putParcelable(BUNDLE_KEY_ANNONCE, P_ANNONCE);
-        outState.putParcelable(BUNDLE_KEY_URI, P_FILE_URI_TEMP);
-        outState.putString(BUNDLE_KEY_MODE, P_MODE);
-        outState.putString(BUNDLE_KEY_TITRE, P_TITRE_ACTIVITY);
+        outState.putParcelable(BUNDLE_KEY_ANNONCE, mAnnonce);
+        outState.putParcelable(BUNDLE_KEY_URI, mFileUriTemp);
+        outState.putString(BUNDLE_KEY_MODE, mMode);
+        outState.putString(BUNDLE_KEY_TITRE, mTitreActivity);
         outState.putParcelableArrayList(BUNDLE_KEY_PHOTO_TO_DELETE, P_PHOTO_TO_DELETE);
 
         super.onSaveInstanceState(outState);
@@ -457,12 +460,12 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
      */
     private void doPost() {
 
-        final Integer idAnnonce = P_ANNONCE.getIdANO();
-        Integer idCat = P_ANNONCE.getCategorieANO().getIdCAT();
-        Integer idUser = P_ANNONCE.getOwnerANO().getIdUTI();
-        String titre = P_ANNONCE.getTitreANO().replace("'", "''");
-        String description = P_ANNONCE.getDescriptionANO().replace("'", "''");
-        Integer prix = P_ANNONCE.getPriceANO();
+        final Integer idAnnonce = mAnnonce.getIdANO();
+        Integer idCat = mAnnonce.getCategorieANO().getIdCAT();
+        Integer idUser = mAnnonce.getOwnerANO().getIdUTI();
+        String titre = mAnnonce.getTitreANO().replace("'", "''");
+        String description = mAnnonce.getDescriptionANO().replace("'", "''");
+        Integer prix = mAnnonce.getPriceANO();
 
         // ------------------------------------------Appel premier retrofitservice---------------------------------------------
         Call<ReturnWS> call = retrofitService.postAnnonce(idCat, idUser, idAnnonce, titre, description, prix);
@@ -471,7 +474,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
 
     /**
-     * Lecture de la liste P_ANNONCE.getPhotos()
+     * Lecture de la liste mAnnonce.getPhotos()
      * pour chaque enregistrement, on va vérifier si l'enregistrement existe déjà sur notre serveur, avec le même nom.
      * -s'il existe déjà avec le même nom, on ne fait rien : ça veut dire que l'utilisateur n'a pas touché à cette image.
      * -si on trouve un nom différent, il faut faire une mise à jour et renvoyer la nouvelle Bitmap.
@@ -479,9 +482,9 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
      */
     private void postPhotos() {
         prgDialog.setProgress(0);
-        CPT_PHOTO_TOTAL = 0;
-        for (Photo photo : P_ANNONCE.getPhotos()) {
-            Call<ReturnWS> callPostUploadPhoto = retrofitService.postPhoto(P_ANNONCE.getIdANO(), photo.getIdPhoto(), photo.getNamePhoto());
+        mCptPhotoTotal = 0;
+        for (Photo photo : mAnnonce.getPhotos()) {
+            Call<ReturnWS> callPostUploadPhoto = retrofitService.postPhoto(mAnnonce.getIdANO(), photo.getIdPhoto(), photo.getNamePhoto());
             callPostUploadPhoto.enqueue(callbackPostUploadPhoto);
         }
 
@@ -529,7 +532,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 focus = descriptionText;
                 save = false;
             }
-            if (P_ANNONCE.getCategorieANO() == null) {
+            if (mAnnonce.getCategorieANO() == null) {
                 textError.setVisibility(View.VISIBLE);
                 textError.setText(getString(R.string.error_choose_category));
                 focus = spinnerCategorie;
@@ -538,10 +541,10 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
             // on sauve l'annonce
             if (save) {
-                P_ANNONCE.setDescriptionANO(descriptionText.getText().toString());
-                P_ANNONCE.setPriceANO(Integer.parseInt(prixText.getText().toString()));
-                P_ANNONCE.setTitreANO(titreText.getText().toString());
-                P_ANNONCE.setOwnerANO(CurrentUser.getInstance());
+                mAnnonce.setDescriptionANO(descriptionText.getText().toString());
+                mAnnonce.setPriceANO(Integer.parseInt(prixText.getText().toString()));
+                mAnnonce.setTitreANO(titreText.getText().toString());
+                mAnnonce.setOwnerANO(CurrentUser.getInstance());
             } else {
                 focus.requestFocus();
             }
@@ -561,11 +564,11 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         // On enlève toutes les vues du ScrollView
         imageContainer.removeAllViews();
 
-        if (!P_ANNONCE.getPhotos().isEmpty()) {
+        if (!mAnnonce.getPhotos().isEmpty()) {
             horizontalScrollView.setVisibility(View.VISIBLE);
             // Pour toutes les images qu'on a, on va créer un nouveau imageView et insérer le bitmap à l'intérieur
             int id = 0;
-            for (Photo photo : P_ANNONCE.getPhotos()) {
+            for (Photo photo : mAnnonce.getPhotos()) {
                 // Récupération de la dimension standard d'une image
                 int dimension = (int) getResources().getDimension(R.dimen.image_list_view);
 
@@ -618,14 +621,14 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                         if (nouvelleImg) {
                             // On est en mode création
                             // On insère un nouvel enregistrement dans l'arrayList
-                            P_ANNONCE.getPhotos().add(new Photo(0, path, P_ANNONCE.getIdANO()));
+                            mAnnonce.getPhotos().add(new Photo(0, path, mAnnonce.getIdANO()));
                         } else {
                             // On est en mode modification
                             // On va se positionner sur la bonne photo pour faire la modification de chemin
-                            P_ANNONCE.getPhotos().get(position).setNamePhoto(path);
+                            mAnnonce.getPhotos().get(position).setNamePhoto(path);
                         }
                         // Si le fichier temporaire existe, il faut le supprimer
-                        File file = new File(String.valueOf(P_FILE_URI_TEMP));
+                        File file = new File(String.valueOf(mFileUriTemp));
                         if (file.exists()) {
                             file.delete();
                         }
@@ -703,9 +706,9 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                         if (data != null) {
                             if (data.getExtras() != null) {
                                 position = data.getExtras().getInt(WorkImageActivity.BUNDLE_KEY_ID);
-                                Photo photo = P_ANNONCE.getPhotos().get(position);
+                                Photo photo = mAnnonce.getPhotos().get(position);
                                 P_PHOTO_TO_DELETE.add(photo);
-                                P_ANNONCE.getPhotos().remove(position);
+                                mAnnonce.getPhotos().remove(position);
                                 presentPhoto();
                             }
                         }
@@ -714,7 +717,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             case DIALOG_REQUEST_IMAGE:
                 dialogImageChoice.dismiss(); // On ferme la boite de dialogue
                 if (resultCode == RESULT_OK) {
-                    callWorkingImageActivity(P_FILE_URI_TEMP, Constants.PARAM_CRE, CODE_WORK_IMAGE_CREATION);  // On va appeler WorkImageActivity
+                    callWorkingImageActivity(mFileUriTemp, Constants.PARAM_CRE, CODE_WORK_IMAGE_CREATION);  // On va appeler WorkImageActivity
                 } else if (resultCode == RESULT_CANCELED) {
                     // user cancelled Image capture
                     Toast.makeText(mActivity,

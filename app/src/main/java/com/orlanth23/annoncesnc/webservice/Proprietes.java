@@ -10,6 +10,7 @@ import java.util.Properties;
 public class Proprietes {
 
     public static final String FICHIER_CONF = "config.properties";
+    public static final String FICHIER_CONF_LOCAL = "config-local.properties";
     public static String LOCAL_ENDPOINT = "LOCAL_ENDPOINT";
     public static String LOCAL_PORT_ENDPOINT = "LOCAL_PORT_ENDPOINT";
     public static String SERVER_PRIMARY_PAGE_UPLOAD = "SERVER_PRIMARY_PAGE_UPLOAD";
@@ -28,7 +29,7 @@ public class Proprietes {
                     Class.forName(Proprietes.class.getName());
                     properties = new java.util.Properties();
                     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-                    InputStream propertiesStream = classLoader.getResourceAsStream(FICHIER_CONF);
+                    InputStream propertiesStream = classLoader.getResourceAsStream(FICHIER_CONF_LOCAL);
                     if (propertiesStream != null) {
                         properties.load(propertiesStream);
                     }

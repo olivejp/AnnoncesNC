@@ -82,15 +82,15 @@ public class DetailAnnonceFragment extends Fragment {
     LinearLayout linearButtonVis;
     @BindView(R.id.image_container)
     LinearLayout P_IMAGE_CONTAINER;
-    private String P_MODE;
-    private Annonce P_ANNONCE;
+    private String mMode;
+    private Annonce mAnnonce;
     private HorizontalScrollView horizontalScrollView;
     private ScrollView scrollImageView;
 
     private ProgressDialog prgDialog;
 
-    private String telephoneUser;
-    private String emailUser;
+    private String telephoneUser = "";
+    private String emailUser = "";
     private Dialog dialogDeleteChoice;
 
     // Création du listener pour supprimer une annonce
@@ -155,11 +155,11 @@ public class DetailAnnonceFragment extends Fragment {
     private View.OnClickListener clickListenerUpdateBouton = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (P_MODE.equals(Constants.PARAM_MAJ)) {
+            if (mMode.equals(Constants.PARAM_MAJ)) {
                 // Passage d'un paramètre Mise à jour
                 Bundle bd = new Bundle();
-                bd.putString(PostAnnonceActivity.BUNDLE_KEY_MODE, P_MODE);
-                bd.putParcelable(PostAnnonceActivity.BUNDLE_KEY_ANNONCE, P_ANNONCE);
+                bd.putString(PostAnnonceActivity.BUNDLE_KEY_MODE, mMode);
+                bd.putParcelable(PostAnnonceActivity.BUNDLE_KEY_ANNONCE, mAnnonce);
 
                 Intent intent = new Intent();
                 intent.setClass(getActivity(), PostAnnonceActivity.class).putExtras(bd);
@@ -175,7 +175,7 @@ public class DetailAnnonceFragment extends Fragment {
             Intent i = new Intent();
             i.setClass(getActivity(), ImageViewerActivity.class);
             Bundle bundle = new Bundle();
-            bundle.putString(ImageViewerActivity.BUNDLE_KEY_URI, P_ANNONCE.getPhotos().get(v.getId()).getNamePhoto());
+            bundle.putString(ImageViewerActivity.BUNDLE_KEY_URI, mAnnonce.getPhotos().get(v.getId()).getNamePhoto());
             i.putExtras(bundle);
             startActivity(i);
         }
@@ -185,13 +185,6 @@ public class DetailAnnonceFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param annonce Parameter 1.
-     * @return A new instance of fragment
-     */
     public static DetailAnnonceFragment newInstance(String mode, Annonce annonce) {
         DetailAnnonceFragment fragment = new DetailAnnonceFragment();
         Bundle args = new Bundle();
@@ -205,8 +198,8 @@ public class DetailAnnonceFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            P_MODE = getArguments().getString(ARG_PARAM_MODE);
-            P_ANNONCE = getArguments().getParcelable(ARG_PARAM_ANNONCE);
+            mMode = getArguments().getString(ARG_PARAM_MODE);
+            mAnnonce = getArguments().getParcelable(ARG_PARAM_ANNONCE);
         }
 
 
@@ -236,7 +229,7 @@ public class DetailAnnonceFragment extends Fragment {
 
 
         // On crée un bouton de suppression et de mise à jour
-        switch (P_MODE) {
+        switch (mMode) {
             case Constants.PARAM_MAJ:
                 linearButtonVis.setVisibility(View.GONE);
                 btnActionDelete.setOnClickListener(clickListenerDeleteBouton);
@@ -260,14 +253,14 @@ public class DetailAnnonceFragment extends Fragment {
 
         // Pour toutes les images qu'on a on va créer un nouveau imageView et insérer le bitmap à l'intérieur
         int id = 0;
-        if (!P_ANNONCE.getPhotos().isEmpty()) {
+        if (!mAnnonce.getPhotos().isEmpty()) {
             if (horizontalScrollView != null) {
                 horizontalScrollView.setVisibility(View.VISIBLE);
             } else {
                 scrollImageView.setVisibility(View.VISIBLE);
             }
             P_IMAGE_CONTAINER.setVisibility(View.VISIBLE);
-            for (Photo photo : P_ANNONCE.getPhotos()) {
+            for (Photo photo : mAnnonce.getPhotos()) {
                 // Récupération de la dimension standard d'une image
                 int dimension = (int) getResources().getDimension(R.dimen.image_list_view);
 
@@ -343,7 +336,7 @@ public class DetailAnnonceFragment extends Fragment {
                     }
                 };
                 prgDialog.show();
-                Call<ReturnWS> call = retrofitService.deleteAnnonce(P_ANNONCE.getIdANO());
+                Call<ReturnWS> call = retrofitService.deleteAnnonce(mAnnonce.getIdANO());
                 call.enqueue(myCallback);
             }
         });
@@ -374,21 +367,30 @@ public class DetailAnnonceFragment extends Fragment {
     }
 
     private void presentAnnonce() {
-        // Récupération de toutes les valeurs de l'annonce dans les zones graphiques
-        value_id_annonce.setText(String.valueOf(P_ANNONCE.getIdANO()));
-        value_titre.setText(P_ANNONCE.getTitreANO());
-        value_description.setText(P_ANNONCE.getDescriptionANO());
-        value_prix_annonce.setText(Utility.convertPrice(P_ANNONCE.getPriceANO()));
+        String color = "";
 
-        String maDate = P_ANNONCE.getDatePublished().toString();
-        emailUser = P_ANNONCE.getOwnerANO().getEmailUTI();
+        // Récupération de toutes les valeurs de l'annonce dans les zones graphiques
+        value_id_annonce.setText(String.valueOf(mAnnonce.getIdANO()));
+        value_titre.setText(mAnnonce.getTitreANO());
+        value_description.setText(mAnnonce.getDescriptionANO());
+        value_prix_annonce.setText(Utility.convertPrice(mAnnonce.getPriceANO()));
+
+        String maDate = mAnnonce.getDatePublished().toString();
+        if (mAnnonce.getOwnerANO() != null) {
+            telephoneUser = mAnnonce.getOwnerANO().getTelephoneUTI().toString();
+            emailUser = mAnnonce.getOwnerANO().getEmailUTI();
+        }
+
+        if (mAnnonce.getCategorieANO() != null){
+            color = mAnnonce.getCategorieANO().getCouleurCAT();
+        }
 
         // On tente de formater la date correctement
         value_user.setText(getString(R.string.text_post_by).concat(" ").concat(emailUser).concat(" ").concat(getString(R.string.text_pre_date)).concat(" ").concat(Utility.convertDate(maDate)));
 
         // Si on est en mode visualisation, on peut cliquer sur les boutons téléphoner, email et sms
-        if (P_MODE.equals(Constants.PARAM_VIS)) {
-            telephoneUser = P_ANNONCE.getOwnerANO().getTelephoneUTI().toString();
+        if (mMode.equals(Constants.PARAM_VIS)) {
+
             if (telephoneUser.isEmpty()) {
                 btnActionAppel.setActivated(false);
                 btnActionAppel.setVisibility(View.GONE);
@@ -401,7 +403,6 @@ public class DetailAnnonceFragment extends Fragment {
                 btnActionSms.setVisibility(View.VISIBLE);
             }
 
-            emailUser = P_ANNONCE.getOwnerANO().getEmailUTI();
             if (emailUser.isEmpty()) {
                 btnActionEmail.setActivated(false);
                 btnActionEmail.setVisibility(View.GONE);
@@ -413,10 +414,10 @@ public class DetailAnnonceFragment extends Fragment {
 
         // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
         Activity myActivity = getActivity();
-        myActivity.setTitle(P_ANNONCE.getCategorieANO().getNameCAT());
+        myActivity.setTitle(mAnnonce.getCategorieANO().getNameCAT());
         if (myActivity instanceof CustomActivityInterface) {
             CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
-            myCustomActivity.changeColorToolBar(Color.parseColor(P_ANNONCE.getCategorieANO().getCouleurCAT()));
+            myCustomActivity.changeColorToolBar(Color.parseColor(color));
         }
     }
 
