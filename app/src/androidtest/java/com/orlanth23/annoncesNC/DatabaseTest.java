@@ -8,7 +8,6 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.orlanth23.annoncesnc.provider.AnnoncesDbHelper;
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesnc.provider.contract.CategorieContract;
 import com.orlanth23.annoncesnc.provider.contract.MessageContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
@@ -37,7 +36,6 @@ public class DatabaseTest {
         assertEquals(true, db.isOpen());
 
         ArrayList<String> myListNomTable = new ArrayList<>();
-        myListNomTable.add(CategorieContract.TABLE_NAME);
         myListNomTable.add(AnnonceContract.TABLE_NAME);
         myListNomTable.add(UtilisateurContract.TABLE_NAME);
         myListNomTable.add(MessageContract.TABLE_NAME);

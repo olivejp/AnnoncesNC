@@ -1,9 +1,5 @@
 package com.orlanth23.annoncesnc.webservice;
 
-import com.orlanth23.annoncesnc.dto.Annonce;
-
-import java.util.ArrayList;
-
 import retrofit2.Call;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
@@ -15,34 +11,34 @@ import retrofit2.http.Query;
 
 public interface RetrofitService {
 
-    @POST("/services/checkconnection")
+    @POST("/REST/services/checkconnection")
     Call<ReturnWS> checkConnection();
 
-    @GET("/annonces/count")
+    @GET("/REST/annonces/count")
     Call<ReturnWS> getNbAnnonce();
 
-    @GET("/utilisateurs/count")
+    @GET("/REST/utilisateurs/count")
     Call<ReturnWS> getNbUser();
 
-    @GET("/categories")
+    @GET("/REST/categories")
     Call<ReturnWS> getListCategory();
 
-    @GET("/categories/{idCagtegory}/annonces")
-    Call<ArrayList<Annonce>> getListAnnonceByCategoryWithPage(@Path("idCategory") Integer idCategory,
+    @GET("/REST/categories/{idCategory}/annonces")
+    Call<ReturnWS> getListAnnonceByCategoryWithPage(@Path("idCategory") Integer idCategory,
                                                               @Query("page") Integer page);
 
-    @GET("/annonces/dosearchmultiparam")
-    Call<ArrayList<Annonce>> searchAnnonceWithPage(@Query("keyword") String keyword,
+    @GET("/REST/annonces/dosearchmultiparam")
+    Call<ReturnWS> searchAnnonceWithPage(@Query("keyword") String keyword,
                                                    @Query("page") Integer page);
 
 
-    @GET("/utilisateurs/{idUser}/annonces")
-    Call<ArrayList<Annonce>> getListAnnonceByUser(@Path("idUser") Integer idUser,
+    @GET("/REST/utilisateurs/{idUser}/annonces")
+    Call<ReturnWS> getListAnnonceByUser(@Path("idUser") Integer idUser,
                                                   @Query("page") Integer page);
 
 
-    @GET("/annonces/dosearchmultiparam")
-    Call<ArrayList<Annonce>> searchAnnonceWithMultiparam(@Query("idCat") Integer idCat,
+    @GET("/REST/annonces/dosearchmultiparam")
+    Call<ReturnWS> searchAnnonceWithMultiparam(@Query("idCat") Integer idCat,
                                                          @Query("minPrice") Integer minPrice,
                                                          @Query("maxPrice") Integer maxPrice,
                                                          @Query("keyword") String keyword,
@@ -50,18 +46,18 @@ public interface RetrofitService {
                                                          @Query("page") Integer page);
 
 
-    @POST("/utilisateurs")
+    @POST("/REST/utilisateurs")
     Call<ReturnWS> register(@Query("email") String email,
                                 @Query("password") String password,
                                 @Query("telephone") Integer telephone);
 
 
-    @POST("/photos")
+    @POST("/REST/photos")
     Call<ReturnWS> postPhoto(@Query("idAnnonce") Integer idAnnonce,
                                  @Query("idPhoto") Integer idPhoto,
                                  @Query("nomPhoto") String nomPhoto);
 
-    @POST("/annonces")
+    @POST("/REST/annonces")
     Call<ReturnWS> postAnnonce(@Query("idCat") Integer idCat,
                                    @Query("idUser") Integer idUser,
                                    @Query("idAnnonce") Integer idAnnonce,
@@ -69,34 +65,34 @@ public interface RetrofitService {
                                    @Query("description") String description,
                                    @Query("prix") Integer prix);
 
-    @POST("/utilisateurs/login")
+    @POST("/REST/utilisateurs/login")
     Call<ReturnWS> login(@Query("email") String email,
                              @Query("password") String password);
 
-    @DELETE("/annonces/{idAnnonce}")
+    @DELETE("/REST/annonces/{idAnnonce}")
     Call<ReturnWS> deleteAnnonce(@Path("idAnnonce") Integer idAnnonce);
 
-    @DELETE("/annonces/{idAnnonce}/photos")
+    @DELETE("/REST/annonces/{idAnnonce}/photos")
     Call<ReturnWS> deletePhoto(@Path("idAnnonce") Integer idAnnonce,
                                    @Query("idPhoto") Integer idPhoto);
 
 
-    @POST("/utilisateurs/lostpassword")
+    @POST("/REST/utilisateurs/lostpassword")
     Call<ReturnWS> doLostPassword(@Query("email") String email);
 
-    @PUT("/utilisateurs/{idUser}")
+    @PUT("/REST/utilisateurs/{idUser}")
     Call<ReturnWS> updateUser(@Path("idUser") Integer idUser,
                                   @Query("emailUser") String emailUser,
                                   @Query("telephoneUser") Integer telephoneUser);
 
-    @DELETE("/utilisateurs/{idUser}")
+    @DELETE("/REST/utilisateurs/{idUser}")
     Call<ReturnWS> unregisterUser(@Path("idUser") Integer idUser);
 
-    @POST("/utilisateurs/{idUser}/change-password")
+    @POST("/REST/utilisateurs/{idUser}/change-password")
     Call<ReturnWS> changePassword(@Path("idUser") Integer idUser,
                                   @Query("oldPassword") String oldPassword,
                                   @Query("newPassword") String newPassword);
 
-    @GET("/utilisateurs/{idUser}/messages")
+    @GET("/REST/utilisateurs/{idUser}/messages")
     Call<ReturnWS> getListMessage(@Path("idUser") Integer idUser);
 }

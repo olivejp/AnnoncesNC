@@ -25,8 +25,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.orlanth23.annoncesnc.BuildConfig;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.ListCategorieAdapter;
@@ -44,8 +42,6 @@ import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -76,7 +72,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     private HomeFragment homeFragment = new HomeFragment();
     private Fragment searchFragment = new SearchFragment();
     private ColorDrawable colorDrawable = new ColorDrawable();
-    private ListeCategories listeCategories = ListeCategories.getInstance();
+    private ListeCategories listeCategories;
     private Fragment mContent;
     private Handler mHandler = new Handler();
     private Runnable runnable;
@@ -123,17 +119,12 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             if (response.isSuccessful()) {
                 ReturnWS rs = response.body();
                 if (rs.statusValid()) {
-                    Gson gson = new Gson();
-                    Type listType = new TypeToken<ArrayList<Categorie>>() {
-                    }.getType();
-                    ArrayList<Categorie> categories = gson.fromJson(rs.getMsg(), listType);
 
                     // On réceptionne la liste des catégories dans l'instance ListeCategories
-                    listeCategories = ListeCategories.getInstance();
-                    ListeCategories.setMyArrayList(categories);
+                    ListeCategories.setNbAnnonceFromJson(rs.getMsg());
 
                     // Création de l'adapter de la liste catégorie
-                    ListCategorieAdapter adapter = new ListCategorieAdapter(getApplicationContext(), categories);
+                    ListCategorieAdapter adapter = new ListCategorieAdapter(getApplicationContext(), listeCategories.getListCategorie());
 
                     // J'affecte l'adapter à ma listView
                     mDrawerList.setAdapter(adapter);
@@ -201,8 +192,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         mDrawerList = (ListView) findViewById(R.id.list_slidermenu); // Récuparation de la liste latérale
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                new Toolbar(this),
-                R.string.app_name, R.string.app_name) {
+            new Toolbar(this),
+            R.string.app_name, R.string.app_name) {
             public void onDrawerClosed(View view) {
                 setTitle(mTitle);
                 invalidateOptionsMenu();
@@ -228,6 +219,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             Log.e(TAG, e.getMessage(), e);
         }
 
+        // Récupération de la liste des catégories
+        listeCategories = ListeCategories.getInstance(this);
 
         // Création d'un exécutable qui va récupérer les informations sur le serveur
         runnable = new Runnable() {
@@ -448,7 +441,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 setTitle(getString(R.string.searchTitle));
                 mContent = searchFragment;
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
+                    .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
                 mDrawerLayout.closeDrawer(mDrawerList);
                 return true;
             } else {
@@ -460,7 +453,6 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             return true;
         }
     }
-
 
     public void manageAds(View view) {
         // On va rechercher le fragment qui est en cours d'utilisation

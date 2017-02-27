@@ -253,6 +253,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         // Récupération des zones graphiques
         ButterKnife.bind(this);
 
+        ListeCategories listeCategories = ListeCategories.getInstance(this);
+
         dialogImageChoice = new Dialog(this);
 
         // Création de la progress Dialog
@@ -261,7 +263,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         prgDialog.setCancelable(false);
 
         // Récupération de la liste des catégories
-        ArrayList<Categorie> myListCategorie = ListeCategories.getInstance().getListCategorie();
+        ArrayList<Categorie> myListCategorie = listeCategories.getListCategorie();
         if (myListCategorie != null) {
             if (!myListCategorie.isEmpty()) {
                 SpinnerAdapter adapter = new SpinnerAdapter(this, R.layout.drawer_list_categorie, myListCategorie);
@@ -332,7 +334,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             P_TITRE_ACTIVITY = savedInstanceState.getString(BUNDLE_KEY_TITRE);
             P_PHOTO_TO_DELETE = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_PHOTO_TO_DELETE);
             if (P_ANNONCE != null) {
-                spinnerCategorie.setSelection(ListeCategories.getInstance().getIndexByName(P_ANNONCE.getCategorieANO().getNameCAT()));
+                spinnerCategorie.setSelection(listeCategories.getIndexByName(P_ANNONCE.getCategorieANO().getNameCAT()));
             }
         } else {
 
@@ -356,7 +358,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                                 titreText.setText(P_ANNONCE.getTitreANO());
                                 descriptionText.setText(P_ANNONCE.getDescriptionANO());
                                 prixText.setText(String.valueOf(P_ANNONCE.getPriceANO()));
-                                spinnerCategorie.setSelection(ListeCategories.getInstance().getIndexByName(P_ANNONCE.getCategorieANO().getNameCAT()));
+                                spinnerCategorie.setSelection(listeCategories.getIndexByName(P_ANNONCE.getCategorieANO().getNameCAT()));
                             }
                             break;
                     }

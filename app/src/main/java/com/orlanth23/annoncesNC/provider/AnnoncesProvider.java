@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesnc.provider.contract.CategorieContract;
 import com.orlanth23.annoncesnc.provider.contract.MessageContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
@@ -18,8 +17,7 @@ import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
 public class AnnoncesProvider extends ContentProvider {
 
     public static final String sSelectionAnnonceById =
-            AnnonceContract.TABLE_NAME + "." + AnnonceContract._ID + " = ?";
-    static final int CATEGORIE = 100;
+        AnnonceContract.TABLE_NAME + "." + AnnonceContract._ID + " = ?";
     static final int ANNONCE = 200;
     static final int UTILISATEUR = 300;
     static final int MESSAGE = 400;
@@ -30,7 +28,6 @@ public class AnnoncesProvider extends ContentProvider {
     static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = ProviderContract.CONTENT_AUTHORITY;
-        matcher.addURI(authority, ProviderContract.PATH_CATEGORIES, CATEGORIE);
         matcher.addURI(authority, ProviderContract.PATH_ANNONCES, ANNONCE);
         matcher.addURI(authority, ProviderContract.PATH_UTILISATEURS, UTILISATEUR);
         matcher.addURI(authority, ProviderContract.PATH_MESSAGES, MESSAGE);
@@ -47,70 +44,36 @@ public class AnnoncesProvider extends ContentProvider {
     @Override
     public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         Cursor retCursor;
+        String tableName;
         switch (sUriMatcher.match(uri)) {
             case MESSAGE: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        MessageContract.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
+                tableName = MessageContract.TABLE_NAME;
                 break;
             }
             case UTILISATEUR: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        UtilisateurContract.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
+                tableName = UtilisateurContract.TABLE_NAME;
                 break;
             }
             case PHOTO: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        PhotoContract.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
+                tableName = PhotoContract.TABLE_NAME;
                 break;
             }
             case ANNONCE: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        AnnonceContract.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
-                break;
-            }
-            case CATEGORIE: {
-                retCursor = mOpenHelper.getReadableDatabase().query(
-                        CategorieContract.TABLE_NAME,
-                        projection,
-                        selection,
-                        selectionArgs,
-                        null,
-                        null,
-                        sortOrder
-                );
+                tableName = AnnonceContract.TABLE_NAME;
                 break;
             }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
+
+        retCursor = mOpenHelper.getReadableDatabase().query(
+            tableName,
+            projection,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            sortOrder);
 
         retCursor.setNotificationUri(getContext().getContentResolver(), uri);
 
@@ -121,8 +84,6 @@ public class AnnoncesProvider extends ContentProvider {
     public String getType(@NonNull Uri uri) {
         final int match = sUriMatcher.match(uri);
         switch (match) {
-            case CATEGORIE:
-                return ProviderContract.CategorieEntry.CONTENT_TYPE;
             case ANNONCE:
                 return ProviderContract.AnnonceEntry.CONTENT_TYPE;
             case UTILISATEUR:
@@ -147,14 +108,6 @@ public class AnnoncesProvider extends ContentProvider {
                 long _id = db.insert(AnnonceContract.TABLE_NAME, null, values);
                 if (_id > 0)
                     returnUri = ContentUris.withAppendedId(ProviderContract.AnnonceEntry.CONTENT_URI, _id);
-                else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
-                break;
-            }
-            case CATEGORIE: {
-                long _id = db.insert(CategorieContract.TABLE_NAME, null, values);
-                if (_id > 0)
-                    returnUri = ContentUris.withAppendedId(ProviderContract.CategorieEntry.CONTENT_URI, _id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
@@ -199,23 +152,19 @@ public class AnnoncesProvider extends ContentProvider {
         switch (match) {
             case ANNONCE:
                 rowsDeleted = db.delete(
-                        AnnonceContract.TABLE_NAME, selection, selectionArgs);
-                break;
-            case CATEGORIE:
-                rowsDeleted = db.delete(
-                        CategorieContract.TABLE_NAME, selection, selectionArgs);
+                    AnnonceContract.TABLE_NAME, selection, selectionArgs);
                 break;
             case UTILISATEUR:
                 rowsDeleted = db.delete(
-                        UtilisateurContract.TABLE_NAME, selection, selectionArgs);
+                    UtilisateurContract.TABLE_NAME, selection, selectionArgs);
                 break;
             case PHOTO:
                 rowsDeleted = db.delete(
-                        PhotoContract.TABLE_NAME, selection, selectionArgs);
+                    PhotoContract.TABLE_NAME, selection, selectionArgs);
                 break;
             case MESSAGE:
                 rowsDeleted = db.delete(
-                        MessageContract.TABLE_NAME, selection, selectionArgs);
+                    MessageContract.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -235,23 +184,19 @@ public class AnnoncesProvider extends ContentProvider {
         switch (match) {
             case ANNONCE:
                 rowsUpdated = db.update(AnnonceContract.TABLE_NAME, values, selection,
-                        selectionArgs);
-                break;
-            case CATEGORIE:
-                rowsUpdated = db.update(CategorieContract.TABLE_NAME, values, selection,
-                        selectionArgs);
+                    selectionArgs);
                 break;
             case MESSAGE:
                 rowsUpdated = db.update(MessageContract.TABLE_NAME, values, selection,
-                        selectionArgs);
+                    selectionArgs);
                 break;
             case PHOTO:
                 rowsUpdated = db.update(PhotoContract.TABLE_NAME, values, selection,
-                        selectionArgs);
+                    selectionArgs);
                 break;
             case UTILISATEUR:
                 rowsUpdated = db.update(UtilisateurContract.TABLE_NAME, values, selection,
-                        selectionArgs);
+                    selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

@@ -12,7 +12,6 @@ public class Proprietes {
     public static final String FICHIER_CONF = "config.properties";
     public static String LOCAL_ENDPOINT = "LOCAL_ENDPOINT";
     public static String LOCAL_PORT_ENDPOINT = "LOCAL_PORT_ENDPOINT";
-    public static String PACKAGE_NAME = "PACKAGE_NAME";
     public static String SERVER_PRIMARY_PAGE_UPLOAD = "SERVER_PRIMARY_PAGE_UPLOAD";
     public static String SERVER_PRIMARY_DIRECTORY_UPLOAD = "SERVER_PRIMARY_DIRECTORY_UPLOAD";
     public static String SERVER_PRIMARY_ENDPOINT = "SERVER_PRIMARY_ENDPOINT";

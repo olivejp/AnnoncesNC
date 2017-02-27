@@ -8,7 +8,6 @@ public abstract class EndlessRecyclerOnScrollListener extends
     private int previousTotal = 0;
     private boolean loading = true;
     private int current_page = 1;
-
     private LinearLayoutManager mLinearLayoutManager;
 
     protected EndlessRecyclerOnScrollListener(

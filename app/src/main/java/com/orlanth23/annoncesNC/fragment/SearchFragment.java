@@ -19,8 +19,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
 import com.orlanth23.annoncesnc.dto.Categorie;
@@ -32,7 +30,6 @@ import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -70,6 +67,9 @@ public class SearchFragment extends Fragment implements OnClickListener {
     Spinner spinnerCategory;
     @BindView(R.id.txtCheckBox)
     TextView txtCheckBox;
+    private ListeCategories listCategorie;
+
+
     private View.OnClickListener textCheckBoxclickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -91,14 +91,9 @@ public class SearchFragment extends Fragment implements OnClickListener {
             if (response.isSuccessful()) {
                 ReturnWS retour = response.body();
                 if (retour.statusValid()) {
-                    Gson gson = new Gson();
-                    Type listType = new TypeToken<ArrayList<Categorie>>() {
-                    }.getType();
-                    ArrayList<Categorie> listCat = gson.fromJson(retour.getMsg(), listType);
-
                     // On réceptionne la liste des catégories dans l'instance ListeCategories
-                    ListeCategories.setMyArrayList(listCat);
-                    loadSpinner(listCat);
+                    ListeCategories.setNbAnnonceFromJson(retour.getMsg());
+                    loadSpinner(listCategorie.getListCategorie());
                 }
             }
         }
@@ -120,12 +115,14 @@ public class SearchFragment extends Fragment implements OnClickListener {
         spinnerCategory.setOnTouchListener(spinnerOnTouch);
         spinnerCategory.setOnKeyListener(spinnerOnKey);
 
-        if (ListeCategories.getInstance().getListCategorie() == null) {
+        listCategorie = ListeCategories.getInstance(getActivity());
+
+        if (listCategorie.getListCategorie() == null) {
             RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
             Call<ReturnWS> call = retrofitService.getListCategory();
             call.enqueue(callbackListCategory);
         } else {
-            loadSpinner(ListeCategories.getInstance().getListCategorie());
+            loadSpinner(listCategorie.getListCategorie());
         }
 
         setHasOptionsMenu(true);

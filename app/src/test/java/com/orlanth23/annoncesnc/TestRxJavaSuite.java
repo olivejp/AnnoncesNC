@@ -38,7 +38,7 @@ public class TestRxJavaSuite {
     @Test
     public void testRxJava2(){
         Observable<Integer> myArrayObservable
-                = Observable.from(new Integer[]{1, 2, 3, 4, 5, 6}); // Emits each item of the array, one at a time
+            = Observable.from(new Integer[]{1, 2, 3, 4, 5, 6}); // Emits each item of the array, one at a time
 
         myArrayObservable.subscribe(new Action1<Integer>() {
             @Override

@@ -196,5 +196,37 @@
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ornare volutpat lobortis. Maecenas tempor tortor nec felis maximus accumsan. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Ut elit mauris, pretium iaculis felis vel, venenatis placerat lorem. In ut suscipit odio. Maecenas scelerisque massa ac sapien ullamcorper venenatis. In maximus, neque vitae viverra hendrerit, erat metus faucibus ex, ut laoreet lorem tortor et dolor. Mauris scelerisque fermentum quam, ac tincidunt quam varius eget.</string>
     <string name="sync_account_type" translatable="false">annoncesnc.orlanth23.com</string>
     <string name="content_authority" translatable="false">com.orlanth23.annoncesnc</string>
+
+    <string-array name="categorie_title_array">
+        <item>Immobilier</item>
+        <item>Automobile</item>
+        <item>Moto</item>
+        <item>Téléphonie</item>
+        <item>Image &amp; Son</item>
+        <item>Informatique</item>
+        <item>Electroménager</item>
+        <item>Puériculture</item>
+        <item>Sport &amp; Loisir</item>
+        <item>Services</item>
+        <item>Mobilier</item>
+        <item>Musique</item>
+        <item>Bricolage</item>
+    </string-array>
+
+    <string-array name="categorie_color_array">
+        <item>#1BA900</item>
+        <item>#88A900</item>
+        <item>#A98D00</item>
+        <item>#A94700</item>
+        <item>#A90013</item>
+        <item>#A90062</item>
+        <item>#A9009D</item>
+        <item>#4100A9</item>
+        <item>#003FA9</item>
+        <item>#40D5DA</item>
+        <item>#40DA97</item>
+        <item>#1B36BF</item>
+        <item>#BF4A1B</item>
+    </string-array>
 </resources>
 

@@ -44,7 +44,7 @@ public class ProviderTest {
         }
     }
 
-    private void testInsertReadCategorieProvider(Uri uri, ContentValues contentValues) {
+    private void testInsertReadUriProvider(Uri uri, ContentValues contentValues) {
 
         /* Suppression des enregistrements précédents */
         deleteRecords(uri);
@@ -88,10 +88,6 @@ public class ProviderTest {
         mContext = InstrumentationRegistry.getTargetContext();
     }
 
-    @Test
-    public void deleteAllRecordsFromCategorieProvider() {
-        deleteRecords(ProviderContract.CategorieEntry.CONTENT_URI);
-    }
 
     @Test
     public void deleteAllRecordsFromAnnonceProvider() {
@@ -114,14 +110,14 @@ public class ProviderTest {
     }
 
     @Test
-    public void testInsertReadCategorieProvider(){
-        ContentValues testValuesCategorie = TestUtilities.createCategorieValues(1);
-        testInsertReadCategorieProvider(ProviderContract.CategorieEntry.CONTENT_URI, testValuesCategorie);
+    public void testInsertReadPhotoProvider(){
+        ContentValues testValuesPhotos = TestUtilities.createPhotoValues(1, 1234);
+        testInsertReadUriProvider(ProviderContract.PhotoEntry.CONTENT_URI, testValuesPhotos);
     }
 
     @Test
     public void testInsertReadAnnonceProvider(){
         ContentValues testValuesAnnonce = TestUtilities.createAnnonceValues(1234);
-        testInsertReadCategorieProvider(ProviderContract.AnnonceEntry.CONTENT_URI, testValuesAnnonce);
+        testInsertReadUriProvider(ProviderContract.AnnonceEntry.CONTENT_URI, testValuesAnnonce);
     }
 }

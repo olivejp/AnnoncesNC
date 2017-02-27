@@ -3,6 +3,8 @@ package com.orlanth23.annoncesnc.activity;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v7.app.ActionBar;
 import android.view.View;
 import android.widget.ImageView;
@@ -25,8 +27,6 @@ import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManag
 import static com.orlanth23.annoncesnc.utility.Utility.checkWifiAndMobileData;
 
 public class FullscreenActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
-
-    private static final String TAG = FullscreenActivity.class.getName();
 
     private static final String DIALOG_TAG_NO_CONNECTION = "NO_CONNECTION";
     private static final String DIALOG_TAG_NO_SERVER = "NO_SERVER";
@@ -64,14 +64,17 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
                     imgGetStats.setImageResource(R.drawable.ic_action_accept);
                     intent.setClass(getApplicationContext(), MainActivity.class);
                     startActivity(intent);
+                }else{
+                    onFailureCallback( R.string.error_no_stats, imgGetStats);
                 }
+            }else{
+                onFailureCallback( R.string.error_no_stats, imgGetStats);
             }
         }
 
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            imgGetStats.setImageResource(R.drawable.ic_remove_inverse);
-            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
+            onFailureCallback( R.string.error_no_stats, imgGetStats);
         }
     };
     private Callback<ReturnWS> getNbUser3Callback = new Callback<ReturnWS>() {
@@ -83,13 +86,17 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
                     ListeStats.setNbUsers(Integer.valueOf(retour.getMsg()));
                     Call<ReturnWS> callGetNbAnnonce = retrofitService.getNbAnnonce();
                     callGetNbAnnonce.enqueue(getNbAnnonce4Callback);
+                }else{
+                    onFailureCallback(R.string.error_no_stats, null);
                 }
+            }else{
+                onFailureCallback(R.string.error_no_stats, null);
             }
         }
 
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_stats), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
+            onFailureCallback(R.string.error_no_stats, null);
         }
     };
     private Callback<ReturnWS> listCategorie2Callback = new Callback<ReturnWS>() {
@@ -97,21 +104,23 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
         public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
             if (response.isSuccessful()) {
                 ReturnWS retour = response.body();
-
                 if (retour.statusValid()) {
                     imgGetInfos.setImageResource(R.drawable.ic_action_accept);
-                    ListeCategories.setMyArrayListFromJson(retour.getMsg());
+                    ListeCategories.setNbAnnonceFromJson(retour.getMsg());
                     imgGetStats.setVisibility(View.VISIBLE);
                     Call<ReturnWS> callGetNbUser = retrofitService.getNbUser();
                     callGetNbUser.enqueue(getNbUser3Callback);
+                }else{
+                    onFailureCallback(R.string.error_no_cat_list, imgGetInfos);
                 }
+            }else{
+                onFailureCallback(R.string.error_no_cat_list, imgGetInfos);
             }
         }
 
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            imgGetInfos.setImageResource(R.drawable.ic_remove_inverse);
-            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_cat_list), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_CAT_LIST);
+            onFailureCallback(R.string.error_no_cat_list, imgGetInfos);
         }
     };
     private Callback<ReturnWS> checkConnection1Callback = new Callback<ReturnWS>() {
@@ -124,16 +133,26 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
                     imgGetInfos.setVisibility(View.VISIBLE);
                     Call<ReturnWS> callGetListCategorie = retrofitService.getListCategory();
                     callGetListCategorie.enqueue(listCategorie2Callback);
+                }else{
+                    onFailureCallback(R.string.error_no_server, imgTestServer);
                 }
+            }else{
+                onFailureCallback(R.string.error_no_server, imgTestServer);
             }
         }
 
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            imgTestServer.setImageResource(R.drawable.ic_remove_inverse);
-            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.error_no_server), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_SERVER);
+            onFailureCallback(R.string.error_no_server, imgTestServer);
         }
     };
+
+    private void onFailureCallback(@StringRes int intRes, @Nullable ImageView imageView){
+        if (imageView != null) {
+            imageView.setImageResource(R.drawable.ic_remove_inverse);
+        }
+        SendDialogByFragmentManager(getFragmentManager(), getString(intRes), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_STATS);
+    }
 
     private void testAllWebservices() {
         imgTestNetwork.setVisibility(View.VISIBLE);
@@ -167,7 +186,7 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
 
         // Instanciation des singletons
         ListeStats.getInstance();
-        ListeCategories.getInstance();
+        ListeCategories.getInstance(this);
 
         // Appel de tous les webservices
         testAllWebservices();

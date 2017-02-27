@@ -6,9 +6,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.support.annotation.Nullable;
 
+import com.orlanth23.annoncesnc.dto.StatutPhoto;
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesnc.provider.contract.CategorieContract;
+import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 
 import java.util.Map;
 import java.util.Set;
@@ -33,48 +35,55 @@ public class TestUtilities {
             assertFalse("Column '" + columnName + "' not found. " + error, idx == -1);
             String expectedValue = entry.getValue().toString();
             assertEquals("Value '" + entry.getValue().toString() +
-                    "' did not match the expected value '" +
-                    expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
+                "' did not match the expected value '" +
+                expectedValue + "'. " + error, expectedValue, valueCursor.getString(idx));
         }
     }
 
-    static ContentValues createCategorieValues(long categorieId) {
+    static ContentValues createPhotoValues(Integer idAnnonce, @Nullable Integer photoId) {
         ContentValues testValues = new ContentValues();
-        testValues.put(CategorieContract._ID, categorieId);
-        testValues.put(CategorieContract.COL_NOM_CATEGORIE,"Poulpy poulpy");
-        testValues.put(CategorieContract.COL_COULEUR_CATEGORIE,"#55555");
+        if (photoId != null) {
+            testValues.put(PhotoContract._ID, photoId);
+        }
+        testValues.put(PhotoContract.COL_NOM_PHOTO, "snow.jpg");
+        testValues.put(PhotoContract.COL_STATUT_PHOTO, StatutPhoto.TOSEND.valeur());
+        testValues.put(PhotoContract.COL_ID_ANNONCE, idAnnonce);
         return testValues;
     }
 
     static ContentValues createAnnonceValues(long annonceId) {
         ContentValues testValues = new ContentValues();
         testValues.put(AnnonceContract._ID, annonceId);
-        testValues.put(AnnonceContract.COL_CONTACT_MEL,"O");
-        testValues.put(AnnonceContract.COL_CONTACT_MSG,"O");
-        testValues.put(AnnonceContract.COL_CONTACT_TEL,"O");
-        testValues.put(AnnonceContract.COL_TITRE_ANNONCE,"Titre d'annonce");
-        testValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE,"Description d'annonce");
-        testValues.put(AnnonceContract.COL_PRIX_ANNONCE,"123456");
-        testValues.put(AnnonceContract.COL_ID_UTILISATEUR,"1");
-        testValues.put(AnnonceContract.COL_ID_CATEGORY,"1");
-        testValues.put(AnnonceContract.COL_STATUT_ANNONCE,"V");
-        testValues.put(AnnonceContract.COL_DATE_PUBLICATION,"CURRENT_TIME()");
+        testValues.put(AnnonceContract.COL_CONTACT_MEL, "O");
+        testValues.put(AnnonceContract.COL_CONTACT_MSG, "O");
+        testValues.put(AnnonceContract.COL_CONTACT_TEL, "O");
+        testValues.put(AnnonceContract.COL_TITRE_ANNONCE, "Titre d'annonce");
+        testValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE, "Description d'annonce");
+        testValues.put(AnnonceContract.COL_PRIX_ANNONCE, "123456");
+        testValues.put(AnnonceContract.COL_ID_UTILISATEUR, "1");
+        testValues.put(AnnonceContract.COL_ID_CATEGORY, "1");
+        testValues.put(AnnonceContract.COL_STATUT_ANNONCE, "V");
+        testValues.put(AnnonceContract.COL_DATE_PUBLICATION, "CURRENT_TIME()");
         return testValues;
+    }
+
+    static TestContentObserver getTestContentObserver() {
+        return TestContentObserver.getTestContentObserver();
     }
 
     static class TestContentObserver extends ContentObserver {
         final HandlerThread mHT;
         boolean mContentChanged;
 
+        private TestContentObserver(HandlerThread ht) {
+            super(new Handler(ht.getLooper()));
+            mHT = ht;
+        }
+
         static TestContentObserver getTestContentObserver() {
             HandlerThread ht = new HandlerThread("ContentObserverThread");
             ht.start();
             return new TestContentObserver(ht);
-        }
-
-        private TestContentObserver(HandlerThread ht) {
-            super(new Handler(ht.getLooper()));
-            mHT = ht;
         }
 
         // On earlier versions of Android, this onChange method is called
@@ -101,9 +110,5 @@ public class TestUtilities {
             }.run();
             mHT.quit();
         }
-    }
-
-    static TestContentObserver getTestContentObserver() {
-        return TestContentObserver.getTestContentObserver();
     }
 }

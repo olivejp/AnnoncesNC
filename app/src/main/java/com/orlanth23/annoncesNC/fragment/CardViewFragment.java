@@ -2,10 +2,11 @@ package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.app.ProgressDialog;
+import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.CardViewDataAdapter;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
@@ -25,7 +28,9 @@ import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.RetrofitService;
+import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import butterknife.BindView;
@@ -38,7 +43,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
-public class CardViewFragment extends Fragment implements Callback<ArrayList<Annonce>> {
+public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
 
     public static final String tag = CardViewFragment.class.getName();
 
@@ -49,6 +54,7 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
     public static final String PARAM_MIN_PRICE = "MIN_PRICE";
     public static final String PARAM_MAX_PRICE = "MAX_PRICE";
     public static final String PARAM_PHOTO = "PHOTO";
+    public static final String PARAM_LIST_ANNONCE = "LIST_ANNONCE";
     public static final String ACTION_ANNONCE_BY_KEYWORD = "ACTION_ANNONCE_BY_KEYWORD";
     public static final String ACTION_ANNONCE_BY_CATEGORY = "ACTION_ANNONCE_BY_CATEGORY";
     public static final String ACTION_ANNONCE_BY_USER = "ACTION_ANNONCE_BY_USER";
@@ -65,14 +71,16 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
     private CardViewDataAdapter mAdapter;
     private String action;
     private String mode;
-    private ProgressDialog prgDialog;
-    private ArrayList<Annonce> gbListAnnonces;
+    private ArrayList<Annonce> mListAnnonces;
     private Categorie category;
     private String keyword;
     private Integer idUser;
     private Integer pMinPrice;
     private Integer pMaxPrice;
     private boolean pPhoto;
+    private Gson gson;
+    private Context mContext;
+    private LinearLayoutManager mLinearLayoutManager;
 
     public CardViewFragment() {
         // Required empty public constructor
@@ -107,6 +115,9 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mListAnnonces = new ArrayList<>();
+        gson = new Gson();
         if (getArguments() != null) {
             action = getArguments().getString(PARAM_ACTION);
             if (action != null) {
@@ -134,6 +145,15 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
                 }
             }
         }
+        mAdapter = new CardViewDataAdapter(mContext, mListAnnonces, mode);
+        current_page = 1;
+        loadData(current_page);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mContext = context;
     }
 
     @Override
@@ -155,25 +175,24 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
         if (pMaxPrice != null) {
             outState.putInt(PARAM_MAX_PRICE, pMaxPrice);
         }
+        if (mListAnnonces != null) {
+            outState.putParcelableArrayList(PARAM_LIST_ANNONCE, mListAnnonces);
+        }
+
         outState.putBoolean(PARAM_PHOTO, pPhoto);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         // On inflate la vue
         View rootView = inflater.inflate(R.layout.fragment_card_view, container, false);
-
         ButterKnife.bind(this, rootView);
-
-        prgDialog = new ProgressDialog(getActivity());
-
-        gbListAnnonces = new ArrayList<>();
 
         // Récupération des paramètres
         if (savedInstanceState != null) {
             action = savedInstanceState.getString(PARAM_ACTION);
+            mListAnnonces = savedInstanceState.getParcelableArrayList(PARAM_LIST_ANNONCE);
             if (action != null) {
                 switch (action) {
                     case ACTION_ANNONCE_BY_USER:
@@ -204,11 +223,26 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
         // in content do not change the layout size of the RecyclerView
         if (mRecyclerView != null) {
             mRecyclerView.setHasFixedSize(true);
-        }
 
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-        // use a linear layout manager
-        mRecyclerView.setLayoutManager(mLayoutManager);
+            mLinearLayoutManager = new LinearLayoutManager(getActivity());
+            mRecyclerView.setLayoutManager(mLinearLayoutManager);
+
+            // Ajout d'un divider entre les éléments
+            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
+                mLinearLayoutManager.getOrientation());
+            mRecyclerView.addItemDecoration(dividerItemDecoration);
+
+            // set the adapter object to the Recyclerview
+            mRecyclerView.setAdapter(mAdapter);
+
+            mRecyclerView.addOnScrollListener(new EndlessRecyclerOnScrollListener(
+                mLinearLayoutManager) {
+                @Override
+                public void onLoadMore() {
+                    loadData(current_page);
+                }
+            });
+        }
 
         //  Changement du titre et de la couleur de l'activité selon les cas
         int color = ContextCompat.getColor(getActivity(), R.color.ColorPrimary);
@@ -239,25 +273,10 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
             customActivityInterface.changeColorToolBar(color);
         }
 
-        mAdapter = new CardViewDataAdapter(getActivity(), gbListAnnonces, mode);
-
-        current_page = 1;
-
-        // set the adapter object to the Recyclerview
-        mRecyclerView.setAdapter(mAdapter);
-
-        loadData(current_page);
-
-        mRecyclerView.addOnScrollListener(new EndlessRecyclerOnScrollListener(
-                mLayoutManager) {
-            @Override
-            public void onLoadMore() {
-                loadData(current_page);
-            }
-        });
-
         // On cache le clavier
         Utility.hideKeyboard(getActivity());
+
+        changeVisibility();
 
         return rootView;
     }
@@ -266,10 +285,8 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
     private void loadData(int currentPage) {
         // Création d'un RestAdapter pour le futur appel de mon RestService
         RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
-        Call<ArrayList<Annonce>> call = null;
+        Call<ReturnWS> call = null;
 
-        prgDialog.setMessage(getString(R.string.dialog_msg_patience));
-        prgDialog.show();
         switch (action) {
             case ACTION_ANNONCE_BY_CATEGORY:
                 // Appel du service RETROFIT
@@ -290,24 +307,14 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
                 call = retrofitService.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage);
                 break;
         }
-        if(call != null){
+        if (call != null) {
             call.enqueue(this);
         }
     }
 
-    private void onPostWebservice(ArrayList<Annonce> listAnnonces) {
-
-        if (listAnnonces != null) {
-            for (Annonce annonce : listAnnonces) {
-                gbListAnnonces.add(annonce);
-                if (!mRecyclerView.isComputingLayout()) {
-                    mAdapter.notifyItemInserted(gbListAnnonces.indexOf(annonce));
-                }
-            }
-        }
-
+    private void changeVisibility(){
         if (linearContent != null && linearEmpty != null) {
-            if (gbListAnnonces.isEmpty()) {
+            if (mListAnnonces.isEmpty()) {
                 linearContent.setVisibility(View.GONE);
                 linearEmpty.setVisibility(View.VISIBLE);
                 textEmpty.setVisibility(View.VISIBLE);
@@ -317,6 +324,19 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
                 textEmpty.setVisibility(View.GONE);
             }
         }
+    }
+
+    private void onPostWebservice(ArrayList<Annonce> listAnnonces) {
+        if (listAnnonces != null) {
+            for (Annonce annonce : listAnnonces) {
+                mListAnnonces.add(annonce);
+                if (!mRecyclerView.isComputingLayout()) {
+                    mAdapter.notifyItemInserted(mListAnnonces.indexOf(annonce));
+                }
+            }
+        }
+
+        changeVisibility();
 
         current_page++;
     }
@@ -324,37 +344,40 @@ public class CardViewFragment extends Fragment implements Callback<ArrayList<Ann
     @Override
     public void onPause() {
         super.onPause();
-        if (prgDialog != null) {
-            prgDialog.dismiss();
-        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (prgDialog != null) {
-            prgDialog.dismiss();
+    }
+
+    private void onFailureWs() {
+        Activity activity = getActivity();
+        if (activity != null) {
+            SendDialogByActivity(activity, getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
         }
     }
 
     @Override
-    public void onResponse(Call<ArrayList<Annonce>> call, Response<ArrayList<Annonce>> response) {
+    public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
         if (response.isSuccessful()) {
             // Récupération de notre liste locale dans la liste globale
-            ArrayList<Annonce> mListAnnonces = response.body();
-            prgDialog.hide();
-            onPostWebservice(mListAnnonces);
-        } else {
-            prgDialog.hide();
-            Activity activity = getActivity();
-            if (activity != null) {
-                SendDialogByActivity(activity, getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
+            ReturnWS rs = response.body();
+            if (rs.statusValid()) {
+                Type listType = new TypeToken<ArrayList<Annonce>>() {
+                }.getType();
+                ArrayList<Annonce> mListAnnonces = gson.fromJson(rs.getMsg(), listType);
+                onPostWebservice(mListAnnonces);
+            } else {
+                onFailureWs();
             }
+        } else {
+            onFailureWs();
         }
     }
 
     @Override
-    public void onFailure(Call<ArrayList<Annonce>> call, Throwable t) {
-        t.printStackTrace();
+    public void onFailure(Call<ReturnWS> call, Throwable t) {
+        onFailureWs();
     }
 }
