@@ -12,9 +12,9 @@ import com.orlanth23.annoncesnc.provider.ProviderContract;
 
 public class SyncUtils {
 
-    private static final long SYNC_FREQUENCY = 60 * 60;  // 1 hour (in seconds)
-    private static final String CONTENT_AUTHORITY = ProviderContract.CONTENT_AUTHORITY;
-    private static final String PREF_SETUP_COMPLETE = "setup_complete";
+    public static final long SYNC_FREQUENCY = 10;  // in seconds
+    public static final String CONTENT_AUTHORITY = ProviderContract.CONTENT_AUTHORITY;
+    public static final String PREF_SETUP_COMPLETE = "setup_complete";
 
     public static void CreateSyncAccount(Context context) {
         boolean newAccount = false;
@@ -22,7 +22,7 @@ public class SyncUtils {
                 .getDefaultSharedPreferences(context).getBoolean(PREF_SETUP_COMPLETE, false);
 
         // Create account, if it's missing. (Either first run, or user has deleted account.)
-        Account account = AnnoncesAuthenticatorService.GetAccount();
+        Account account = AnnoncesAuthenticatorService.getAccount();
         AccountManager accountManager = (AccountManager) context.getSystemService(Context.ACCOUNT_SERVICE);
         if (accountManager.addAccountExplicitly(account, null, null)) {
             // Inform the system that this account supports sync
@@ -52,7 +52,7 @@ public class SyncUtils {
         b.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         b.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true);
         ContentResolver.requestSync(
-                AnnoncesAuthenticatorService.GetAccount(),      // Sync account
+                AnnoncesAuthenticatorService.getAccount(),      // Sync account
                 ProviderContract.CONTENT_AUTHORITY, // Content authority
                 b);                                      // Extras
     }

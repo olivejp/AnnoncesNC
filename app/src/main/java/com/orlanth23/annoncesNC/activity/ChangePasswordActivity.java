@@ -87,7 +87,7 @@ public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
 
         CurrentUser.getInstance();
 
-        if (!CurrentUser.isConnected()) {
+        if (!CurrentUser.getInstance().isConnected()) {
             oldPassword.setError(getString(R.string.error_need_user_connection));
             return false;
         }

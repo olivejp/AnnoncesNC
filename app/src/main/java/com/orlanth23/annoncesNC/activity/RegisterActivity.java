@@ -11,11 +11,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
-import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
@@ -47,31 +45,9 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
     private ProgressDialog prgDialog;
     private AppCompatActivity mActivity = this;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_register);
-        ButterKnife.bind(this);
-
-        // Rajout d'une toolbar et changement du titre
-        ActionBar tb = getSupportActionBar();
-        if (tb != null) {
-            tb.setTitle(R.string.action_sign_up);
-            tb.setDisplayHomeAsUpEnabled(true);
-        }
-
-        // Création d'une progress bar
-        prgDialog = new ProgressDialog(this);
-        prgDialog.setMessage(getString(R.string.dialog_msg_patience));
-        prgDialog.setCancelable(false);
-    }
-
-    private void onFailureCallback() {
-        prgDialog.hide();
-        SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
-    }
-
-    // Appel du RETROFIT Webservice
+    private String mEmail;
+    private Integer mTelephone;
+    // Retour du webservice Register
     private Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
         @Override
         public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
@@ -92,16 +68,11 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
                     // Display successfully registered message using Toast
                     Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
 
-                    // Récupération de l'utilisateur
-                    Gson gson = new Gson();
-
-                    Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
-
                     // Récupération de l'utilisateur comme étant l'utilisateur courant
-                    CurrentUser.getInstance().setIdUTI(user.getIdUTI());
-                    CurrentUser.getInstance().setEmailUTI(user.getEmailUTI());
-                    CurrentUser.getInstance().setTelephoneUTI(user.getTelephoneUTI());
-                    CurrentUser.setConnected(true);
+                    CurrentUser.getInstance().setIdUTI(rs.getId());
+                    CurrentUser.getInstance().setEmailUTI(mEmail);
+                    CurrentUser.getInstance().setTelephoneUTI(mTelephone);
+                    CurrentUser.getInstance().setConnected(true);
 
                     Utility.hideKeyboard(mActivity);
 
@@ -129,6 +100,30 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
         }
     };
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_register);
+        ButterKnife.bind(this);
+
+        // Rajout d'une toolbar et changement du titre
+        ActionBar tb = getSupportActionBar();
+        if (tb != null) {
+            tb.setTitle(R.string.action_sign_up);
+            tb.setDisplayHomeAsUpEnabled(true);
+        }
+
+        // Création d'une progress bar
+        prgDialog = new ProgressDialog(this);
+        prgDialog.setMessage(getString(R.string.dialog_msg_patience));
+        prgDialog.setCancelable(false);
+    }
+
+    private void onFailureCallback() {
+        prgDialog.hide();
+        SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
+    }
+
     public void setDefaultValues() {
         emailET.setText("");
         pwdET.setText("");
@@ -137,7 +132,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
     }
 
     private boolean checkRegister() {
-        Integer telephone = 0;
+        mTelephone = 0;
         View focusView = null;
         boolean cancel = false;
 
@@ -145,20 +140,20 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
         // Téléphone, email et password
         String monTelephone = telephoneET.getText().toString();
         if (!monTelephone.equals("")) {
-            telephone = Integer.parseInt(monTelephone);
+            mTelephone = Integer.parseInt(monTelephone);
         }
-        String email = emailET.getText().toString().replace("'", "''");
+        mEmail = emailET.getText().toString().replace("'", "''");
         String password = pwdET.getText().toString().replace("'", "''");
         String passwordConfirm = pwdConfirmET.getText().toString().replace("'", "''");
 
         // When Email Edit View and Password Edit View have values other than Null
-        if (!Utility.isNotNull(email)) {
+        if (!Utility.isNotNull(mEmail)) {
             emailET.setError(getString(R.string.error_field_required));
             focusView = emailET;
             cancel = true;
         }
 
-        if (!Utility.isNotNull(String.valueOf(telephone))) {
+        if (!Utility.isNotNull(String.valueOf(mTelephone))) {
             telephoneET.setError(getString(R.string.error_field_required));
             focusView = telephoneET;
             cancel = true;
@@ -177,7 +172,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
         }
 
         // When Email entered is invalid
-        if (!Utility.validateEmail(email)) {
+        if (!Utility.validateEmail(mEmail)) {
             emailET.setError(getString(R.string.error_invalid_email));
             focusView = emailET;
             cancel = true;

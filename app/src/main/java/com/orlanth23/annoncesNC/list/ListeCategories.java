@@ -34,11 +34,24 @@ public class ListeCategories {
         return INSTANCE;
     }
 
-    public static void setNbAnnonceFromJson(String json) {
+    public static boolean setNbAnnonceFromJson(String json) {
+        if(json == null) {
+            return false;
+        }
+
+        if(json.isEmpty()){
+            return false;
+        }
+
         Gson gson = new Gson();
         Type listType = new TypeToken<ArrayList<Categorie>>() {
         }.getType();
         ArrayList<Categorie> categories = gson.fromJson(json, listType);
+
+        if (categories.isEmpty()){
+            return false;
+        }
+
         for (Categorie categorieOut : categories) {
             for (Categorie categorieIn : myArrayList) {
                 if (categorieOut.getIdCAT().equals(categorieIn.getIdCAT())){
@@ -46,6 +59,8 @@ public class ListeCategories {
                 }
             }
         }
+
+        return true;
     }
 
     public Categorie getCategorieByName(String nameCategorie) {

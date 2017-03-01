@@ -64,7 +64,7 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
 
                     // Récupération de l'utilisateur comme étant l'utilisateur courant
                     CurrentUser.getInstance();
-                    CurrentUser.setUser(user);
+                    CurrentUser.getInstance().setUser(user);
 
                     Toast.makeText(mActivity, "Connecté avec le compte " + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
                     goodFinishActivity();

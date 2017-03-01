@@ -1,9 +1,9 @@
 <LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@drawable/degrade"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,8 +24,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="0.3"
-            android:orientation="horizontal"
-            android:baselineAligned="false">
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
             <RelativeLayout
                 android:layout_width="0dp"
@@ -39,7 +39,7 @@
                     android:layout_height="100dp"
                     android:layout_centerInParent="true"
                     android:background="@drawable/roudedbutton"
-                    android:onClick="mainSearch"
+                    android:onClick="onClickChangeToSearchFragment"
                     android:text="@string/action_search"
                     android:textColor="@color/white" />
 

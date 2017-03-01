@@ -121,7 +121,7 @@ public class MyProfileFragment extends Fragment{
                 CurrentUser.getInstance().setIdUTI(null);
                 CurrentUser.getInstance().setEmailUTI(null);
                 CurrentUser.getInstance().setTelephoneUTI(null);
-                CurrentUser.setConnected(false);
+                CurrentUser.getInstance().setConnected(false);
 
                 // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
                 Activity myActivity = getActivity();

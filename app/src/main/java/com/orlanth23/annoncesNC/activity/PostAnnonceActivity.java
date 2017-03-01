@@ -117,14 +117,6 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             SendDialogByFragmentManager(getFragmentManager(), "Erreur lors de l'appel d'un Webservice", NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
         }
     };
-
-    private void onFailurePostUploadPhoto(){
-        mCptPhotoTotal++;
-        if (mCptPhotoTotal == mAnnonce.getPhotos().size()) {
-            mUploadFileToServer.execute();
-        }
-        SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
-    }
     private Callback<ReturnWS> callbackPostUploadPhoto = new Callback<ReturnWS>() {
         @Override
         public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
@@ -232,9 +224,16 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             dialogImageChoice.show();
         }
     };
-
     // Constructor du fragment
     public PostAnnonceActivity() {
+    }
+
+    private void onFailurePostUploadPhoto(){
+        mCptPhotoTotal++;
+        if (mCptPhotoTotal == mAnnonce.getPhotos().size()) {
+            mUploadFileToServer.execute();
+        }
+        SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
     }
 
     private void deletePhotos() {
@@ -515,7 +514,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         boolean save = true;
         View focus = null;
 
-        if (CurrentUser.isConnected()) {
+        if (CurrentUser.getInstance().isConnected()) {
             if (titreText.getText().toString().length() == 0) {
                 titreText.setError(getString(R.string.error_post_title));
                 focus = titreText;

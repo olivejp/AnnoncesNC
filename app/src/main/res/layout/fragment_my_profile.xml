@@ -27,9 +27,9 @@
                 android:layout_height="wrap_content"
                 android:drawableLeft="@drawable/ic_login"
                 android:drawableStart="@drawable/ic_login"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
                 android:hint="@string/email"
-                android:inputType="textEmailAddress" />
+                android:inputType="textEmailAddress"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
         </android.support.design.widget.TextInputLayout>
 
         <android.support.design.widget.TextInputLayout
@@ -42,10 +42,10 @@
                 android:layout_height="wrap_content"
                 android:drawableLeft="@drawable/ic_action_phone"
                 android:drawableStart="@drawable/ic_action_phone"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body2"
                 android:hint="@string/telephone"
                 android:inputType="phone"
-                android:maxLength="9" />
+                android:maxLength="9"
+                android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
         </android.support.design.widget.TextInputLayout>
 
         <Button
@@ -62,7 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:onClick="manageAds"
+            android:onClick="onClickManageMesAnnonces"
             android:text="@string/manage_my_ads" />
 
         <Button

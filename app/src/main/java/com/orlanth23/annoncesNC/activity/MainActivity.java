@@ -1,15 +1,16 @@
 package com.orlanth23.annoncesnc.activity;
 
 
+import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -25,29 +26,38 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.BuildConfig;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.ListCategorieAdapter;
+import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.fragment.CardViewFragment;
 import com.orlanth23.annoncesnc.fragment.HomeFragment;
 import com.orlanth23.annoncesnc.fragment.MyProfileFragment;
 import com.orlanth23.annoncesnc.fragment.SearchFragment;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeCategories;
-import com.orlanth23.annoncesnc.list.ListeStats;
+import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
+import com.orlanth23.annoncesnc.sync.SyncUtils;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
+import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
+import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
 public class MainActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface {
 
@@ -56,16 +66,17 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     public final static int CODE_SETTINGS = 300;
     public final static int CODE_POST_NOT_LOGGED = 500;
 
-
     public final static String PARAM_REQUEST_CODE = "REQUEST_CODE";
-
-    public static final int NOTIFY_INTERVAL = 15 * 1000; // toutes les 10 seconds on va récupérer la liste des catégories
 
     private static final String TAG = MainActivity.class.getName();
     private static final String DIALOG_TAG_EXIT = "EXIT";
     private static final String PARAM_FRAGMENT = "FRAGMENT";
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+
+    @BindView(R.id.drawer_layout)
+    DrawerLayout mDrawerLayout;
+    @BindView(R.id.drawer_list_categorie)
+    ListView mDrawerListCategorie;
+
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mTitle;
     private Menu menu;
@@ -74,18 +85,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     private ColorDrawable colorDrawable = new ColorDrawable();
     private ListeCategories listeCategories;
     private Fragment mContent;
-    private Handler mHandler = new Handler();
-    private Runnable runnable;
-    private Timer mTimer;
-    private TimerTask timerTask;
-
-    // Ce runnable va nous permettre de lancer le rafraichissement du menu
-    private Runnable runnableMenu = new Runnable() {
-        @Override
-        public void run() {
-            refreshMenu();
-        }
-    };
+    private Activity mActivity = this;
 
     private Callback<ReturnWS> callbackUnregisterUser = new Callback<ReturnWS>() {
         @Override
@@ -97,7 +97,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                     cu.setTelephoneUTI(0);
                     cu.setEmailUTI(null);
                     cu.setIdUTI(0);
-                    CurrentUser.setConnected(false);
+                    CurrentUser.getInstance().setConnected(false);
                     Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
                     refreshMenu();
                     getFragmentManager().popBackStackImmediate();
@@ -112,73 +112,41 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
         }
     };
-
-    private Callback<ReturnWS> callbackGetListCategorie = new Callback<ReturnWS>() {
+    private Callback<ReturnWS> callbackLogin = new Callback<ReturnWS>() {
         @Override
         public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
             if (response.isSuccessful()) {
                 ReturnWS rs = response.body();
                 if (rs.statusValid()) {
+                    Gson gson = new Gson();
 
-                    // On réceptionne la liste des catégories dans l'instance ListeCategories
-                    ListeCategories.setNbAnnonceFromJson(rs.getMsg());
+                    Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+                    CurrentUser currentUser = CurrentUser.getInstance();
+                    currentUser.setIdUTI(user.getIdUTI());
+                    currentUser.setEmailUTI(user.getEmailUTI());
+                    currentUser.setTelephoneUTI(user.getTelephoneUTI());
+                    currentUser.setConnected(true);
 
-                    // Création de l'adapter de la liste catégorie
-                    ListCategorieAdapter adapter = new ListCategorieAdapter(getApplicationContext(), listeCategories.getListCategorie());
+                    refreshMenu();
 
-                    // J'affecte l'adapter à ma listView
-                    mDrawerList.setAdapter(adapter);
+                    // Display successfully registered message using Toast
+                    Toast.makeText(mActivity, mActivity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
                 }
             }
         }
-
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+            SendDialogByActivity(mActivity, mActivity.getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, null);
         }
     };
-
-    private Callback<ReturnWS> callbackGetNbAnnonce = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    ListeStats.setNbAnnonces(Integer.valueOf(rs.getMsg()));
-                }
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-
-        }
-    };
-
-    private Callback<ReturnWS> callbackGetNbUtilisateur = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    ListeStats.setNbUsers(Integer.valueOf(rs.getMsg()));
-                }
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-        }
-    };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add);
         if (fab != null) {
@@ -188,8 +156,6 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         }
 
         mTitle = getString(R.string.app_name);  // Récupération du titre
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout); // Récupération du layout latéral
-        mDrawerList = (ListView) findViewById(R.id.list_slidermenu); // Récuparation de la liste latérale
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
             new Toolbar(this),
@@ -207,7 +173,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         };
 
         mDrawerLayout.addDrawerListener(mDrawerToggle);
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        mDrawerListCategorie.setOnItemClickListener(new DrawerItemClickListener());
 
         try {
             ActionBar actionBar = getSupportActionBar();
@@ -221,31 +187,10 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
 
         // Récupération de la liste des catégories
         listeCategories = ListeCategories.getInstance(this);
-
-        // Création d'un exécutable qui va récupérer les informations sur le serveur
-        runnable = new Runnable() {
-            @Override
-            public void run() {
-                // ---------------------------------------
-                // RECUPERATION de la liste des catégories
-                // ---------------------------------------
-                Call<ReturnWS> callGetListCategorie = retrofitService.getListCategory();
-                callGetListCategorie.enqueue(callbackGetListCategorie);
-
-                // Récupération du nombre d'annonces
-                Call<ReturnWS> callGetNbAnnonce = retrofitService.getNbAnnonce();
-                callGetNbAnnonce.enqueue(callbackGetNbAnnonce);
-
-                // Récupération du nombre d'utilisateur
-                Call<ReturnWS> callGetNbUtilisateur = retrofitService.getNbUser();
-                callGetNbUtilisateur.enqueue(callbackGetNbUtilisateur);
-
-                refreshMenu();
-            }
-        };
+        mDrawerListCategorie.setAdapter(new ListCategorieAdapter(this, listeCategories.getListCategorie()));
 
         // Fermeture du Drawer
-        mDrawerLayout.closeDrawer(mDrawerList);
+        mDrawerLayout.closeDrawer(mDrawerListCategorie);
 
         // Par défaut c'est le HomeFragment qu'on mettra
         mContent = homeFragment;
@@ -255,10 +200,11 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             mContent = getFragmentManager().getFragment(savedInstanceState, PARAM_FRAGMENT);
         }
 
+        // Lancement du service SyncAdapter
+        ContentResolver.requestSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY);
 
         // Tentative de connexion avec l'utilisateur par défaut
-        CurrentUser.getInstance();
-        CurrentUser.retrieveConnection(this, runnableMenu);
+        retrieveConnection();
 
         getFragmentManager().beginTransaction().replace(R.id.frame_container, mContent, null).commit();
     }
@@ -266,30 +212,19 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-
-        //Save the fragment's instance
         mContent = getFragmentManager().findFragmentById(R.id.frame_container);
         getFragmentManager().putFragment(outState, PARAM_FRAGMENT, mContent);
     }
 
-    /**
-     * Méthode pour rafraichir le menu
-     * Si l'utilisateur est connecté on propose l'option de Déconnexion
-     * Sinon on propose l'option de Connexion
-     */
     public void refreshMenu() {
         if (menu != null) {
-            menu.findItem(R.id.action_connect).setVisible(!CurrentUser.isConnected());
+            menu.findItem(R.id.action_connect).setVisible(!CurrentUser.getInstance().isConnected());
 
             // Gestion du profil accessible uniquement si l'user est connecté
-            menu.findItem(R.id.action_my_profile).setVisible(CurrentUser.isConnected());
+            menu.findItem(R.id.action_my_profile).setVisible(CurrentUser.getInstance().isConnected());
         }
     }
 
-
-    /*
-     * Création du menu
-     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // On inflate le menu
@@ -304,38 +239,9 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        mTimer.cancel();
-        timerTask.cancel();
-        mHandler.removeCallbacks(runnable);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        mTimer = new Timer();
-
-        // Création d'un timerTask pour aller récupérer la liste des catégories toutes les 20 secondes
-        timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                // run on another thread
-                mHandler.post(runnable);
-            }
-        };
-
-        // On va récupérer les catégories toutes les 20 secondes.
-        mTimer.scheduleAtFixedRate(timerTask, 0, NOTIFY_INTERVAL);
-    }
-
-    @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         switch (dialog.getTag()) {
             case DIALOG_TAG_EXIT:
-                timerTask.cancel();
-                mHandler.removeCallbacks(runnable);
                 finish();
                 break;
             case Utility.DIALOG_TAG_UNREGISTER:
@@ -354,12 +260,31 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         }
     }
 
+    public void retrieveConnection() {
+        // Récupération de l'utilisateur par défaut
+        // Création d'un RestAdapter pour le futur appel de mon RestService
+        String connexion_auto = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT);
+        if (connexion_auto != null && connexion_auto.equals("O")) {
+            if (!CurrentUser.getInstance().isConnected()) {
+                String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
+                String password = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
+
+                // Si les données d'identification ont été saisies
+                if (email != null && password != null) {
+                    RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+                    Call<ReturnWS> callLogin = retrofitService.login(email, password);
+                    callLogin.enqueue(callbackLogin);
+                }
+            }
+        }
+    }
+
     /**
      * On a sélectionné un élément dans la liste des catégories
      */
-    private void selectItem(int position) {
+    private void onSelectCategorie(int position) {
         // Récupération de la catégorie
-        mDrawerList.setItemChecked(position, true);
+        mDrawerListCategorie.setItemChecked(position, true);
         Categorie cat = listeCategories.getListCategorie().get(position);
 
         // Changement du nom dans l'ActionBar
@@ -367,10 +292,9 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         changeColorToolBar(Color.parseColor(cat.getCouleurCAT()));
 
         // On ferme le drawer latéral
-        mDrawerLayout.closeDrawer(mDrawerList);
+        mDrawerLayout.closeDrawer(mDrawerListCategorie);
 
         CardViewFragment cardViewFragment = CardViewFragment.newInstance(CardViewFragment.ACTION_ANNONCE_BY_CATEGORY, null, cat, null, null, null, false);
-
         getFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.ACTION_ANNONCE_BY_CATEGORY).addToBackStack(null).commit();
     }
 
@@ -392,28 +316,25 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // if nav drawer is opened, hide the action items
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerListCategorie);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
         menu.findItem(R.id.action_post).setVisible(!drawerOpen);
         menu.findItem(R.id.action_suggestion).setVisible(!drawerOpen);
-        menu.findItem(R.id.action_connect).setVisible(!drawerOpen && !CurrentUser.isConnected());
+        menu.findItem(R.id.action_connect).setVisible(!drawerOpen && !CurrentUser.getInstance().isConnected());
         menu.findItem(R.id.action_search).setVisible(!drawerOpen);
-        menu.findItem(R.id.action_my_profile).setVisible(!drawerOpen && CurrentUser.isConnected());
+        menu.findItem(R.id.action_my_profile).setVisible(!drawerOpen && CurrentUser.getInstance().isConnected());
         menu.findItem(R.id.action_leave).setVisible(!drawerOpen);
 
         return super.onPrepareOptionsMenu(menu);
     }
 
-    public void mainSearch(View view) {
-        changeToSearch();
-    }
 
     public void mainPost(View view) {
         Intent intent = new Intent();
         Bundle b = new Bundle();
 
         // Vérification que l'utilisateur est connecté
-        if (!CurrentUser.isConnected()) {
+        if (!CurrentUser.getInstance().isConnected()) {
             // Ouverture de l'activity pour connecter l'utilisateur
             intent.setClass(this, LoginActivityRetrofit.class);
             b.putInt(PARAM_REQUEST_CODE, CODE_POST_NOT_LOGGED); //Your id
@@ -432,7 +353,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         }
     }
 
-    private boolean changeToSearch() {
+    private boolean changeToSearchFragment() {
         // On va rechercher le fragment qui est en cours d'utilisation
         if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof SearchFragment)) {
 
@@ -442,7 +363,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 mContent = searchFragment;
                 getFragmentManager().beginTransaction()
                     .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
-                mDrawerLayout.closeDrawer(mDrawerList);
+                mDrawerLayout.closeDrawer(mDrawerListCategorie);
                 return true;
             } else {
                 // error in creating fragment
@@ -454,10 +375,14 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         }
     }
 
-    public void manageAds(View view) {
+    public void onClickChangeToSearchFragment(View view){
+        changeToSearchFragment();
+    }
+
+    public void onClickManageMesAnnonces(View view) {
         // On va rechercher le fragment qui est en cours d'utilisation
         if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof CardViewFragment) || (!getFragmentManager().findFragmentById(R.id.frame_container).getTag().equals(CardViewFragment.ACTION_ANNONCE_BY_USER))) {
-            if (CurrentUser.isConnected()) {
+            if (CurrentUser.getInstance().isConnected()) {
                 // Gestion de mes annonces
                 CardViewFragment cardViewFragment = CardViewFragment.newInstance(CardViewFragment.ACTION_ANNONCE_BY_USER, null, null, CurrentUser.getInstance().getIdUTI(), null, null, false);
 
@@ -481,8 +406,6 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         switch (item.getItemId()) {
 
             case R.id.action_leave:
-                timerTask.cancel();
-                mHandler.removeCallbacks(runnable);
                 finish();
                 return true;
 
@@ -508,7 +431,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
 
             case R.id.action_my_profile:
                 if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof MyProfileFragment)) {
-                    if (CurrentUser.isConnected()) {
+                    if (CurrentUser.getInstance().isConnected()) {
                         // Gestion de mes annonces
                         MyProfileFragment myProfileFragment = MyProfileFragment.newInstance();
 
@@ -523,10 +446,10 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 }
 
             case R.id.action_search:
-                return changeToSearch();
+                return changeToSearchFragment();
 
             case R.id.action_connect:
-                if (!CurrentUser.isConnected()) {
+                if (!CurrentUser.getInstance().isConnected()) {
                     // Ouverture de l'activity pour connecter l'utilisateur
                     Intent intent = new Intent();
                     intent.setClass(this, LoginActivityRetrofit.class);
@@ -535,7 +458,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 } else {
                     // On a cliqué sur le l'option Déconnexion
                     // On se déconnecte
-                    CurrentUser.setConnected(false);
+                    CurrentUser.getInstance().setConnected(false);
                     refreshMenu();
                     return false;
                 }
@@ -591,12 +514,6 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        mHandler.removeCallbacks(runnable);
-    }
-
-    @Override
     public void changeColorToolBar(int color) {
         if (color != 0) {
             try {
@@ -614,7 +531,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView parent, View view, int position, long id) {
-            selectItem(position);
+            onSelectCategorie(position);
         }
     }
 }

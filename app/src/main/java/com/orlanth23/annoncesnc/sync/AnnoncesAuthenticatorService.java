@@ -12,7 +12,7 @@ public class AnnoncesAuthenticatorService extends Service {
     private static final String ACCOUNT_TYPE = "annoncesnc.orlanth23.com";
     private AnnoncesAuthenticator mAuthenticator;
 
-    public static Account GetAccount() {
+    public static Account getAccount() {
         // Note: Normally the account name is set to the user's identity (username or email
         // address). However, since we aren't actually using any user accounts, it makes more sense
         // to use a generic string in this case.
