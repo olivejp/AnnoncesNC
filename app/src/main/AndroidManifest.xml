@@ -2,9 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.orlanth23.annoncesnc">
 
-    <!-- To auto-complete the email text field in the login form with the user's emails -->
-    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
-
     <uses-permission
         android:name="android.permission.CALL_PHONE"
         android:required="true" />
@@ -23,9 +20,13 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-permission
+        android:name="android.permission.READ_SYNC_STATS"/>
+    <uses-permission
         android:name="android.permission.READ_SYNC_SETTINGS"/>
     <uses-permission
         android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission
+        android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
 
     <application
         android:allowBackup="true"
@@ -131,6 +132,7 @@
             android:authorities="@string/content_authority"
             android:exported="false"
             android:syncable="true"/>
+
         <service android:name=".sync.AnnoncesAuthenticatorService">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>

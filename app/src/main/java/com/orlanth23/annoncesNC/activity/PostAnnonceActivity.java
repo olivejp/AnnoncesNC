@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,7 +35,10 @@ import com.orlanth23.annoncesnc.dto.Annonce;
 import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.dto.Photo;
+import com.orlanth23.annoncesnc.dto.StatutAnnonce;
 import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.provider.ProviderContract;
+import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.ReturnClassUFTS;
 import com.orlanth23.annoncesnc.utility.UploadFileToServer;
@@ -101,6 +105,13 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     private ArrayList<Photo> P_PHOTO_TO_UPDATE = new ArrayList<>();
     private int mCptPhotoTotal;
 
+    private Integer mIdCat;
+    private Integer mIdUser;
+    private String mTitre;
+    private String mDescription;
+    private Integer mPrix;
+    private Integer mIdAnnonce;
+
     private Callback<ReturnWS> callbackDeletePhoto = new Callback<ReturnWS>() {
         @Override
         public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
@@ -136,7 +147,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 } else {
                     SendDialogByFragmentManager(getFragmentManager(), rs.getMsg(), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
                 }
-            } else{
+            } else {
                 onFailurePostUploadPhoto();
             }
         }
@@ -153,7 +164,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 ReturnWS rs = response.body();
                 if (rs.statusValid()) {
                     prgDialog.setProgress(100);
-                    mAnnonce.setIdANO(rs.getId());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
+                    mAnnonce.setIdANO(rs.getIdServer());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
 
                     deletePhotos(); // S'il y a des photos à supprimer on le fait ici
 
@@ -170,7 +181,38 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
+            ContentValues contentValues = getAnnonceInContentValue(StatutAnnonce.ToUpdate.valeur());
+            getContentResolver().insert(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues);
+            Toast.makeText(mActivity, "Le service n'a pas pu être contacté. L'annonce est sauvegardée et sera envoyée à la prochaine connexion.", Toast.LENGTH_LONG).show();
+        }
+    };
+    private Callback<ReturnWS> callbackPutAnnonce = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    prgDialog.setProgress(100);
+                    mAnnonce.setIdANO(rs.getIdServer());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
+
+                    deletePhotos(); // S'il y a des photos à supprimer on le fait ici
+
+                    if (!mAnnonce.getPhotos().isEmpty()) { // On a réussi à sauver l'annonce, on va maintenant uploader les photos
+                        postPhotos();
+                    } else {
+                        endPostAnnonceActivity(Activity.RESULT_OK, getString(R.string.dialog_success_post));
+                    }
+                } else {
+                    endPostAnnonceActivity(Activity.RESULT_CANCELED, rs.getMsg());
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            ContentValues contentValues = getAnnonceInContentValue(StatutAnnonce.ToUpdate.valeur());
+            getContentResolver().insert(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues);
+            Toast.makeText(mActivity, "Le service n'a pas pu être contacté. L'annonce est sauvegardée et sera envoyée à la prochaine connexion.", Toast.LENGTH_LONG).show();
         }
     };
     // Création du listener sur chaque image du scrollView
@@ -204,14 +246,24 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         @Override
         public void onClick(View v) {
             // Vérification que tous les champs soient remplis
-            if (checkAnnonceCreate()) {
+            if (validateAnnonce()) {
                 prgDialog.setMessage(getString(R.string.dialog_sending_post));
                 prgDialog.show();
 
+                // Récupération des données sur le layout
+                mIdAnnonce = mAnnonce.getIdANO();
+                mIdCat = mAnnonce.getCategorieANO().getIdCAT();
+                mIdUser = mAnnonce.getOwnerANO().getIdUTI();
+                mTitre = mAnnonce.getTitreANO().replace("'", "''");
+                mDescription = mAnnonce.getDescriptionANO().replace("'", "''");
+                mPrix = mAnnonce.getPriceANO();
+
                 switch (mMode) {
                     case Constants.PARAM_CRE:
-                    case Constants.PARAM_MAJ:
                         doPost();
+                        break;
+                    case Constants.PARAM_MAJ:
+                        doPut();
                         break;
                 }
             }
@@ -224,11 +276,12 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             dialogImageChoice.show();
         }
     };
+
     // Constructor du fragment
     public PostAnnonceActivity() {
     }
 
-    private void onFailurePostUploadPhoto(){
+    private void onFailurePostUploadPhoto() {
         mCptPhotoTotal++;
         if (mCptPhotoTotal == mAnnonce.getPhotos().size()) {
             mUploadFileToServer.execute();
@@ -374,7 +427,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         // Cette méthode va présenter la liste des photos présentes dans notre ArrayList
         presentPhoto();
 
-        // Recherche de la toolbar et changement du titre
+        // Recherche de la toolbar et changement du mTitre
         ActionBar tb = getSupportActionBar();
         if (tb != null) {
             tb.setTitle(mTitreActivity);
@@ -454,21 +507,42 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         super.onSaveInstanceState(outState);
     }
 
+    private ContentValues getAnnonceInContentValue(String statutAnnonce){
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(AnnonceContract.COL_ID_ANNONCE_SERVER, mIdAnnonce);
+        contentValues.put(AnnonceContract.COL_ID_CATEGORY, mIdCat);
+        contentValues.put(AnnonceContract.COL_ID_UTILISATEUR, mIdUser);
+        contentValues.put(AnnonceContract.COL_TITRE_ANNONCE, mTitre);
+        contentValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE, mDescription);
+        contentValues.put(AnnonceContract.COL_PRIX_ANNONCE, mPrix);
+        contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, statutAnnonce);
+        return contentValues;
+    }
+
     /**
-     * Méthode de Post pour créer/mettre à jour l'annonce sur le serveur
+     * Méthode de Post pour créer l'annonce sur le serveur
      */
     private void doPost() {
+        if (Utility.checkWifiAndMobileData(this)) {
+            Call<ReturnWS> call = retrofitService.postAnnonce(mIdCat, mIdUser, mTitre, mDescription, mPrix, null);
+            call.enqueue(callbackPostAnnonce);
+        } else {
+            ContentValues contentValues = getAnnonceInContentValue(StatutAnnonce.ToPost.valeur());
+            getContentResolver().insert(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues);
+        }
+    }
 
-        final Integer idAnnonce = mAnnonce.getIdANO();
-        Integer idCat = mAnnonce.getCategorieANO().getIdCAT();
-        Integer idUser = mAnnonce.getOwnerANO().getIdUTI();
-        String titre = mAnnonce.getTitreANO().replace("'", "''");
-        String description = mAnnonce.getDescriptionANO().replace("'", "''");
-        Integer prix = mAnnonce.getPriceANO();
-
-        // ------------------------------------------Appel premier retrofitservice---------------------------------------------
-        Call<ReturnWS> call = retrofitService.postAnnonce(idCat, idUser, idAnnonce, titre, description, prix);
-        call.enqueue(callbackPostAnnonce);
+    /**
+     * Méthode de Post pour mettre à jour l'annonce sur le serveur
+     */
+    private void doPut() {
+        if (Utility.checkWifiAndMobileData(this)) {
+            Call<ReturnWS> call = retrofitService.putAnnonce(mIdAnnonce, mIdCat, mTitre, mDescription, mPrix, null);
+            call.enqueue(callbackPutAnnonce);
+        } else {
+            ContentValues contentValues = getAnnonceInContentValue(StatutAnnonce.ToUpdate.valeur());
+            getContentResolver().insert(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues);
+        }
     }
 
 
@@ -508,7 +582,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
     }
 
-    private Boolean checkAnnonceCreate() {
+    private Boolean validateAnnonce() {
         textError.setVisibility(View.GONE);
         // Récupération des views
         boolean save = true;
@@ -720,15 +794,15 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 } else if (resultCode == RESULT_CANCELED) {
                     // user cancelled Image capture
                     Toast.makeText(mActivity,
-                            getString(R.string.action_cancelled),
-                            Toast.LENGTH_SHORT)
-                            .show();
+                        getString(R.string.action_cancelled),
+                        Toast.LENGTH_SHORT)
+                        .show();
                 } else {
                     // failed to capture image
                     Toast.makeText(mActivity,
-                            getString(R.string.action_failed),
-                            Toast.LENGTH_SHORT)
-                            .show();
+                        getString(R.string.action_failed),
+                        Toast.LENGTH_SHORT)
+                        .show();
                 }
                 break;
             case DIALOG_GALLERY_IMAGE:
@@ -743,15 +817,15 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 } else if (resultCode == RESULT_CANCELED) {
                     // user cancelled Image capture
                     Toast.makeText(getApplicationContext(),
-                            getString(R.string.action_cancelled),
-                            Toast.LENGTH_SHORT)
-                            .show();
+                        getString(R.string.action_cancelled),
+                        Toast.LENGTH_SHORT)
+                        .show();
                 } else {
                     // failed to capture image
                     Toast.makeText(getApplicationContext(),
-                            getString(R.string.action_failed),
-                            Toast.LENGTH_SHORT)
-                            .show();
+                        getString(R.string.action_failed),
+                        Toast.LENGTH_SHORT)
+                        .show();
                 }
                 break;
         }

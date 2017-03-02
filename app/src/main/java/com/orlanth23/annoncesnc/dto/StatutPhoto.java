@@ -3,8 +3,10 @@ package com.orlanth23.annoncesnc.dto;
 import org.jetbrains.annotations.Contract;
 
 public enum StatutPhoto {
-    VALID("V"),
-    TOSEND("T");
+    valid("V"),
+    ToSend("T"),
+    ToUpdate("U"),
+    ToDelete("D");
 
     private String valeur;
 

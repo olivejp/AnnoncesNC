@@ -57,10 +57,8 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
                 prgDialog.hide();
                 if (rs.statusValid()) {
 
-                    // Si on a coché la case pour se souvenir de l'utilisateur
-                    if (checkBox_register_remember_me.isChecked()) {
-                        Utility.saveAutoComplete(mActivity, emailET, pwdET, checkBox_register_remember_me);
-                    }
+                    // Récupération du numéro Id de l'utilisateur renvoyé par le WS
+                    Integer idUser = rs.getIdServer();
 
                     // On remet les zones à blank
                     setDefaultValues();
@@ -69,10 +67,15 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
                     Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
 
                     // Récupération de l'utilisateur comme étant l'utilisateur courant
-                    CurrentUser.getInstance().setIdUTI(rs.getId());
+                    CurrentUser.getInstance().setIdUTI(idUser);
                     CurrentUser.getInstance().setEmailUTI(mEmail);
                     CurrentUser.getInstance().setTelephoneUTI(mTelephone);
                     CurrentUser.getInstance().setConnected(true);
+
+                    // Si on a coché la case pour se souvenir de l'utilisateur
+                    if (checkBox_register_remember_me.isChecked()) {
+                        Utility.saveAutoComplete(mActivity, emailET, pwdET, checkBox_register_remember_me, idUser);
+                    }
 
                     Utility.hideKeyboard(mActivity);
 

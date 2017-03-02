@@ -60,10 +60,18 @@ public interface RetrofitService {
     @POST("/REST/annonces")
     Call<ReturnWS> postAnnonce(@Query("idCat") Integer idCat,
                                @Query("idUser") Integer idUser,
-                               @Query("idAnnonce") Integer idAnnonce,
                                @Query("titre") String titre,
                                @Query("description") String description,
-                               @Query("prix") Integer prix);
+                               @Query("prix") Integer prix,
+                               @Query("idLocal") Integer idLocal);
+
+    @PUT("/REST/annonces/{idAnnonce}")
+    Call<ReturnWS> putAnnonce(@Path("idAnnonce") Integer idAnnonce,
+                               @Query("idCat") Integer idCat,
+                               @Query("titre") String titre,
+                               @Query("description") String description,
+                               @Query("prix") Integer prix,
+                               @Query("idLocal") Integer idLocal);
 
     @POST("/REST/utilisateurs/login")
     Call<ReturnWS> login(@Query("email") String email,

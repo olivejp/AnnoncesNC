@@ -18,6 +18,10 @@ public class AnnoncesProvider extends ContentProvider {
 
     public static final String sSelectionAnnonceById =
         AnnonceContract.TABLE_NAME + "." + AnnonceContract._ID + " = ?";
+
+    public static final String sSelectionAnnoncesByStatut =
+        AnnonceContract.TABLE_NAME + "." + AnnonceContract.COL_STATUT_ANNONCE + " = ?";
+
     static final int ANNONCE = 200;
     static final int UTILISATEUR = 300;
     static final int MESSAGE = 400;

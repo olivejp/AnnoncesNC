@@ -9,7 +9,7 @@ public class PhotoContract implements BaseColumns {
     public static final String COL_STATUT_PHOTO = "statutPhoto";
 
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
-        _ID + " INTEGER PRIMARY KEY," +
+        _ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
         COL_ID_ANNONCE + " INTEGER NULL," +
         COL_STATUT_PHOTO + " text NULL," +
         COL_NOM_PHOTO + " TEXT NULL);";

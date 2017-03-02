@@ -46,24 +46,39 @@ public class TestUtilities {
             testValues.put(PhotoContract._ID, photoId);
         }
         testValues.put(PhotoContract.COL_NOM_PHOTO, "snow.jpg");
-        testValues.put(PhotoContract.COL_STATUT_PHOTO, StatutPhoto.TOSEND.valeur());
+        testValues.put(PhotoContract.COL_STATUT_PHOTO, StatutPhoto.ToSend.valeur());
         testValues.put(PhotoContract.COL_ID_ANNONCE, idAnnonce);
         return testValues;
     }
 
-    static ContentValues createAnnonceValues(long annonceId) {
+    static ContentValues createAnnonceValuesNullId() {
         ContentValues testValues = new ContentValues();
-        testValues.put(AnnonceContract._ID, annonceId);
-        testValues.put(AnnonceContract.COL_CONTACT_MEL, "O");
-        testValues.put(AnnonceContract.COL_CONTACT_MSG, "O");
-        testValues.put(AnnonceContract.COL_CONTACT_TEL, "O");
+        testValues.put(AnnonceContract.COL_CONTACT_MEL, "0");
+        testValues.put(AnnonceContract.COL_CONTACT_MSG, "0");
+        testValues.put(AnnonceContract.COL_CONTACT_TEL, "0");
+        testValues.put(AnnonceContract.COL_ID_ANNONCE_SERVER, "1");
         testValues.put(AnnonceContract.COL_TITRE_ANNONCE, "Titre d'annonce");
         testValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE, "Description d'annonce");
         testValues.put(AnnonceContract.COL_PRIX_ANNONCE, "123456");
         testValues.put(AnnonceContract.COL_ID_UTILISATEUR, "1");
         testValues.put(AnnonceContract.COL_ID_CATEGORY, "1");
         testValues.put(AnnonceContract.COL_STATUT_ANNONCE, "V");
-        testValues.put(AnnonceContract.COL_DATE_PUBLICATION, "CURRENT_TIME()");
+        return testValues;
+    }
+
+    static ContentValues createAnnonceValues(long annonceId) {
+        ContentValues testValues = new ContentValues();
+        testValues.put(AnnonceContract._ID, annonceId);
+        testValues.put(AnnonceContract.COL_CONTACT_MEL, "0");
+        testValues.put(AnnonceContract.COL_CONTACT_MSG, "0");
+        testValues.put(AnnonceContract.COL_CONTACT_TEL, "0");
+        testValues.put(AnnonceContract.COL_ID_ANNONCE_SERVER, "1");
+        testValues.put(AnnonceContract.COL_TITRE_ANNONCE, "Titre d'annonce");
+        testValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE, "Description d'annonce");
+        testValues.put(AnnonceContract.COL_PRIX_ANNONCE, "123456");
+        testValues.put(AnnonceContract.COL_ID_UTILISATEUR, "1");
+        testValues.put(AnnonceContract.COL_ID_CATEGORY, "1");
+        testValues.put(AnnonceContract.COL_STATUT_ANNONCE, "V");
         return testValues;
     }
 

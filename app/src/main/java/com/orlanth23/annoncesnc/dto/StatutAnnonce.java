@@ -3,10 +3,11 @@ package com.orlanth23.annoncesnc.dto;
 import org.jetbrains.annotations.Contract;
 
 public enum StatutAnnonce {
-    UNREGISTRED("R"),
-    VALID("V"),
-    SOLD("S"),
-    TOSEND("T");
+    Valid("V"),
+    Sold("S"),
+    ToPost("T"),
+    ToUpdate("U"),
+    ToDelete("D");
 
     private String valeur;
 

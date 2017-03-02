@@ -70,6 +70,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
 
     private static final String TAG = MainActivity.class.getName();
     private static final String DIALOG_TAG_EXIT = "EXIT";
+    private static final String DIALOG_TAG_NO_ACCOUNT = "DIALOG_TAG_NO_ACCOUNT";
     private static final String PARAM_FRAGMENT = "FRAGMENT";
 
     @BindView(R.id.drawer_layout)
@@ -136,9 +137,10 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 }
             }
         }
+
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            SendDialogByActivity(mActivity, mActivity.getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, null);
+            SendDialogByActivity(mActivity, "Impossible de récupérer le compte par défaut.", NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_ACCOUNT);
         }
     };
 
@@ -201,7 +203,9 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         }
 
         // Lancement du service SyncAdapter
-        ContentResolver.requestSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY);
+        SyncUtils.CreateSyncAccount(this);
+        ContentResolver mResolver = getContentResolver();
+        ContentResolver.addPeriodicSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY, SyncUtils.SYNC_FREQUENCY);
 
         // Tentative de connexion avec l'utilisateur par défaut
         retrieveConnection();
@@ -241,6 +245,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         switch (dialog.getTag()) {
+            case DIALOG_TAG_NO_ACCOUNT:
+                break;
             case DIALOG_TAG_EXIT:
                 finish();
                 break;
@@ -255,6 +261,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
         switch (dialog.getTag()) {
+            case DIALOG_TAG_NO_ACCOUNT:
+                break;
             case DIALOG_TAG_EXIT:
                 break;
         }
@@ -317,6 +325,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     public boolean onPrepareOptionsMenu(Menu menu) {
         // if nav drawer is opened, hide the action items
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerListCategorie);
+        menu.findItem(R.id.action_refresh).setVisible(!drawerOpen);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
         menu.findItem(R.id.action_post).setVisible(!drawerOpen);
         menu.findItem(R.id.action_suggestion).setVisible(!drawerOpen);
@@ -375,7 +384,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         }
     }
 
-    public void onClickChangeToSearchFragment(View view){
+    public void onClickChangeToSearchFragment(View view) {
         changeToSearchFragment();
     }
 
@@ -404,6 +413,10 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         }
         // Handle action bar actions click
         switch (item.getItemId()) {
+
+            case R.id.action_refresh:
+                ContentResolver.requestSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY);
+                return true;
 
             case R.id.action_leave:
                 finish();

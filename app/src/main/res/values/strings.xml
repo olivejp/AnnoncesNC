@@ -229,5 +229,6 @@
         <item>#1B36BF</item>
         <item>#BF4A1B</item>
     </string-array>
+    <string name="refresh">Refresh</string>
 </resources>
 

@@ -12,6 +12,7 @@ public class AnnoncesSyncService extends Service {
 
     @Override
     public void onCreate() {
+        super.onCreate();
         Log.d("AnnoncesSyncService", "onCreate - AnnoncesSyncService");
         synchronized (sSyncAdapterLock){
             if (sAnnonceSyncAdapter == null){

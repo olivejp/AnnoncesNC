@@ -56,11 +56,13 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
             if (response.isSuccessful()) {
                 ReturnWS rs = response.body();
                 if (rs.statusValid()) {
-                    if (mCheckBoxRememberMe.isChecked()) {
-                        Utility.saveAutoComplete(mActivity, mEmailView, mPasswordView, mCheckBoxRememberMe);
-                    }
+
                     Gson gson = new Gson();
                     Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
+
+                    if (mCheckBoxRememberMe.isChecked()) {
+                        Utility.saveAutoComplete(mActivity, mEmailView, mPasswordView, mCheckBoxRememberMe, user.getIdUTI());
+                    }
 
                     // Récupération de l'utilisateur comme étant l'utilisateur courant
                     CurrentUser.getInstance();

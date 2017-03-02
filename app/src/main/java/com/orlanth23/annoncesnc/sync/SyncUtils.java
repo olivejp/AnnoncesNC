@@ -12,7 +12,7 @@ import com.orlanth23.annoncesnc.provider.ProviderContract;
 
 public class SyncUtils {
 
-    public static final long SYNC_FREQUENCY = 10;  // in seconds
+    public static final long SYNC_FREQUENCY = 1L ;  // in seconds
     public static final String CONTENT_AUTHORITY = ProviderContract.CONTENT_AUTHORITY;
     public static final String PREF_SETUP_COMPLETE = "setup_complete";
 

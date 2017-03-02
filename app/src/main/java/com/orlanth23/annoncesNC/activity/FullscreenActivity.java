@@ -58,12 +58,10 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
             if (response.isSuccessful()) {
                 ReturnWS retour = response.body();
                 if (retour.statusValid()) {
-                    Intent intent = new Intent();
                     P_OK = true;
                     ListeStats.setNbAnnonces(Integer.valueOf(retour.getMsg()));
                     imgGetStats.setImageResource(R.drawable.ic_action_accept);
-                    intent.setClass(getApplicationContext(), MainActivity.class);
-                    startActivity(intent);
+                    startMainActivity();
                 }else{
                     onFailureCallback( R.string.error_no_stats, imgGetStats);
                 }
@@ -147,6 +145,12 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
         }
     };
 
+    private void startMainActivity(){
+        Intent intent = new Intent();
+        intent.setClass(getApplicationContext(), MainActivity.class);
+        startActivity(intent);
+    }
+
     private void onFailureCallback(@StringRes int intRes, @Nullable ImageView imageView){
         if (imageView != null) {
             imageView.setImageResource(R.drawable.ic_remove_inverse);
@@ -189,7 +193,10 @@ public class FullscreenActivity extends CustomRetrofitCompatActivity implements 
         ListeCategories.getInstance(this);
 
         // Appel de tous les webservices
-        testAllWebservices();
+        // testAllWebservices();
+
+        // Démarrage de l'activity principale
+        startMainActivity();
     }
 
     @Override

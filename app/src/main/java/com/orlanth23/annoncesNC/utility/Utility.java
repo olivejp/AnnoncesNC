@@ -283,10 +283,11 @@ public class Utility {
         inputManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
-    public static boolean saveAutoComplete(Context context, EditText emailText, EditText passwordText, CheckBox checkBox) {
+    public static boolean saveAutoComplete(Context context, EditText emailText, EditText passwordText, CheckBox checkBox, Integer idUser) {
         boolean retourLogin;
         boolean retourPassword;
         boolean retourAutoConnect;
+        boolean retourIdUser;
         String valeur;
 
         if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_LOGIN)) {
@@ -322,7 +323,15 @@ public class Utility {
             retourAutoConnect = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT, valeur);
         }
 
-        return retourLogin && retourPassword && retourAutoConnect;
+        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_ID_USER)) {
+            // L'enregistrement existe bien, on va juste le mettre à jour
+            retourIdUser = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_ID_USER, String.valueOf(idUser));
+        } else {
+            // Création de l'enregistrement
+            retourIdUser = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_ID_USER, String.valueOf(idUser));
+        }
+
+        return retourLogin && retourPassword && retourAutoConnect && retourIdUser;
     }
 
 }

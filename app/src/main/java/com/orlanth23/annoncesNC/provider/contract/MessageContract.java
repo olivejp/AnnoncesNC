@@ -12,7 +12,7 @@ public class MessageContract implements BaseColumns {
     public static final String COL_STATUT_MESSAGE = "statutMessage";
 
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
-        _ID + " INTEGER PRIMARY KEY," +
+        _ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
         COL_ID_ANNONCE + " INTEGER NOT NULL," +
         COL_ID_SENDER + " INTEGER NOT NULL," +
         COL_ID_RECEIVER + " INTEGER NOT NULL," +

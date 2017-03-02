@@ -13,7 +13,7 @@ public class UtilisateurContract implements BaseColumns{
     public static final String COL_STATUT_UTILISATEUR = "statutUtilisateur";
 
     public static final String CREATE_TABLE = "CREATE TABLE "+TABLE_NAME+" ("+
-            _ID + " INTEGER PRIMARY KEY,"+
+            _ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"+
             COL_TELEPHONE_UTILISATEUR + " INTEGER NULL,"+
             COL_EMAIL_UTILISATEUR + " TEXT NULL,"+
             COL_DATE_CREATION_UTILISATEUR + " TIMESTAMP,"+

@@ -4,6 +4,11 @@
     tools:context=".MainActivity">
 
     <item
+        android:id="@+id/action_refresh"
+        android:title="@string/refresh"
+        appcompat:showAsAction="never" />
+
+    <item
         android:id="@+id/action_search"
         android:title="@string/action_search"
         appcompat:showAsAction="never" />

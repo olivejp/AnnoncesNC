@@ -9,7 +9,7 @@ import android.os.IBinder;
 public class AnnoncesAuthenticatorService extends Service {
 
     private static final String ACCOUNT_NAME = "sync";
-    private static final String ACCOUNT_TYPE = "annoncesnc.orlanth23.com";
+    private static final String ACCOUNT_TYPE = "com.orlanth23.annoncesnc";
     private AnnoncesAuthenticator mAuthenticator;
 
     public static Account getAccount() {

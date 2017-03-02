@@ -1,9 +1,9 @@
 package com.orlanth23.annoncesnc.dialog;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,30 +16,28 @@ import com.orlanth23.annoncesnc.R;
 
 public class NoticeDialogFragment extends DialogFragment {
 
-    public static final String P_MESSAGE                = "message";
-    public static final String P_TYPE                   = "type";
+    public static final String P_MESSAGE = "message";
+    public static final String P_TYPE = "type";
     public static final String P_IMG = "image";
-    public static final int TYPE_BOUTON_YESNO           = 10;
-    public static final int TYPE_BOUTON_OK              = 20;
+    public static final int TYPE_BOUTON_YESNO = 10;
+    public static final int TYPE_BOUTON_OK = 20;
     public static final int TYPE_IMAGE_CAUTION = 100;
     public static final int TYPE_IMAGE_ERROR = 110;
     public static final int TYPE_IMAGE_INFORMATION = 120;
     // Use this instance of the interface to deliver action events
     NoticeDialogListener mListener;
 
-    // Override the Fragment.onAttach() method to instantiate the NoticeDialogListener
     @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        // Verify that the host activity implements the callback interface
+    public void onAttach(Context context) {
+        super.onAttach(context);
         try {
             // Instantiate the NoticeDialogListener so we can send events to the host
-            mListener = (NoticeDialogListener) activity;
+            mListener = (NoticeDialogListener) context;
         } catch (ClassCastException e) {
             Log.e("ClassCastException", e.getMessage(), e);
             // The activity doesn't implement the interface, throw exception
-            throw new ClassCastException(activity.toString()
-                    + " doit implementer l'interface NoticeDialogListener");
+            throw new ClassCastException(context.toString()
+                + " doit implementer l'interface NoticeDialogListener");
         }
     }
 
@@ -62,7 +60,7 @@ public class NoticeDialogFragment extends DialogFragment {
         // builder.setMessage(getArguments().getString(P_MESSAGE));
         textview.setText(getArguments().getString(P_MESSAGE));
 
-        switch (typeBouton){
+        switch (typeBouton) {
             case TYPE_BOUTON_OK:
                 builder.setPositiveButton(R.string.dialogOk, new DialogInterface.OnClickListener() {
                     @Override
