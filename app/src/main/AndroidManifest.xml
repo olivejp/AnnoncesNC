@@ -1,32 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.orlanth23.annoncesnc">
-
-    <uses-permission
-        android:name="android.permission.CALL_PHONE"
-        android:required="true" />
-    <uses-permission
-        android:name="android.permission.INTERNET"
-        android:required="true" />
-    <uses-permission
-        android:name="android.permission.ACCESS_NETWORK_STATE"
-        android:required="true" />
-    <uses-permission
-        android:name="android.permission.SEND_SMS"
-        android:required="true" />
-    <uses-permission
-        android:name="android.permission.CAMERA"
-        android:required="true" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
+    <uses-permission android:name="android.permission.INTERNET" android:required="true" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" android:required="true" />
+    <uses-permission android:name="android.permission.SEND_SMS"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-
-    <uses-permission
-        android:name="android.permission.READ_SYNC_STATS"/>
-    <uses-permission
-        android:name="android.permission.READ_SYNC_SETTINGS"/>
-    <uses-permission
-        android:name="android.permission.WRITE_SYNC_SETTINGS"/>
-    <uses-permission
-        android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
 
     <application
         android:allowBackup="true"
@@ -52,7 +37,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit"
+            android:name="com.orlanth23.annoncesnc.activity.LoginActivity"
             android:label="@string/title_activity_login"
             android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity"
             android:windowSoftInputMode="adjustResize|stateHidden">
@@ -72,11 +57,11 @@
         <activity
             android:name="com.orlanth23.annoncesnc.activity.RegisterActivity"
             android:label="@string/title_register"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit"
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginActivity"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit" />
+                android:value="com.orlanth23.annoncesnc.activity.LoginActivity" />
         </activity>
         <activity
             android:name="com.orlanth23.annoncesnc.activity.SettingsActivity"
@@ -89,10 +74,10 @@
         <activity
             android:name="com.orlanth23.annoncesnc.activity.LostPasswordActivity"
             android:label="@string/action_lost_password"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit">
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.LoginActivityRetrofit" />
+                android:value="com.orlanth23.annoncesnc.activity.LoginActivity" />
         </activity>
         <activity
             android:name="com.orlanth23.annoncesnc.activity.ChangePasswordActivity"

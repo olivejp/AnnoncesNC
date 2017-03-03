@@ -20,8 +20,8 @@ package com.orlanth23.annoncesnc;
 import junit.framework.Assert;
 
 public abstract class PollingCheck {
-    private static final long TIME_SLICE = 50;
-    private long mTimeout = 3000;
+    private static final long TIME_SLICE = 70;
+    private long mTimeout = 4000;
 
     public PollingCheck() {
     }

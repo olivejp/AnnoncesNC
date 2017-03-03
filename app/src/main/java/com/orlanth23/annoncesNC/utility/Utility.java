@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -163,16 +164,16 @@ public class Utility {
         return txt != null && txt.trim().length() > 0;
     }
 
-    private static boolean isWifiActivated(Activity activity){
+    private static boolean isWifiActivated(Context context){
         // Test de la connexion WIFI
-        ConnectivityManager connManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
     }
 
-    private static boolean is3GActivated(Activity activity){
+    private static boolean is3GActivated(Context context){
         // Test de la connexion 3g
-        ConnectivityManager connManager = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
     }
@@ -194,7 +195,7 @@ public class Utility {
         return Integer.valueOf(number);
     }
 
-    public static void SendDialogByFragmentManager(FragmentManager fragmentManager, String message, int type, int img, String tag) {
+    public static void SendDialogByFragmentManager(FragmentManager fragmentManager, String message, int type, int img, @Nullable String tag) {
         NoticeDialogFragment dialogErreur = new NoticeDialogFragment();
         Bundle bundle = new Bundle();
         bundle.putString(NoticeDialogFragment.P_MESSAGE, message);
@@ -268,8 +269,8 @@ public class Utility {
         return NumberFormat.getNumberInstance(Locale.FRENCH).format(prix) + " " + Constants.CURRENCY;
     }
 
-    public static boolean checkWifiAndMobileData(Activity activity) {
-        return (Utility.isWifiActivated(activity) || Utility.is3GActivated(activity));
+    public static boolean checkWifiAndMobileData(Context context) {
+        return (Utility.isWifiActivated(context) || Utility.is3GActivated(context));
     }
 
     public static void hideKeyboard(Context ctx) {

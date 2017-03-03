@@ -7,6 +7,7 @@ import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -41,6 +42,7 @@ import com.orlanth23.annoncesnc.fragment.MyProfileFragment;
 import com.orlanth23.annoncesnc.fragment.SearchFragment;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.sync.SyncUtils;
 import com.orlanth23.annoncesnc.utility.Constants;
@@ -202,9 +204,14 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             mContent = getFragmentManager().getFragment(savedInstanceState, PARAM_FRAGMENT);
         }
 
+        // Création d'un broadcast pour écouter si la connectivité à changer
+        AnnoncesReceiver annoncesReceiver = new AnnoncesReceiver();
+        IntentFilter ifilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+        registerReceiver(annoncesReceiver, ifilter);
+
         // Lancement du service SyncAdapter
         SyncUtils.CreateSyncAccount(this);
-        ContentResolver mResolver = getContentResolver();
+        getContentResolver();
         ContentResolver.addPeriodicSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY, SyncUtils.SYNC_FREQUENCY);
 
         // Tentative de connexion avec l'utilisateur par défaut
@@ -345,7 +352,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         // Vérification que l'utilisateur est connecté
         if (!CurrentUser.getInstance().isConnected()) {
             // Ouverture de l'activity pour connecter l'utilisateur
-            intent.setClass(this, LoginActivityRetrofit.class);
+            intent.setClass(this, LoginActivity.class);
             b.putInt(PARAM_REQUEST_CODE, CODE_POST_NOT_LOGGED); //Your id
             intent.putExtras(b);
             startActivityForResult(intent, CODE_POST_NOT_LOGGED);
@@ -465,7 +472,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 if (!CurrentUser.getInstance().isConnected()) {
                     // Ouverture de l'activity pour connecter l'utilisateur
                     Intent intent = new Intent();
-                    intent.setClass(this, LoginActivityRetrofit.class);
+                    intent.setClass(this, LoginActivity.class);
                     startActivityForResult(intent, CODE_CONNECT_USER);
                     return true;
                 } else {

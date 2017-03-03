@@ -32,9 +32,9 @@ import retrofit2.Response;
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 
-public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
+public class LoginActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
 
-    private static final String tag = LoginActivityRetrofit.class.getName();
+    private static final String tag = LoginActivity.class.getName();
 
     @BindView(R.id.email)
     AutoCompleteTextView mEmailView;
@@ -74,6 +74,8 @@ public class LoginActivityRetrofit extends CustomRetrofitCompatActivity implemen
                     errorMsg.setText(rs.getMsg());
                     Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
                 }
+            }else{
+                SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
             }
         }
 

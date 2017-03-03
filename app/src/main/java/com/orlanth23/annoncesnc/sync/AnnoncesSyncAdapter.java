@@ -10,6 +10,7 @@ import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.dto.StatutAnnonce;
@@ -49,6 +50,8 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                     String where = AnnonceContract._ID + " = ?";
                     String[] whereArgs = new String[]{String.valueOf(idLocal)};
                     mContentResolver.update(AnnonceEntry.CONTENT_URI, contentValues, where, whereArgs);
+                } else {
+                    Toast.makeText(getContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
                 }
             }
         }
@@ -141,14 +144,14 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         Log.d(TAG, "JPO ***** onPerformSync");
     }
 
-    private void postAnnonceEnAttente(){
+    private void postAnnonceEnAttente() {
         // Lecture des annonces postées Hors Connexion qui sont maintenant à envoyer
         Cursor cursorAnnoncesToSend;
         String[] selectionArgs = new String[]{StatutAnnonce.ToPost.valeur()};
         cursorAnnoncesToSend = mContentResolver.query(AnnonceEntry.CONTENT_URI, null, sSelectionAnnoncesByStatut, selectionArgs, null);
 
         if (cursorAnnoncesToSend != null) {
-            while (cursorAnnoncesToSend.moveToNext()){
+            while (cursorAnnoncesToSend.moveToNext()) {
                 int indexColIdLocal = cursorAnnoncesToSend.getColumnIndex(AnnonceContract._ID);
                 int indexColIdCategory = cursorAnnoncesToSend.getColumnIndex(AnnonceContract.COL_ID_CATEGORY);
                 int indexColIdUtilisateur = cursorAnnoncesToSend.getColumnIndex(AnnonceContract.COL_ID_UTILISATEUR);
@@ -156,13 +159,15 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                 int indexColDescriptionAnnonce = cursorAnnoncesToSend.getColumnIndex(AnnonceContract.COL_DESCRIPTION_ANNONCE);
                 int indexColPrixAnnonce = cursorAnnoncesToSend.getColumnIndex(AnnonceContract.COL_PRIX_ANNONCE);
 
-                retrofitService.postAnnonce(cursorAnnoncesToSend.getInt(indexColIdCategory),
-                    cursorAnnoncesToSend.getInt(indexColIdUtilisateur),
-                    cursorAnnoncesToSend.getString(indexColTitreAnnonce),
-                    cursorAnnoncesToSend.getString(indexColDescriptionAnnonce),
-                    cursorAnnoncesToSend.getInt(indexColPrixAnnonce),
-                    cursorAnnoncesToSend.getInt(indexColIdLocal)).enqueue(callbackPostAnnonce);
-            }
+                Integer idCategory = cursorAnnoncesToSend.getInt(indexColIdCategory);
+                Integer idUtilisateur = cursorAnnoncesToSend.getInt(indexColIdUtilisateur);
+                String titreAnnonce = cursorAnnoncesToSend.getString(indexColTitreAnnonce);
+                String descriptionAnnonce = cursorAnnoncesToSend.getString(indexColDescriptionAnnonce);
+                Integer prixAnnonce = cursorAnnoncesToSend.getInt(indexColPrixAnnonce);
+                Integer idLocal = cursorAnnoncesToSend.getInt(indexColIdLocal);
+
+                retrofitService.postAnnonce(idCategory,idUtilisateur, titreAnnonce, descriptionAnnonce, prixAnnonce, idLocal).enqueue(callbackPostAnnonce);
+           }
             cursorAnnoncesToSend.close();
         }
     }

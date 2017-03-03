@@ -529,6 +529,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         } else {
             ContentValues contentValues = getAnnonceInContentValue(StatutAnnonce.ToPost.valeur());
             getContentResolver().insert(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues);
+            SendDialogByFragmentManager(getFragmentManager(), "Votre annonce a été sauvegardée et sera envoyée à votre prochaine connexion.", NoticeDialogFragment.TYPE_BOUTON_OK, 0, null);
+            prgDialog.hide();
         }
     }
 
@@ -542,6 +544,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         } else {
             ContentValues contentValues = getAnnonceInContentValue(StatutAnnonce.ToUpdate.valeur());
             getContentResolver().insert(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues);
+            SendDialogByFragmentManager(getFragmentManager(), "Votre annonce a été sauvegardée et sera envoyée à votre prochaine connexion.", NoticeDialogFragment.TYPE_BOUTON_OK, 0, null);
+            prgDialog.hide();
         }
     }
 

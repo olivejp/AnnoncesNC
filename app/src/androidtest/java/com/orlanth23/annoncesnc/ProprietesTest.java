@@ -16,6 +16,6 @@ public class ProprietesTest {
     @Test
     public void testAccessPoint(){
         String localEndpoint = Proprietes.getProperty(Proprietes.LOCAL_ENDPOINT);
-        assertEquals(localEndpoint, "http://annoncesnc.ddns.net");
+        assertEquals(localEndpoint, "http://10.0.2.2");
     }
 }
