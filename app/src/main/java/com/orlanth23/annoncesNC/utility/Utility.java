@@ -19,14 +19,13 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.dto.Utilisateur;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -41,6 +40,11 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.orlanth23.annoncesnc.database.DictionaryDAO.Dictionary;
+import static com.orlanth23.annoncesnc.database.DictionaryDAO.existDictionary;
+import static com.orlanth23.annoncesnc.database.DictionaryDAO.insertInto;
+import static com.orlanth23.annoncesnc.database.DictionaryDAO.update;
 
 
 public class Utility {
@@ -284,52 +288,44 @@ public class Utility {
         inputManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
-    public static boolean saveAutoComplete(Context context, EditText emailText, EditText passwordText, CheckBox checkBox, Integer idUser) {
+    public static boolean saveAutoComplete(Context context, Utilisateur utilisateur, EditText passwordText) {
         boolean retourLogin;
         boolean retourPassword;
         boolean retourAutoConnect;
         boolean retourIdUser;
+        boolean retourTelephoneUser;
         String valeur;
 
-        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_LOGIN)) {
-            // L'enregistrement existe bien, on va juste le mettre à jour
-            retourLogin = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_LOGIN, emailText.getText().toString());
+        if (existDictionary(context, Dictionary.DB_CLEF_LOGIN)) {
+            retourLogin = update(context, Dictionary.DB_CLEF_LOGIN, utilisateur.getEmailUTI());
         } else {
-            // Création de l'enregistrement
-            retourLogin = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_LOGIN, emailText.getText().toString());
+            retourLogin = insertInto(context, Dictionary.DB_CLEF_LOGIN, utilisateur.getEmailUTI());
         }
-
 
         // Encryptage du mot de passe
         String motDePasseEncrypted = PasswordEncryptionService.desEncryptIt(passwordText.getText().toString());
-        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE)) {
-            // L'enregistrement existe bien, on va juste le mettre à jour
-            retourPassword = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE, motDePasseEncrypted);
+        if (existDictionary(context, Dictionary.DB_CLEF_MOT_PASSE)) {
+            retourPassword = update(context, Dictionary.DB_CLEF_MOT_PASSE, motDePasseEncrypted);
         } else {
-            // Création de l'enregistrement
-            retourPassword = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE, motDePasseEncrypted);
+            retourPassword = insertInto(context, Dictionary.DB_CLEF_MOT_PASSE, motDePasseEncrypted);
         }
 
-        if (checkBox.isChecked()) {
-            valeur = "O";
+        if (existDictionary(context, Dictionary.DB_CLEF_AUTO_CONNECT)) {
+            retourAutoConnect = update(context, Dictionary.DB_CLEF_AUTO_CONNECT, "O");
         } else {
-            valeur = "N";
+            retourAutoConnect = insertInto(context, Dictionary.DB_CLEF_AUTO_CONNECT, "O");
         }
 
-        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT)) {
-            // L'enregistrement existe bien, on va juste le mettre à jour
-            retourAutoConnect = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT, valeur);
+        if (existDictionary(context, Dictionary.DB_CLEF_ID_USER)) {
+            retourIdUser = update(context, Dictionary.DB_CLEF_ID_USER, String.valueOf(utilisateur.getIdUTI()));
         } else {
-            // Création de l'enregistrement
-            retourAutoConnect = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT, valeur);
+            retourIdUser = insertInto(context, Dictionary.DB_CLEF_ID_USER, String.valueOf(utilisateur.getIdUTI()));
         }
 
-        if (DictionaryDAO.existDictionary(context, DictionaryDAO.Dictionary.DB_CLEF_ID_USER)) {
-            // L'enregistrement existe bien, on va juste le mettre à jour
-            retourIdUser = DictionaryDAO.update(context, DictionaryDAO.Dictionary.DB_CLEF_ID_USER, String.valueOf(idUser));
+        if (existDictionary(context, Dictionary.DB_CLEF_TELEPHONE)) {
+            retourTelephoneUser = update(context, Dictionary.DB_CLEF_TELEPHONE, String.valueOf(utilisateur.getTelephoneUTI()));
         } else {
-            // Création de l'enregistrement
-            retourIdUser = DictionaryDAO.insertInto(context, DictionaryDAO.Dictionary.DB_CLEF_ID_USER, String.valueOf(idUser));
+            retourTelephoneUser = insertInto(context, Dictionary.DB_CLEF_TELEPHONE, String.valueOf(utilisateur.getTelephoneUTI()));
         }
 
         return retourLogin && retourPassword && retourAutoConnect && retourIdUser;

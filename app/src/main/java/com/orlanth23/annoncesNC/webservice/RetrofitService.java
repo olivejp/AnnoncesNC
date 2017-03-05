@@ -11,6 +11,9 @@ import retrofit2.http.Query;
 
 public interface RetrofitService {
 
+    @POST("/REST/services/infoserver")
+    Call<ReturnWS> infoServer();
+
     @POST("/REST/services/checkconnection")
     Call<ReturnWS> checkConnection();
 
@@ -57,6 +60,12 @@ public interface RetrofitService {
                              @Query("idPhoto") Integer idPhoto,
                              @Query("nomPhoto") String nomPhoto);
 
+    @GET("/REST/photos/{idPhoto}")
+    Call<ReturnWS> getPhoto(@Path("idPhoto") Integer idPhoto);
+
+    @DELETE("/REST/photos/{idPhoto}")
+    Call<ReturnWS> postPhoto(@Path("idPhoto") Integer idPhoto);
+
     @POST("/REST/annonces")
     Call<ReturnWS> postAnnonce(@Query("idCat") Integer idCat,
                                @Query("idUser") Integer idUser,
@@ -80,9 +89,9 @@ public interface RetrofitService {
     @DELETE("/REST/annonces/{idAnnonce}")
     Call<ReturnWS> deleteAnnonce(@Path("idAnnonce") Integer idAnnonce);
 
-    @DELETE("/REST/annonces/{idAnnonce}/photos")
+    @DELETE("/REST/annonces/{idAnnonce}/photos/{idPhoto}")
     Call<ReturnWS> deletePhoto(@Path("idAnnonce") Integer idAnnonce,
-                               @Query("idPhoto") Integer idPhoto);
+                               @Path("idPhoto") Integer idPhoto);
 
 
     @POST("/REST/utilisateurs/lost-password")

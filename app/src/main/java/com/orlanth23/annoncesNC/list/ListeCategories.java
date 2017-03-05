@@ -10,6 +10,7 @@ import com.orlanth23.annoncesnc.dto.Categorie;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ListeCategories {
 
@@ -34,43 +35,37 @@ public class ListeCategories {
         return INSTANCE;
     }
 
-    public static boolean setNbAnnonceFromJson(String json) {
-        if(json == null) {
+    public static boolean setNbAnnonceFromHashMap(Context context, HashMap<Integer, Integer> pHashMap) {
+        if(pHashMap == null) {
             return false;
         }
 
-        if(json.isEmpty()){
+        if(pHashMap.isEmpty()){
             return false;
         }
 
-        Gson gson = new Gson();
-        Type listType = new TypeToken<ArrayList<Categorie>>() {
-        }.getType();
-        ArrayList<Categorie> categories = gson.fromJson(json, listType);
-
-        if (categories.isEmpty()){
-            return false;
-        }
-
-        for (Categorie categorieOut : categories) {
-            for (Categorie categorieIn : myArrayList) {
-                if (categorieOut.getIdCAT().equals(categorieIn.getIdCAT())){
-                    categorieIn.setNbAnnonceCAT(categorieOut.getNbAnnonceCAT());
-                }
-            }
+        ListeCategories listeCategories = ListeCategories.getInstance(context);
+        for (Categorie categorie : listeCategories.getListCategorie()) {
+            categorie.setNbAnnonceCAT(pHashMap.get(categorie.getIdCAT()));
         }
 
         return true;
     }
 
+    public Categorie getCategorieById(Integer idCategorie) {
+        for (Categorie cat : myArrayList) {
+            if (cat.getIdCAT().equals(idCategorie)) {
+                return  cat;
+            }
+        }
+        return null;
+    }
+
     public Categorie getCategorieByName(String nameCategorie) {
-        int i = 0;
-        int index = 0;
         for (Categorie cat : myArrayList) {
             if (cat.getNameCAT().equals(nameCategorie)) {
                 return  cat;
             }
-            i++;
         }
         return null;
     }

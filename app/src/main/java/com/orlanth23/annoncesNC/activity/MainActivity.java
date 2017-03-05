@@ -133,7 +133,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                     refreshMenu();
 
                     // Display successfully registered message using Toast
-                    Toast.makeText(mActivity, mActivity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
+                    sendOkLoginToast();
                 } else {
                     Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
                 }
@@ -145,6 +145,10 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             SendDialogByActivity(mActivity, "Impossible de récupérer le compte par défaut.", NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_ACCOUNT);
         }
     };
+
+    private void sendOkLoginToast(){
+        Toast.makeText(mActivity, mActivity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -162,8 +166,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         mTitle = getString(R.string.app_name);  // Récupération du titre
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-            new Toolbar(this),
-            R.string.app_name, R.string.app_name) {
+                new Toolbar(this),
+                R.string.app_name, R.string.app_name) {
             public void onDrawerClosed(View view) {
                 setTitle(mTitle);
                 invalidateOptionsMenu();
@@ -281,14 +285,28 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         String connexion_auto = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT);
         if (connexion_auto != null && connexion_auto.equals("O")) {
             if (!CurrentUser.getInstance().isConnected()) {
+                String idUser = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_ID_USER);
                 String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
                 String password = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
+                String telephone = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_TELEPHONE);
 
                 // Si les données d'identification ont été saisies
                 if (email != null && password != null) {
-                    RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
-                    Call<ReturnWS> callLogin = retrofitService.login(email, password);
-                    callLogin.enqueue(callbackLogin);
+
+                    if (Utility.checkWifiAndMobileData(this)) {
+                        // On tente de se connecter au serveur.
+                        RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+                        Call<ReturnWS> callLogin = retrofitService.login(email, password);
+                        callLogin.enqueue(callbackLogin);
+                    }else{
+                        // Si pas de connexion, on récupère l'utilisateur enregistré
+                        CurrentUser currentUser = CurrentUser.getInstance();
+                        currentUser.setConnected(true);
+                        currentUser.setIdUTI(Integer.valueOf(idUser));
+                        currentUser.setEmailUTI(email);
+                        currentUser.setTelephoneUTI(Integer.valueOf(telephone));
+                        sendOkLoginToast();
+                    }
                 }
             }
         }
@@ -378,7 +396,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 setTitle(getString(R.string.searchTitle));
                 mContent = searchFragment;
                 getFragmentManager().beginTransaction()
-                    .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
+                        .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
                 mDrawerLayout.closeDrawer(mDrawerListCategorie);
                 return true;
             } else {
@@ -426,7 +444,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 return true;
 
             case R.id.action_leave:
-                finish();
+                SendDialogByActivity(this,getString(R.string.dialog_want_to_quit), NoticeDialogFragment.TYPE_BOUTON_OK, 0, DIALOG_TAG_EXIT);
                 return true;
 
             case R.id.action_suggestion:

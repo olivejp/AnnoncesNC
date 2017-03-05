@@ -20,6 +20,10 @@ public class Photo implements Parcelable {
     private String namePhoto;
     private Integer idAnnoncePhoto;
 
+    public Photo() {
+        super();
+    }
+
     public Photo(Integer p_idPhoto, String p_namePhoto, Integer idAnnonce) {
         this.idPhoto = p_idPhoto;
         this.namePhoto = p_namePhoto;

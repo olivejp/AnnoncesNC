@@ -22,6 +22,9 @@ public class AnnoncesProvider extends ContentProvider {
     public static final String sSelectionAnnoncesByStatut =
         AnnonceContract.TABLE_NAME + "." + AnnonceContract.COL_STATUT_ANNONCE + " = ?";
 
+    public static final String sSelectionPhotosByStatut =
+            PhotoContract.TABLE_NAME + "." + PhotoContract.COL_STATUT_PHOTO + " = ?";
+
     static final int ANNONCE = 200;
     static final int UTILISATEUR = 300;
     static final int MESSAGE = 400;

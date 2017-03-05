@@ -3,9 +3,6 @@ package com.orlanth23.annoncesnc.dto;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-/**
- * Created by orlanth23 on 17/08/2015.
- */
 public class Utilisateur implements Parcelable {
 
     public static final Parcelable.Creator<Utilisateur> CREATOR = new Parcelable.Creator<Utilisateur>() {

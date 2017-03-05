@@ -67,14 +67,15 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
                     Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
 
                     // Récupération de l'utilisateur comme étant l'utilisateur courant
-                    CurrentUser.getInstance().setIdUTI(idUser);
-                    CurrentUser.getInstance().setEmailUTI(mEmail);
-                    CurrentUser.getInstance().setTelephoneUTI(mTelephone);
-                    CurrentUser.getInstance().setConnected(true);
+                    CurrentUser cu = CurrentUser.getInstance();
+                    cu.setIdUTI(idUser);
+                    cu.setEmailUTI(mEmail);
+                    cu.setTelephoneUTI(mTelephone);
+                    cu.setConnected(true);
 
                     // Si on a coché la case pour se souvenir de l'utilisateur
                     if (checkBox_register_remember_me.isChecked()) {
-                        Utility.saveAutoComplete(mActivity, emailET, pwdET, checkBox_register_remember_me, idUser);
+                        Utility.saveAutoComplete(mActivity, cu, pwdET);
                     }
 
                     Utility.hideKeyboard(mActivity);

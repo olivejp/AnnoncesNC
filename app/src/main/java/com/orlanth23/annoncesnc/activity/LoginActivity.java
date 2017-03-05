@@ -61,7 +61,7 @@ public class LoginActivity extends CustomRetrofitCompatActivity implements Notic
                     Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
 
                     if (mCheckBoxRememberMe.isChecked()) {
-                        Utility.saveAutoComplete(mActivity, mEmailView, mPasswordView, mCheckBoxRememberMe, user.getIdUTI());
+                        Utility.saveAutoComplete(mActivity, user, mPasswordView);
                     }
 
                     // Récupération de l'utilisateur comme étant l'utilisateur courant

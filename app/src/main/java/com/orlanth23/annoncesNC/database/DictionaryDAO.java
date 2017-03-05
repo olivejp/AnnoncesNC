@@ -110,6 +110,7 @@ public class DictionaryDAO {
         public static final String DB_CLEF_MOT_PASSE = "MOT_DE_PASSE";
         public static final String DB_CLEF_ID_USER = "ID_USER";
         public static final String DB_CLEF_AUTO_CONNECT = "CONNECTION_AUTO";
+        public static final String DB_CLEF_TELEPHONE = "TELEPHONE";
         static final String COLUMN_CLEF = "CLEF";
         static final String COLUMN_CHAMP = "CHAMP";
     }
