@@ -26,19 +26,11 @@ import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
-import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class SearchFragment extends Fragment implements OnClickListener {
 
@@ -67,7 +59,6 @@ public class SearchFragment extends Fragment implements OnClickListener {
     Spinner spinnerCategory;
     @BindView(R.id.txtCheckBox)
     TextView txtCheckBox;
-    private ListeCategories listCategorie;
 
 
     private View.OnClickListener textCheckBoxclickListener = new View.OnClickListener() {
@@ -85,25 +76,6 @@ public class SearchFragment extends Fragment implements OnClickListener {
         }
     };
 
-    private Callback<ReturnWS> callbackListCategory = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS retour = response.body();
-                if (retour.statusValid()) {
-                    // On réceptionne la liste des catégories dans l'instance ListeCategories
-                    ListeCategories.setNbAnnonceFromJson(retour.getMsg());
-                    loadSpinner(listCategorie.getListCategorie());
-                }
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-        }
-    };
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -115,15 +87,8 @@ public class SearchFragment extends Fragment implements OnClickListener {
         spinnerCategory.setOnTouchListener(spinnerOnTouch);
         spinnerCategory.setOnKeyListener(spinnerOnKey);
 
-        listCategorie = ListeCategories.getInstance(getActivity());
-
-        if (listCategorie.getListCategorie() == null) {
-            RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
-            Call<ReturnWS> call = retrofitService.getListCategory();
-            call.enqueue(callbackListCategory);
-        } else {
-            loadSpinner(listCategorie.getListCategorie());
-        }
+        ListeCategories listCategorie = ListeCategories.getInstance(getActivity());
+        loadSpinner(listCategorie.getListCategorie());
 
         setHasOptionsMenu(true);
         getActivity().setTitle(getString(R.string.action_search));

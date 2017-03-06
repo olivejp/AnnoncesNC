@@ -21,8 +21,8 @@ public class Annonce implements Parcelable {
     };
 
     private Integer idANO;               // Identifiant
-    private Categorie categorieANO;      // Une annonce appartient à une catégorie
-    private Utilisateur ownerANO;        // Une annonce est rédigée par une personne
+    private Integer idCategorieANO;      // Une annonce appartient à une catégorie
+    private Utilisateur utilisateurANO;  // Une annonce est rédigée par une personne
     private Integer priceANO;            // L'annonce a un prix
     private String descriptionANO;       // Description de l'annonce
     private String titreANO;             // Titre de l'annonce
@@ -33,8 +33,8 @@ public class Annonce implements Parcelable {
     /* Constructeur à partir d'un Parcel*/
     private Annonce(Parcel in) {
         idANO = in.readInt();
-        categorieANO = in.readParcelable(Categorie.class.getClassLoader());
-        ownerANO = in.readParcelable(Utilisateur.class.getClassLoader());
+        idCategorieANO = in.readInt();
+        utilisateurANO = in.readParcelable(Utilisateur.class.getClassLoader());
         priceANO = in.readInt();
         descriptionANO = in.readString();
         titreANO = in.readString();
@@ -48,8 +48,8 @@ public class Annonce implements Parcelable {
     public Annonce(){
         super();
         this.idANO = 0;
-        this.categorieANO = null;
-        this.ownerANO = null;
+        this.idCategorieANO = null;
+        this.utilisateurANO = null;
         this.priceANO = 0;
         this.descriptionANO = "";
         this.titreANO = "";
@@ -66,20 +66,20 @@ public class Annonce implements Parcelable {
         this.idANO = idANO;
     }
 
-    public Categorie getCategorieANO() {
-        return categorieANO;
+    public Integer getIdCategorieANO() {
+        return idCategorieANO;
     }
 
-    public void setCategorieANO(Categorie categorieANO) {
-        this.categorieANO = categorieANO;
+    public void setIdCategorieANO(Integer idCategorieANO) {
+        this.idCategorieANO = idCategorieANO;
     }
 
-    public Utilisateur getOwnerANO() {
-        return ownerANO;
+    public Utilisateur getUtilisateurANO() {
+        return utilisateurANO;
     }
 
-    public void setOwnerANO(Utilisateur ownerANO) {
-        this.ownerANO = ownerANO;
+    public void setUtilisateurANO(Utilisateur utilisateurANO) {
+        this.utilisateurANO = utilisateurANO;
     }
 
     public Integer getPriceANO() {
@@ -138,8 +138,8 @@ public class Annonce implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(this.idANO);
-        dest.writeParcelable(this.categorieANO, 0);
-        dest.writeParcelable(this.ownerANO, 0);
+        dest.writeInt(this.idCategorieANO);
+        dest.writeParcelable(this.utilisateurANO, 0);
         dest.writeInt(this.priceANO);
         dest.writeString(this.descriptionANO);
         dest.writeString(this.titreANO);

@@ -38,7 +38,7 @@
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:layout_centerInParent="true"
-                    android:background="@drawable/roudedbutton"
+                    android:background="@drawable/rounded_button_primary"
                     android:onClick="onClickChangeToSearchFragment"
                     android:text="@string/action_search"
                     android:textColor="@color/white" />
@@ -55,7 +55,7 @@
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:layout_centerInParent="true"
-                    android:background="@drawable/roudedbutton"
+                    android:background="@drawable/rounded_button_primary"
                     android:onClick="mainPost"
                     android:text="@string/action_post"
                     android:textColor="@color/white" />

@@ -29,8 +29,10 @@ import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.activity.ImageViewerActivity;
 import com.orlanth23.annoncesnc.activity.PostAnnonceActivity;
 import com.orlanth23.annoncesnc.dto.Annonce;
+import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.dto.Photo;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
@@ -92,6 +94,8 @@ public class DetailAnnonceFragment extends Fragment {
     private String telephoneUser = "";
     private String emailUser = "";
     private Dialog dialogDeleteChoice;
+
+    private Activity mActivity;
 
     // Création du listener pour supprimer une annonce
     private View.OnClickListener clickListenerDeleteBouton = new View.OnClickListener() {
@@ -206,6 +210,7 @@ public class DetailAnnonceFragment extends Fragment {
         // Fenêtre de confirmation avant de supprimer une annonce
         dialogDeleteChoice = new Dialog(getActivity());
         prgDialog = new ProgressDialog(getActivity());
+        mActivity = getActivity();
         createDialogDeleteChoice();
     }
 
@@ -367,7 +372,7 @@ public class DetailAnnonceFragment extends Fragment {
     }
 
     private void presentAnnonce() {
-        String color = "";
+        String color = "#00000";
 
         // Récupération de toutes les valeurs de l'annonce dans les zones graphiques
         value_id_annonce.setText(String.valueOf(mAnnonce.getIdANO()));
@@ -376,13 +381,14 @@ public class DetailAnnonceFragment extends Fragment {
         value_prix_annonce.setText(Utility.convertPrice(mAnnonce.getPriceANO()));
 
         String maDate = mAnnonce.getDatePublished().toString();
-        if (mAnnonce.getOwnerANO() != null) {
-            telephoneUser = mAnnonce.getOwnerANO().getTelephoneUTI().toString();
-            emailUser = mAnnonce.getOwnerANO().getEmailUTI();
+        if (mAnnonce.getUtilisateurANO() != null) {
+            telephoneUser = mAnnonce.getUtilisateurANO().getTelephoneUTI().toString();
+            emailUser = mAnnonce.getUtilisateurANO().getEmailUTI();
         }
 
-        if (mAnnonce.getCategorieANO() != null){
-            color = mAnnonce.getCategorieANO().getCouleurCAT();
+        if (mAnnonce.getIdCategorieANO() != null){
+            Categorie categorie = ListeCategories.getInstance(getActivity()).getCategorieById(mAnnonce.getIdCategorieANO());
+            color = categorie.getCouleurCAT();
         }
 
         // On tente de formater la date correctement
@@ -413,10 +419,10 @@ public class DetailAnnonceFragment extends Fragment {
         }
 
         // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
-        Activity myActivity = getActivity();
-        myActivity.setTitle(mAnnonce.getCategorieANO().getNameCAT());
-        if (myActivity instanceof CustomActivityInterface) {
-            CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
+        Categorie categorie = ListeCategories.getInstance(mActivity).getCategorieById(mAnnonce.getIdCategorieANO());
+        mActivity.setTitle(categorie.getNameCAT());
+        if (mActivity instanceof CustomActivityInterface) {
+            CustomActivityInterface myCustomActivity = (CustomActivityInterface) mActivity;
             myCustomActivity.changeColorToolBar(Color.parseColor(color));
         }
     }

@@ -22,12 +22,6 @@ public class Utilisateur implements Parcelable {
     private String emailUTI;
     private Integer telephoneUTI;
 
-    public Utilisateur(Integer idUTI, String emailUTI, Integer telephoneUTI) {
-        this.idUTI = idUTI;
-        this.emailUTI = emailUTI;
-        this.telephoneUTI = telephoneUTI;
-    }
-
     public Utilisateur() {
         this.idUTI = 0;
         this.emailUTI = "";

@@ -199,6 +199,8 @@
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ornare volutpat lobortis. Maecenas tempor tortor nec felis maximus accumsan. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Ut elit mauris, pretium iaculis felis vel, venenatis placerat lorem. In ut suscipit odio. Maecenas scelerisque massa ac sapien ullamcorper venenatis. In maximus, neque vitae viverra hendrerit, erat metus faucibus ex, ut laoreet lorem tortor et dolor. Mauris scelerisque fermentum quam, ac tincidunt quam varius eget.</string>
     <string name="error_mail_already_exist">This email is already used.</string>
     <string name="refresh">Refresh</string>
+    <string name="non">No</string>
+    <string name="oui">Yes</string>
 
 </resources>
 

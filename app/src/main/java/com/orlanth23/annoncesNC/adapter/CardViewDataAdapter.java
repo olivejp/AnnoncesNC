@@ -13,7 +13,9 @@ import android.widget.TextView;
 
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.dto.Annonce;
+import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.fragment.DetailAnnonceFragment;
+import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.utility.Utility;
 
 import java.util.List;
@@ -25,12 +27,12 @@ public class CardViewDataAdapter extends
         RecyclerView.Adapter<CardViewDataAdapter.ViewHolder> {
 
     public static final String tag = CardViewDataAdapter.class.getName();
-    private Context context;
+    private Context mContext;
     private List<Annonce> listAnnonces;
     private String mode;
 
     public CardViewDataAdapter(Context p_context, List<Annonce> p_annonces, String p_mode) {
-        context = p_context;
+        mContext = p_context;
         listAnnonces = p_annonces;
         mode = p_mode;
     }
@@ -47,7 +49,8 @@ public class CardViewDataAdapter extends
         Annonce annonce = listAnnonces.get(position);
         viewHolder.singleAnnonce = annonce;
 
-        int color = Color.parseColor(annonce.getCategorieANO().getCouleurCAT());        // Récupération de la couleur
+        Categorie categorie = ListeCategories.getInstance(mContext).getCategorieById(annonce.getIdCategorieANO());
+        int color = Color.parseColor(categorie.getCouleurCAT());        // Récupération de la couleur
 
         // Attribution des données au valeurs graphiques
         viewHolder.textIdAnnonce.setText(String.valueOf(annonce.getIdANO()));
@@ -56,7 +59,7 @@ public class CardViewDataAdapter extends
         String description = annonce.getDescriptionANO();
 
         // Si la description fait moins que le nombre maximum de caractère, on prend la taille de la description
-        int nb_caractere = (Utility.getPrefNumberCar(context) > description.length()) ? description.length() : Utility.getPrefNumberCar(context);
+        int nb_caractere = (Utility.getPrefNumberCar(mContext) > description.length()) ? description.length() : Utility.getPrefNumberCar(mContext);
 
         viewHolder.textDescriptionAnnonce.setText(description.substring(0, nb_caractere).concat("..."));
         viewHolder.textPrixAnnonce.setText(Utility.convertPrice(annonce.getPriceANO()));
@@ -106,7 +109,7 @@ public class CardViewDataAdapter extends
                 @Override
                 public void onClick(View v) {
                     DetailAnnonceFragment detailAnnonceFragment = DetailAnnonceFragment.newInstance(mode, singleAnnonce);
-                    FragmentTransaction transaction = ((Activity) context).getFragmentManager().beginTransaction();
+                    FragmentTransaction transaction = ((Activity) mContext).getFragmentManager().beginTransaction();
                     transaction.replace(R.id.frame_container, detailAnnonceFragment, DetailAnnonceFragment.tag);
                     transaction.addToBackStack(null);
                     transaction.commit();

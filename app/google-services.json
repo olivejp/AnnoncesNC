@@ -36,6 +36,50 @@
           "status": 2
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:684512364987:android:4b6a7410439c28a0",
+        "android_client_info": {
+          "package_name": "com.orlanth23.annoncesnc"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "684512364987-o7lg1p1c8bkb2l6h5inmolodincna742.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.orlanth23.annoncesnc",
+            "certificate_hash": "d60621c6cf4be501cac2f284bdb26398a2f22212"
+          }
+        },
+        {
+          "client_id": "684512364987-f8ao74l93363t9v6ejhhl8eemi4jdci6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAyhOJF6Da3p1hNv0SNLLutaUKJZ1ORnFM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "684512364987-f8ao74l93363t9v6ejhhl8eemi4jdci6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
     }
   ],
   "configuration_version": "1"

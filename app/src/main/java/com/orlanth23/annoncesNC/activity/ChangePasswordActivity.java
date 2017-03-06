@@ -39,7 +39,6 @@ public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
         public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
             if (response.isSuccessful()) {
                 ReturnWS rc = response.body();
-                prgDialog.hide();
                 if (rc.statusValid()) {
                     Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
                     Utility.hideKeyboard(mActivity);
@@ -53,7 +52,6 @@ public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
 
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            prgDialog.hide();
             SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
         }
     };
@@ -74,7 +72,6 @@ public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
             String oldPasswordEncrypted = PasswordEncryptionService.desEncryptIt(oldPass);
             String newPasswordEncrypted = PasswordEncryptionService.desEncryptIt(newPass);
 
-            prgDialog.show();
             Call<ReturnWS> call = retrofitService.changePassword(CurrentUser.getInstance().getIdUTI(), oldPasswordEncrypted, newPasswordEncrypted);
             call.enqueue(changePasswordCallback);
         }

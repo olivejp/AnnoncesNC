@@ -3,12 +3,9 @@ package com.orlanth23.annoncesnc.list;
 import android.content.Context;
 import android.content.res.Resources;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.dto.Categorie;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -26,7 +23,8 @@ public class ListeCategories {
             int i = 0;
             for (String title : categorie_title) {
                 i++;
-                Categorie categorie = new Categorie(i, title, categorie_color[i-1], 0);
+                String color = categorie_color[i-1];
+                Categorie categorie = new Categorie(i, title, color, 0);
                 myArrayList.add(categorie);
             }
 
@@ -46,7 +44,10 @@ public class ListeCategories {
 
         ListeCategories listeCategories = ListeCategories.getInstance(context);
         for (Categorie categorie : listeCategories.getListCategorie()) {
-            categorie.setNbAnnonceCAT(pHashMap.get(categorie.getIdCAT()));
+            Integer nbAnnonce = pHashMap.get(categorie.getIdCAT());
+            if (nbAnnonce != null) {
+                categorie.setNbAnnonceCAT(nbAnnonce);
+            }
         }
 
         return true;

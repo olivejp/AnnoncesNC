@@ -5,6 +5,7 @@ ext {
 
 apply plugin: 'com.android.application'
 apply plugin: 'org.sonarqube'
+apply from: "$project.rootDir/script-git-version.gradle"
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
@@ -16,7 +17,7 @@ sonarqube {
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '25.0.2'
     signingConfigs {
         config {
             keyAlias keystoreProperties['keyAlias']
@@ -30,7 +31,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 25
         versionCode 15
-        multiDexEnabled false
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -50,8 +51,14 @@ android {
         }
     }
     productFlavors {
-        serverNC {
-            versionName "Alpha-3"
+        dev {
+            versionCode gitVersionCodeTime
+            versionName gitVersionName
+            buildConfigField 'String', 'ADMIN_EMAIL', '"orlanth23@hotmail.com"'
+        }
+        prod {
+            versionCode gitVersionCode
+            versionName gitVersionName
             buildConfigField 'String', 'ADMIN_EMAIL', '"admin@oliweb.nc"'
         }
     }
@@ -67,22 +74,10 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
-    testCompile 'junit:junit:4.12'
-
-    // Android runner and rules support
-    androidTestCompile 'com.android.support.test:runner:0.5'
-    androidTestCompile 'com.android.support.test:rules:0.5'
-
     // Espresso support
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
-    // add this for intent mocking support
-    androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
-
-    // add this for webview testing support
-    androidTestCompile 'com.android.support.test.espresso:espresso-web:2.2.2'
 
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
@@ -91,19 +86,32 @@ dependencies {
     compile "com.android.support:recyclerview-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.jakewharton:butterknife:${ButterKnifeVersion}"
-    compile "com.squareup.retrofit2:retrofit:2.2.0"
-    compile "com.squareup.retrofit2:converter-gson:2.1.0"
-    compile "com.github.bumptech.glide:glide:3.5.2"
-    compile "com.google.code.gson:gson:2.4"
-    compile "com.google.android.gms:play-services-ads:10.2.0"
-    compile "org.jetbrains:annotations-java5:15.0"
-    compile "it.sephiroth.android.library.imagezoom:imagezoom:2.2.5"
+    compile 'com.squareup.retrofit2:retrofit:2.2.0'
+    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.google.code.gson:gson:2.7'
+    compile 'com.google.android.gms:play-services-ads:10.2.0'
+    compile 'com.google.android:flexbox:0.3.0-alpha2'
+    compile 'org.jetbrains:annotations-java5:15.0'
+    compile 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
+    compile 'com.google.firebase:firebase-storage:10.0.1'
+    compile 'com.google.firebase:firebase-auth:10.0.1'
+    compile 'io.reactivex:rxjava:1.1.6'
+    compile 'com.android.support.constraint:constraint-layout:1.0.1'
+
 
     annotationProcessor "com.jakewharton:butterknife-compiler:${ButterKnifeVersion}"
-    androidTestCompile "com.android.support:support-v4:${supportLibVersion}"
-//    compile 'com.mikhaellopez:circularimageview:3.0.2'
 
+    testCompile 'junit:junit:4.12'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
+    androidTestCompile 'com.android.support.test.espresso:espresso-web:2.2.2'
+    androidTestCompile "com.android.support:support-v4:${supportLibVersion}"
 }
+
 
 // Modification pour le MAC, j'enleve le plug in. Pensez à le remettre pour la version Windows
 // apply plugin: 'com.google.gms.google-services'
+
+apply plugin: 'com.google.gms.google-services'

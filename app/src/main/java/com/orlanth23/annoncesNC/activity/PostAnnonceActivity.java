@@ -28,6 +28,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
@@ -39,12 +41,10 @@ import com.orlanth23.annoncesnc.dto.Photo;
 import com.orlanth23.annoncesnc.dto.StatutAnnonce;
 import com.orlanth23.annoncesnc.dto.StatutPhoto;
 import com.orlanth23.annoncesnc.list.ListeCategories;
-import com.orlanth23.annoncesnc.provider.AnnoncesProvider;
 import com.orlanth23.annoncesnc.provider.ProviderContract;
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
-import com.orlanth23.annoncesnc.sync.AnnoncesSyncService;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.ReturnClassUFTS;
 import com.orlanth23.annoncesnc.utility.UploadFileToServer;
@@ -117,6 +117,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     private String mDescription;
     private Integer mPrix;
     private Integer mIdAnnonce;
+
+    private StorageReference mStorageRef;
 
     private Callback<ReturnWS> callbackDeletePhoto = new Callback<ReturnWS>() {
         @Override
@@ -258,8 +260,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
                 // Récupération des données sur le layout
                 mIdAnnonce = mAnnonce.getIdANO();
-                mIdCat = mAnnonce.getCategorieANO().getIdCAT();
-                mIdUser = mAnnonce.getOwnerANO().getIdUTI();
+                mIdCat = mAnnonce.getIdCategorieANO();
+                mIdUser = mAnnonce.getUtilisateurANO().getIdUTI();
                 mTitre = mAnnonce.getTitreANO().replace("'", "''");
                 mDescription = mAnnonce.getDescriptionANO().replace("'", "''");
                 mPrix = mAnnonce.getPriceANO();
@@ -349,6 +351,9 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         // Récupération des zones graphiques
         ButterKnife.bind(this);
 
+        // Get the Firebase Storage reference
+        mStorageRef = FirebaseStorage.getInstance().getReference();
+
         ListeCategories listeCategories = ListeCategories.getInstance(this);
 
         dialogImageChoice = new Dialog(this);
@@ -370,7 +375,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Categorie cat = (Categorie) parent.getItemAtPosition(position);
-                mAnnonce.setCategorieANO(cat);
+                mAnnonce.setIdCategorieANO(cat.getIdCAT());
             }
 
             @Override
@@ -428,7 +433,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             mTitreActivity = savedInstanceState.getString(BUNDLE_KEY_TITRE);
             P_PHOTO_TO_DELETE = savedInstanceState.getParcelableArrayList(BUNDLE_KEY_PHOTO_TO_DELETE);
             if (mAnnonce != null) {
-                spinnerCategorie.setSelection(listeCategories.getIndexByName(mAnnonce.getCategorieANO().getNameCAT()));
+                Categorie categorie = listeCategories.getCategorieById(mAnnonce.getIdCategorieANO());
+                spinnerCategorie.setSelection(listeCategories.getIndexByName(categorie.getNameCAT()));
             }
         } else {
 
@@ -452,7 +458,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                                 titreText.setText(mAnnonce.getTitreANO());
                                 descriptionText.setText(mAnnonce.getDescriptionANO());
                                 prixText.setText(String.valueOf(mAnnonce.getPriceANO()));
-                                spinnerCategorie.setSelection(listeCategories.getIndexByName(mAnnonce.getCategorieANO().getNameCAT()));
+                                Categorie categorie = listeCategories.getCategorieById(mAnnonce.getIdCategorieANO());
+                                spinnerCategorie.setSelection(listeCategories.getIndexByName(categorie.getNameCAT()));
                             }
                             break;
                     }
@@ -617,7 +624,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 focus = descriptionText;
                 save = false;
             }
-            if (mAnnonce.getCategorieANO() == null) {
+            if (mAnnonce.getIdCategorieANO() == null) {
                 textError.setVisibility(View.VISIBLE);
                 textError.setText(getString(R.string.error_choose_category));
                 focus = spinnerCategorie;
@@ -629,7 +636,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 mAnnonce.setDescriptionANO(descriptionText.getText().toString());
                 mAnnonce.setPriceANO(Integer.parseInt(prixText.getText().toString()));
                 mAnnonce.setTitreANO(titreText.getText().toString());
-                mAnnonce.setOwnerANO(CurrentUser.getInstance());
+                mAnnonce.setUtilisateurANO(CurrentUser.getInstance());
             } else {
                 focus.requestFocus();
             }
@@ -693,37 +700,43 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     protected void travailImage(byte[] byteArray, boolean nouvelleImg, int position) {
         String path;
 
-        if (byteArray != null) {
-            File f = Utility.getOutputMediaFile(Constants.MEDIA_TYPE_IMAGE, CurrentUser.getInstance().getIdUTI(), TAG);
-            try {
-                if (f != null) {
-                    if (f.createNewFile()) {
-                        FileOutputStream fo = new FileOutputStream(f);
-                        fo.write(byteArray);
-                        fo.close();
-                        path = f.getPath();
+        if (byteArray == null) {
+            return;
+        }
 
-                        if (nouvelleImg) {
-                            // On est en mode création
-                            // On insère un nouvel enregistrement dans l'arrayList
-                            mAnnonce.getPhotos().add(new Photo(0, path, mAnnonce.getIdANO()));
-                        } else {
-                            // On est en mode modification
-                            // On va se positionner sur la bonne photo pour faire la modification de chemin
-                            mAnnonce.getPhotos().get(position).setNamePhoto(path);
-                        }
-                        // Si le fichier temporaire existe, il faut le supprimer
-                        File file = new File(String.valueOf(mFileUriTemp));
-                        if (file.exists()) {
-                            file.delete();
-                        }
-                    }
+        File f = Utility.getOutputMediaFile(Constants.MEDIA_TYPE_IMAGE, CurrentUser.getInstance().getIdUTI(), TAG);
+
+        if (f == null) {
+            return;
+        }
+
+        try {
+            if (f.createNewFile()) {
+                FileOutputStream fo = new FileOutputStream(f);
+                fo.write(byteArray);
+                fo.close();
+                path = f.getPath();
+
+                if (nouvelleImg) {
+                    // On est en mode création
+                    // On insère un nouvel enregistrement dans l'arrayList
+                    mAnnonce.getPhotos().add(new Photo(0, path, mAnnonce.getIdANO()));
+                } else {
+                    // On est en mode modification
+                    // On va se positionner sur la bonne photo pour faire la modification de chemin
+                    mAnnonce.getPhotos().get(position).setNamePhoto(path);
                 }
-            } catch (IOException e) {
-                Log.e("IOException", e.getMessage(), e);
+                // Si le fichier temporaire existe, il faut le supprimer
+                File file = new File(String.valueOf(mFileUriTemp));
+                if (file.exists()) {
+                    file.delete();
+                }
             }
+        } catch (IOException e) {
+            Log.e("IOException", e.getMessage(), e);
         }
     }
+
 
     private void callWorkingImageActivity(Uri uri, String mode, int requestCode) {
         Bitmap bitmap;
@@ -806,15 +819,15 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 } else if (resultCode == RESULT_CANCELED) {
                     // user cancelled Image capture
                     Toast.makeText(mActivity,
-                            getString(R.string.action_cancelled),
-                            Toast.LENGTH_SHORT)
-                            .show();
+                        getString(R.string.action_cancelled),
+                        Toast.LENGTH_SHORT)
+                        .show();
                 } else {
                     // failed to capture image
                     Toast.makeText(mActivity,
-                            getString(R.string.action_failed),
-                            Toast.LENGTH_SHORT)
-                            .show();
+                        getString(R.string.action_failed),
+                        Toast.LENGTH_SHORT)
+                        .show();
                 }
                 break;
             case DIALOG_GALLERY_IMAGE:
@@ -829,15 +842,15 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 } else if (resultCode == RESULT_CANCELED) {
                     // user cancelled Image capture
                     Toast.makeText(getApplicationContext(),
-                            getString(R.string.action_cancelled),
-                            Toast.LENGTH_SHORT)
-                            .show();
+                        getString(R.string.action_cancelled),
+                        Toast.LENGTH_SHORT)
+                        .show();
                 } else {
                     // failed to capture image
                     Toast.makeText(getApplicationContext(),
-                            getString(R.string.action_failed),
-                            Toast.LENGTH_SHORT)
-                            .show();
+                        getString(R.string.action_failed),
+                        Toast.LENGTH_SHORT)
+                        .show();
                 }
                 break;
         }

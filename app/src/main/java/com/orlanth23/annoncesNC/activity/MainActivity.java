@@ -42,13 +42,12 @@ import com.orlanth23.annoncesnc.fragment.MyProfileFragment;
 import com.orlanth23.annoncesnc.fragment.SearchFragment;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.list.ListeStats;
 import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.sync.SyncUtils;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 
 import butterknife.BindView;
@@ -56,8 +55,6 @@ import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
@@ -115,20 +112,15 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
         }
     };
-    private Callback<ReturnWS> callbackLogin = new Callback<ReturnWS>() {
+    private Callback<ReturnWS> callbackAutoLogin = new Callback<ReturnWS>() {
         @Override
         public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
             if (response.isSuccessful()) {
                 ReturnWS rs = response.body();
                 if (rs.statusValid()) {
                     Gson gson = new Gson();
-
                     Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
-                    CurrentUser currentUser = CurrentUser.getInstance();
-                    currentUser.setIdUTI(user.getIdUTI());
-                    currentUser.setEmailUTI(user.getEmailUTI());
-                    currentUser.setTelephoneUTI(user.getTelephoneUTI());
-                    currentUser.setConnected(true);
+                    CurrentUser.getInstance().setUser(user);
 
                     refreshMenu();
 
@@ -142,11 +134,13 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
 
         @Override
         public void onFailure(Call<ReturnWS> call, Throwable t) {
-            SendDialogByActivity(mActivity, "Impossible de récupérer le compte par défaut.", NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, DIALOG_TAG_NO_ACCOUNT);
+            // Si pas de connexion, on récupère l'utilisateur enregistré
+            CurrentUser.getInstance().getUserFromDictionary(mActivity);
+            sendOkLoginToast();
         }
     };
 
-    private void sendOkLoginToast(){
+    private void sendOkLoginToast() {
         Toast.makeText(mActivity, mActivity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
     }
 
@@ -155,6 +149,10 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        // Instanciation des singletons
+        ListeStats.getInstance();
+        listeCategories = ListeCategories.getInstance(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add);
         if (fab != null) {
@@ -166,8 +164,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         mTitle = getString(R.string.app_name);  // Récupération du titre
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                new Toolbar(this),
-                R.string.app_name, R.string.app_name) {
+            new Toolbar(this),
+            R.string.app_name, R.string.app_name) {
             public void onDrawerClosed(View view) {
                 setTitle(mTitle);
                 invalidateOptionsMenu();
@@ -194,7 +192,6 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         }
 
         // Récupération de la liste des catégories
-        listeCategories = ListeCategories.getInstance(this);
         mDrawerListCategorie.setAdapter(new ListCategorieAdapter(this, listeCategories.getListCategorie()));
 
         // Fermeture du Drawer
@@ -219,7 +216,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         ContentResolver.addPeriodicSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY, SyncUtils.SYNC_FREQUENCY);
 
         // Tentative de connexion avec l'utilisateur par défaut
-        retrieveConnection();
+        tryRemoteConnection();
 
         getFragmentManager().beginTransaction().replace(R.id.frame_container, mContent, null).commit();
     }
@@ -279,36 +276,38 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         }
     }
 
-    public void retrieveConnection() {
+    public void tryRemoteConnection() {
         // Récupération de l'utilisateur par défaut
         // Création d'un RestAdapter pour le futur appel de mon RestService
+
+        // Si on a déjà une connexion, on ne continue pas.
+        if (CurrentUser.getInstance().isConnected()) {
+            return;
+        }
+
+        // Vérification que l'utilisateur a demandé la connexion automatique, sinon on sort tout de suite.
         String connexion_auto = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT);
-        if (connexion_auto != null && connexion_auto.equals("O")) {
-            if (!CurrentUser.getInstance().isConnected()) {
-                String idUser = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_ID_USER);
-                String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
-                String password = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
-                String telephone = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_TELEPHONE);
+        if (connexion_auto == null || !connexion_auto.equals("O")) {
+            return;
+        }
 
-                // Si les données d'identification ont été saisies
-                if (email != null && password != null) {
+        // Si on a une connexion
+        if (Utility.checkWifiAndMobileData(this)) {
+            // Récupération des données dans le dictionnaire
+            String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
+            String password = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
 
-                    if (Utility.checkWifiAndMobileData(this)) {
-                        // On tente de se connecter au serveur.
-                        RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
-                        Call<ReturnWS> callLogin = retrofitService.login(email, password);
-                        callLogin.enqueue(callbackLogin);
-                    }else{
-                        // Si pas de connexion, on récupère l'utilisateur enregistré
-                        CurrentUser currentUser = CurrentUser.getInstance();
-                        currentUser.setConnected(true);
-                        currentUser.setIdUTI(Integer.valueOf(idUser));
-                        currentUser.setEmailUTI(email);
-                        currentUser.setTelephoneUTI(Integer.valueOf(telephone));
-                        sendOkLoginToast();
-                    }
-                }
+            // Si les données d'identification ont été saisies
+            if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
+
+                // On tente de se connecter au serveur.
+                Call<ReturnWS> callLogin = retrofitService.login(email, password);
+                callLogin.enqueue(callbackAutoLogin);
             }
+        } else {
+            // Si pas de connexion, on récupère l'utilisateur enregistré
+            CurrentUser.getInstance().getUserFromDictionary(this);
+            sendOkLoginToast();
         }
     }
 
@@ -396,7 +395,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 setTitle(getString(R.string.searchTitle));
                 mContent = searchFragment;
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
+                    .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
                 mDrawerLayout.closeDrawer(mDrawerListCategorie);
                 return true;
             } else {
@@ -444,7 +443,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 return true;
 
             case R.id.action_leave:
-                SendDialogByActivity(this,getString(R.string.dialog_want_to_quit), NoticeDialogFragment.TYPE_BOUTON_OK, 0, DIALOG_TAG_EXIT);
+                SendDialogByActivity(this, getString(R.string.dialog_want_to_quit), NoticeDialogFragment.TYPE_BOUTON_OK, 0, DIALOG_TAG_EXIT);
                 return true;
 
             case R.id.action_suggestion:
