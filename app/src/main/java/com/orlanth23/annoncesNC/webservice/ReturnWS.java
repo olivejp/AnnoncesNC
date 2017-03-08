@@ -7,6 +7,7 @@ public class ReturnWS {
     private String msg;
     private Integer idServer;
     private Integer idLocal;
+    private String token;
 
     public ReturnWS(String tag, boolean status, String msg, Integer idServer, Integer idLocal) {
         this.tag = tag;
@@ -14,6 +15,7 @@ public class ReturnWS {
         this.msg = msg;
         this.idServer = idServer;
         this.idLocal = idLocal;
+        this.token = null;
     }
 
     public ReturnWS(String tag, boolean status, String msg, Integer idServer) {
@@ -22,6 +24,7 @@ public class ReturnWS {
         this.msg = msg;
         this.idServer = idServer;
         this.idLocal = null;
+        this.token = null;
     }
 
     public String getTag() {
@@ -64,4 +67,11 @@ public class ReturnWS {
         this.idLocal = id;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

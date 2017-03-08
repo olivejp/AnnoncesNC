@@ -27,7 +27,7 @@ public class CustomRetrofitCompatActivity extends AppCompatActivity {
         retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
     }
 
-    public void changeActionBarTitle(int resIdTitle, boolean setHomeEnabled){
+    public void changeActionBarTitle(int resIdTitle, boolean setHomeEnabled) {
         ActionBar tb = getSupportActionBar();
         if (tb != null) {
             tb.setTitle(resIdTitle);

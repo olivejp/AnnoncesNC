@@ -20,12 +20,15 @@ public class CurrentUser extends Utilisateur implements Parcelable {
             return new CurrentUser[size];
         }
     };
+
     private static CurrentUser INSTANCE = null;
     private static boolean connected = false;
+    private static String token = null;
 
     private CurrentUser(Parcel in) {
         INSTANCE = in.readParcelable(CurrentUser.class.getClassLoader());
         connected = (boolean) in.readValue(Boolean.class.getClassLoader());
+        token = in.readString();
     }
 
     private CurrentUser() {
@@ -38,6 +41,14 @@ public class CurrentUser extends Utilisateur implements Parcelable {
             INSTANCE = new CurrentUser();
         }
         return INSTANCE;
+    }
+
+    public static String getToken() {
+        return token;
+    }
+
+    public static void setToken(String token) {
+        CurrentUser.token = token;
     }
 
     public boolean isConnected() {
@@ -61,6 +72,7 @@ public class CurrentUser extends Utilisateur implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeParcelable(INSTANCE, 0);
         dest.writeValue(connected);
+        dest.writeString(token);
     }
 
     public CurrentUser getUserFromDictionary(Context context) {

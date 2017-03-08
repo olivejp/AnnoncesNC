@@ -3,6 +3,7 @@ package com.orlanth23.annoncesnc.webservice;
 import retrofit2.Call;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -10,6 +11,24 @@ import retrofit2.http.Query;
 
 
 public interface RetrofitService {
+
+    /**
+     * Test d'envoi d'un header avec un JWT à l'intérieur
+     * @param token
+     * @return
+     */
+    @POST("/REST/services/jwt-test")
+    Call<ReturnWS> testJwtHeader(@Header("Token") String token);
+
+    /**
+     * Test de loggin pour récupérer un JWT
+     * @param email
+     * @param password
+     * @return
+     */
+    @POST("/REST/utilisateurs/login-jwt")
+    Call<ReturnWS> loginJwt(@Query("email") String email,
+                         @Query("password") String password);
 
     @POST("/REST/services/infoserver")
     Call<ReturnWS> infoServer();
