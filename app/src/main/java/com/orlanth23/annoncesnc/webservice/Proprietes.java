@@ -17,6 +17,8 @@ public class Proprietes {
     public static String SERVER_PRIMARY_DIRECTORY_UPLOAD = "SERVER_PRIMARY_DIRECTORY_UPLOAD";
     public static String SERVER_PRIMARY_ENDPOINT = "SERVER_PRIMARY_ENDPOINT";
     public static String CRYPTO_PASS = "CRYPTO_PASS";
+    public static String JWT_ISSUER = "JWT_ISSUER";
+    public static String JWT_SUBJECT_LOGIN = "JWT_SUBJECT_LOGIN";
     private static Properties properties;
 
     public static String getProperty(String key) {

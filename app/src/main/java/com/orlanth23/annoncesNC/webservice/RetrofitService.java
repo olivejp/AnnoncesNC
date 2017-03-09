@@ -18,7 +18,7 @@ public interface RetrofitService {
      * @return
      */
     @POST("/REST/services/jwt-test")
-    Call<ReturnWS> testJwtHeader(@Header("Token") String token);
+    Call<ReturnWS> testJwtHeader(@Header("Authorization") String token);
 
     /**
      * Test de loggin pour récupérer un JWT
@@ -28,7 +28,8 @@ public interface RetrofitService {
      */
     @POST("/REST/utilisateurs/login-jwt")
     Call<ReturnWS> loginJwt(@Query("email") String email,
-                         @Query("password") String password);
+                            @Query("password") String password);
+
 
     @POST("/REST/services/infoserver")
     Call<ReturnWS> infoServer();
