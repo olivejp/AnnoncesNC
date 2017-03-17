@@ -10,6 +10,8 @@ import com.orlanth23.annoncesnc.webservice.ReturnWS;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+
 import io.jsonwebtoken.Jwts;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,7 +34,7 @@ public class TestRestJwt {
     private RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
 
     @Test
-    public void testRestJwt() {
+    public void testOkRestJwt() {
         // CallBack pour Authentification avec JWT
         final Callback<ReturnWS> callbackTestJwt = new Callback<ReturnWS>() {
             @Override
@@ -53,8 +55,8 @@ public class TestRestJwt {
             }
         };
 
-        // CallBack pour obtention du JWT
-        Callback<ReturnWS> callbackOkLoginJwt = new Callback<ReturnWS>() {
+        // CallBack pour OBTENTION du JWT
+        final Callback<ReturnWS> callbackOkLoginJwt = new Callback<ReturnWS>() {
             @Override
             public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
                 if (response.isSuccessful()) {
@@ -82,12 +84,62 @@ public class TestRestJwt {
             }
         };
 
+        // Appel du service pour OBTENTION d'un JWT
+        Call<ReturnWS> callOkLogin = retrofitService.loginJwt(LOGIN, PasswordEncryptionService.desEncryptIt(PASSWORD));
+        try {
+            Response<ReturnWS> response = callOkLogin.execute();
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    // On teste les données récupérées du JWT
+                    token = rs.getMsg();
+
+                    String key = PasswordEncryptionService.desEncryptIt(Proprietes.getProperty(Proprietes.CRYPTO_PASS));
+                    String subject = Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody().getSubject();
+                    String audience = Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody().getAudience();
+
+                    assertTrue("Sujet bien récupéré", subject.equals(Proprietes.getProperty(Proprietes.JWT_SUBJECT_LOGIN)));
+                    assertTrue("Login bien récupéré", audience.equals(LOGIN));
+
+                    Call<ReturnWS> callTestJwt = retrofitService.testJwtHeader(token);
+                    response = callTestJwt.execute();
+                    if (response.isSuccessful()) {
+                        rs = response.body();
+                        if (rs.statusValid()) {
+                            assertTrue(true);
+                        } else {
+                            assertTrue(false);
+                        }
+                    } else {
+                        assertTrue("Code incorrect", false);
+                    }
+
+                } else {
+                    assertTrue(false);
+                }
+            } else {
+                assertTrue("Le code renvoyé n'est pas correct.",response.code() == 200);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            assertTrue("Sortie avec exception !",false);
+        }
+    }
+
+    @Test
+    public void testKoRestJwt() {
+
         // CallBack pour obtention du JWT
-        Callback<ReturnWS> callbackKoLoginJwt = new Callback<ReturnWS>() {
+        final Callback<ReturnWS> callbackKoLoginJwt = new Callback<ReturnWS>() {
             @Override
             public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
                 if (response.isSuccessful()) {
-                    assertTrue(false);
+                    ReturnWS rs = response.body();
+                    if (rs.statusValid()) {
+                        assertTrue("Tentative de connexion avec un mauvais MDP.",false);
+                    }else{
+                        assertTrue(true);
+                    }
                 }
             }
 
@@ -96,11 +148,6 @@ public class TestRestJwt {
                 assertTrue(true);
             }
         };
-
-        // Appel du service pour OBTENTION d'un JWT
-        Call<ReturnWS> callOkLogin = retrofitService.loginJwt(LOGIN, PasswordEncryptionService.desEncryptIt(PASSWORD));
-        callOkLogin.enqueue(callbackOkLoginJwt);
-
 
         // Appel du service pour tester que le WS n'arrive pas à s'authentifier
         Call<ReturnWS> callKoLogin = retrofitService.loginJwt(LOGIN, PasswordEncryptionService.desEncryptIt(WRONG_PASSWORD));

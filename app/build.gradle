@@ -5,7 +5,7 @@ ext {
 
 apply plugin: 'com.android.application'
 apply plugin: 'org.sonarqube'
-//apply from: "$project.rootDir/script-git-version.gradle"
+apply from: "$project.rootDir/script-git-version.gradle"
 
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 def keystoreProperties = new Properties()
@@ -52,17 +52,13 @@ android {
     }
     productFlavors {
         dev {
-//            versionCode gitVersionCodeTime
-//            versionName gitVersionName
-            versionCode 1
-            versionName "1"
+            versionCode gitVersionCodeTime
+            versionName gitVersionName
             buildConfigField 'String', 'ADMIN_EMAIL', '"orlanth23@hotmail.com"'
         }
         prod {
-//            versionCode gitVersionCode
-//            versionName gitVersionName
-            versionCode 1
-            versionName "1"
+            versionCode gitVersionCode
+            versionName gitVersionName
             buildConfigField 'String', 'ADMIN_EMAIL', '"admin@oliweb.nc"'
         }
     }
@@ -95,31 +91,34 @@ dependencies {
     compile "com.android.support:recyclerview-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.jakewharton:butterknife:${ButterKnifeVersion}"
+
+    annotationProcessor "com.jakewharton:butterknife-compiler:${ButterKnifeVersion}"
+
+    androidTestCompile "com.android.support:support-v4:${supportLibVersion}"
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.google.code.gson:gson:2.7'
-    compile 'com.google.android.gms:play-services-ads:10.2.0'
     compile 'org.jetbrains:annotations-java5:15.0'
     compile 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
-    compile 'com.google.firebase:firebase-storage:10.0.1'
-    compile 'com.google.firebase:firebase-auth:10.0.1'
     compile 'io.reactivex:rxjava:1.1.6'
     compile 'com.android.support.constraint:constraint-layout:1.0.1'
     compile 'io.jsonwebtoken:jjwt:0.7.0'
-
-    annotationProcessor "com.jakewharton:butterknife-compiler:${ButterKnifeVersion}"
-
+    compile 'com.google.android.gms:play-services-ads:10.2.0'
+    compile 'com.google.firebase:firebase-storage:10.0.1'
+    compile 'com.google.firebase:firebase-auth:10.0.1'
     testCompile 'junit:junit:4.12'
+
     androidTestCompile 'com.android.support.test:runner:0.5'
     androidTestCompile 'com.android.support.test:rules:0.5'
     androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
     androidTestCompile 'com.android.support.test.espresso:espresso-web:2.2.2'
-    androidTestCompile "com.android.support:support-v4:${supportLibVersion}"
+
+    // Utilisation de Mockito
+//    androidTestCompile 'org.mockito:mockito-core:2.7.5'
+//    androidTestCompile 'com.google.dexmaker:dexmaker:1.2'
+//    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
+//    androidTestCompile('junit:junit:4.11') {exclude module: 'hamcrest-core'}
 }
-
-
-// Modification pour le MAC, j'enleve le plug in. Pensez à le remettre pour la version Windows
-// apply plugin: 'com.google.gms.google-services'
 
 apply plugin: 'com.google.gms.google-services'

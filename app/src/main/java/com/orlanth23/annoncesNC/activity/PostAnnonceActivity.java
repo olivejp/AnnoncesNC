@@ -13,6 +13,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -28,8 +29,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
@@ -59,6 +63,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -117,6 +122,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     private String mDescription;
     private Integer mPrix;
     private Integer mIdAnnonce;
+    private AppCompatActivity mContext = this;
 
     private StorageReference mStorageRef;
 
@@ -320,6 +326,36 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
     // Constructor du fragment
     public PostAnnonceActivity() {
+    }
+
+    public void onSendPhotoClick(View view){
+// Création d'une image
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_action_accept);
+
+        if (bitmap != null) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+            byte[] data = baos.toByteArray();
+
+            StorageReference storageRef = mStorageRef.child("images/" + UUID.randomUUID() + ".png");
+
+            storageRef.putBytes(data).
+                addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // Get a URL to the uploaded content
+                        // Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        Toast.makeText(mContext, "Success FIREBASE", Toast.LENGTH_LONG).show();
+                    }
+                }).
+                addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        Toast.makeText(mContext, "Failure FIREBASE", Toast.LENGTH_LONG).show();
+                    }
+                });
+        }
     }
 
     private void onFailurePostUploadPhoto() {
