@@ -7,11 +7,13 @@ import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -27,6 +29,11 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.BuildConfig;
 import com.orlanth23.annoncesnc.R;
@@ -43,12 +50,13 @@ import com.orlanth23.annoncesnc.fragment.SearchFragment;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.list.ListeStats;
-import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.sync.SyncUtils;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+
+import java.io.ByteArrayOutputStream;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -57,6 +65,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
+import static junit.framework.Assert.assertTrue;
 
 public class MainActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface {
 
@@ -86,6 +95,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     private ListeCategories listeCategories;
     private Fragment mContent;
     private Activity mActivity = this;
+    private StorageReference mStorageRef;
 
     private Callback<ReturnWS> callbackUnregisterUser = new Callback<ReturnWS>() {
         @Override
@@ -164,8 +174,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         mTitle = getString(R.string.app_name);  // Récupération du titre
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-            new Toolbar(this),
-            R.string.app_name, R.string.app_name) {
+                new Toolbar(this),
+                R.string.app_name, R.string.app_name) {
             public void onDrawerClosed(View view) {
                 setTitle(mTitle);
                 invalidateOptionsMenu();
@@ -205,10 +215,11 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             mContent = getFragmentManager().getFragment(savedInstanceState, PARAM_FRAGMENT);
         }
 
+        // ToDo Reamenager le receiver pour auil ne plante pas
         // Création d'un broadcast pour écouter si la connectivité à changer
-        AnnoncesReceiver annoncesReceiver = new AnnoncesReceiver();
-        IntentFilter ifilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
-        registerReceiver(annoncesReceiver, ifilter);
+//        AnnoncesReceiver annoncesReceiver = new AnnoncesReceiver();
+//        IntentFilter ifilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+//        registerReceiver(annoncesReceiver, ifilter);
 
         // Lancement du service SyncAdapter
         SyncUtils.CreateSyncAccount(this);
@@ -362,6 +373,35 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     }
 
 
+    public void testFirebaseStorage(View view) {
+        mStorageRef = FirebaseStorage.getInstance().getReference();
+        Bitmap bitmap = BitmapFactory.decodeResource(mActivity.getResources(), R.mipmap.ic_annonces);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] byteArray = baos.toByteArray();
+
+        StorageReference riversRef = mStorageRef.child("images/rivers.png");
+
+        riversRef.putBytes(byteArray)
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        // Get a URL to the uploaded content
+                        // Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        assertTrue(true);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        // ...
+                        assertTrue(false);
+                    }
+                });
+    }
+
+
     public void mainPost(View view) {
         Intent intent = new Intent();
         Bundle b = new Bundle();
@@ -395,7 +435,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 setTitle(getString(R.string.searchTitle));
                 mContent = searchFragment;
                 getFragmentManager().beginTransaction()
-                    .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
+                        .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
                 mDrawerLayout.closeDrawer(mDrawerListCategorie);
                 return true;
             } else {
@@ -569,6 +609,6 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         @Override
         public void onItemClick(AdapterView parent, View view, int position, long id) {
             onSelectCategorie(position);
-        }
+    }
     }
 }

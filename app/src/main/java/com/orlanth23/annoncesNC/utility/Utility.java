@@ -199,6 +199,13 @@ public class Utility {
         return Integer.valueOf(number);
     }
 
+    /**
+     * @param fragmentManager Get from the context
+     * @param message         The message to be send
+     * @param type            From NoticeDialogFragment
+     * @param img             From NoticeDialogFragment
+     * @param tag             A text to be a tag
+     */
     public static void SendDialogByFragmentManager(FragmentManager fragmentManager, String message, int type, int img, @Nullable String tag) {
         NoticeDialogFragment dialogErreur = new NoticeDialogFragment();
         Bundle bundle = new Bundle();

@@ -1,27 +1,27 @@
 {
   "project_info": {
-    "project_number": "684512364987",
-    "firebase_url": "https://admob-app-id-3796625128.firebaseio.com",
-    "project_id": "admob-app-id-3796625128",
-    "storage_bucket": "admob-app-id-3796625128.appspot.com"
+    "project_number": "529417155410",
+    "firebase_url": "https://annoncesnc-storage.firebaseio.com",
+    "project_id": "annoncesnc-storage",
+    "storage_bucket": "annoncesnc-storage.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:684512364987:android:a8bcbe34e041cdf5",
+        "mobilesdk_app_id": "1:529417155410:android:4b6a7410439c28a0",
         "android_client_info": {
-          "package_name": "com.orlanth23.annoncesNC"
+          "package_name": "com.orlanth23.annoncesnc"
         }
       },
       "oauth_client": [
         {
-          "client_id": "684512364987-f8ao74l93363t9v6ejhhl8eemi4jdci6.apps.googleusercontent.com",
+          "client_id": "529417155410-74s1goaspc2t08sgabs9bkrlhlo73o71.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAyhOJF6Da3p1hNv0SNLLutaUKJZ1ORnFM"
+          "current_key": "AIzaSyApDzGO2BHY19aBwkxsB-g1rV-ucdG0wnQ"
         }
       ],
       "services": {
@@ -31,50 +31,6 @@
         "appinvite_service": {
           "status": 1,
           "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:684512364987:android:4b6a7410439c28a0",
-        "android_client_info": {
-          "package_name": "com.orlanth23.annoncesnc"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "684512364987-o7lg1p1c8bkb2l6h5inmolodincna742.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.orlanth23.annoncesnc",
-            "certificate_hash": "d60621c6cf4be501cac2f284bdb26398a2f22212"
-          }
-        },
-        {
-          "client_id": "684512364987-f8ao74l93363t9v6ejhhl8eemi4jdci6.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyAyhOJF6Da3p1hNv0SNLLutaUKJZ1ORnFM"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "684512364987-f8ao74l93363t9v6ejhhl8eemi4jdci6.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
         },
         "ads_service": {
           "status": 2

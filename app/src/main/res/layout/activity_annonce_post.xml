@@ -90,6 +90,17 @@
         </HorizontalScrollView>
 
         <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:background="@drawable/mybutton"
+            android:clickable="true"
+            android:onClick="testFirebaseStorage"
+            android:text="Firebase Test"
+            android:textColor="#fff"
+            android:textStyle="bold" />
+
+        <Button
             android:id="@+id/buttonPhoto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -1,7 +1,6 @@
 package com.orlanth23.annoncesnc.sync;
 
 import android.accounts.Account;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
@@ -10,6 +9,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncResult;
 import android.database.Cursor;
+import android.media.RingtoneManager;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
@@ -42,32 +42,6 @@ import static com.orlanth23.annoncesnc.provider.ProviderContract.PhotoEntry;
 
 public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
-    // Création des classes privées pour récupérer des infos à partir des curseurs
-    private class AnnonceForWs {
-        Integer idAnnonce;
-        Integer idCategory;
-        Integer idUtilisateur;
-        String titreAnnonce;
-        String descriptionAnnonce;
-        Integer prixAnnonce;
-        Integer idLocal;
-    }
-
-    private class PhotoForWs {
-        Integer idAnnonce;
-        Integer idLocal;
-        Integer idPhoto;
-        String nomPhoto;
-    }
-
-    private class MessageForWs {
-        Integer idMessage;
-        Integer idLocal;
-        Integer idSender;
-        Integer idReceiver;
-        String message;
-    }
-
     private static final String TAG = AnnoncesSyncAdapter.class.getName();
     private static final Gson gson = new Gson();
     private static final RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
@@ -78,13 +52,56 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     private int nbPhotosSend;
     private int nbMessageSend;
     private String textToSend;
+    private Callback<ReturnWS> callbackPostAnnonce = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    // Si la mise à jour à bien eu lieu sur le serveur, on va mettre à jour l'annonce dans notre ContentProvider
+                    Integer idLocal = rs.getIdLocal();
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, StatutAnnonce.Valid.valeur());
+                    String where = AnnonceContract._ID + " = ?";
+                    String[] whereArgs = new String[]{String.valueOf(idLocal)};
+                    mContentResolver.update(AnnonceEntry.CONTENT_URI, contentValues, where, whereArgs);
+                } else {
+                    Toast.makeText(getContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
+                }
+            }
+        }
 
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            t.printStackTrace();
+        }
+    };
+    private Callback<ReturnWS> callbackGetInfoServer = new Callback<ReturnWS>() {
+        @Override
+        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
+            if (response.isSuccessful()) {
+                ReturnWS rs = response.body();
+                if (rs.statusValid()) {
+                    InfoServer infoServer = gson.fromJson(rs.getMsg(), InfoServer.class);
+                    ListeStats.setNbUsers(infoServer.getNbUtilisateur());
+                    ListeStats.setNbAnnonces(infoServer.getNbAnnonce());
+                    ListeCategories.setNbAnnonceFromHashMap(mContext, infoServer.getNbAnnonceByCategorie());
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call<ReturnWS> call, Throwable t) {
+            Log.d(TAG, "callbackGetInfoServer failed");
+        }
+    };
 
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         mContentResolver = context.getContentResolver();
         mContext = context;
     }
+
 
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
@@ -112,67 +129,41 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void sendNotification(String textToSend) {
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(mContext)
-                        .setSmallIcon(R.mipmap.ic_annonces)
-                        .setContentTitle(mContext.getString(R.string.app_name))
-                        .setContentText(textToSend);
+        if (nbAnnoncesDeleted == 0 && nbAnnoncesSend == 0 && nbMessageSend == 0 && nbPhotosSend == 0) {
+        } else {
+            if (nbAnnoncesSend > 0) {
+                textToSend = "Nombre d'annonce envoyées :" + String.valueOf(nbAnnoncesSend);
+            }
 
-        // Sets an ID for the notification
-        int mNotificationId = 001;
+            if (nbAnnoncesDeleted > 0) {
+                textToSend = textToSend + "\n" + "Nombre d'annonce supprimées :" + String.valueOf(nbAnnoncesDeleted);
+            }
 
-        // Gets an instance of the NotificationManager service
-        NotificationManager mNotifyMgr =
-                (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
+            if (nbMessageSend > 0) {
+                textToSend = textToSend + "\n" + "Nombre de messages envoyés :" + String.valueOf(nbMessageSend);
+            }
 
-        // Builds the notification and issues it.
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
+            NotificationCompat.Builder mBuilder =
+                    new NotificationCompat.Builder(mContext)
+                            .setSmallIcon(R.mipmap.ic_annonces)
+                            .setContentTitle(mContext.getString(R.string.app_name))
+                            .setContentText(textToSend)
+                            .setStyle(new NotificationCompat.BigTextStyle().bigText(mContext.getString(R.string.app_name)))
+                            .setStyle(new NotificationCompat.BigTextStyle().bigText(textToSend))
+                            .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
+                            .setVibrate(new long[]{1, 1, 1});
+
+            // Sets an ID for the notification
+            int mNotificationId = 001;
+
+            // Gets an instance of the NotificationManager service
+            NotificationManager mNotifyMgr =
+                    (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
+
+            // Builds the notification and issues it.
+            mNotifyMgr.notify(mNotificationId, mBuilder.build());
+        }
     }
-
-    private Callback<ReturnWS> callbackPostAnnonce = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    // Si la mise à jour à bien eu lieu sur le serveur, on va mettre à jour l'annonce dans notre ContentProvider
-                    Integer idLocal = rs.getIdLocal();
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, StatutAnnonce.Valid.valeur());
-                    String where = AnnonceContract._ID + " = ?";
-                    String[] whereArgs = new String[]{String.valueOf(idLocal)};
-                    mContentResolver.update(AnnonceEntry.CONTENT_URI, contentValues, where, whereArgs);
-                } else {
-                    Toast.makeText(getContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            t.printStackTrace();
-        }
-    };
-
-    private Callback<ReturnWS> callbackGetInfoServer = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    InfoServer infoServer = gson.fromJson(rs.getMsg(), InfoServer.class);
-                    ListeStats.setNbUsers(infoServer.getNbUtilisateur());
-                    ListeStats.setNbAnnonces(infoServer.getNbAnnonce());
-                    ListeCategories.setNbAnnonceFromHashMap(mContext, infoServer.getNbAnnonceByCategorie());
-                }
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            Log.d(TAG, "callbackGetInfoServer failed");
-        }
-    };
 
     private void getInfoServer() {
         Call<ReturnWS> callGetInfoServer = retrofitService.infoServer();
@@ -263,5 +254,31 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
             }
             cursorAnnoncesToSend.close();
         }
+    }
+
+    // Création des classes privées pour récupérer des infos à partir des curseurs
+    private class AnnonceForWs {
+        Integer idAnnonce;
+        Integer idCategory;
+        Integer idUtilisateur;
+        String titreAnnonce;
+        String descriptionAnnonce;
+        Integer prixAnnonce;
+        Integer idLocal;
+    }
+
+    private class PhotoForWs {
+        Integer idAnnonce;
+        Integer idLocal;
+        Integer idPhoto;
+        String nomPhoto;
+    }
+
+    private class MessageForWs {
+        Integer idMessage;
+        Integer idLocal;
+        Integer idSender;
+        Integer idReceiver;
+        String message;
     }
 }

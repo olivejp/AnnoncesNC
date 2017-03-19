@@ -176,10 +176,20 @@ public class LoginActivity extends CustomRetrofitCompatActivity implements Notic
         String decryptedPassword = mPasswordView.getText().toString().replace("'", "''");
 
         if (checkLogin(email, decryptedPassword)) {
-            prgDialog.show();
-            String encryptedPassword = PasswordEncryptionService.desEncryptIt(decryptedPassword);
-            Call<ReturnWS> callLogin = retrofitService.login(email, encryptedPassword);
-            callLogin.enqueue(loginCallback);
+            if (Utility.checkWifiAndMobileData(this)) {
+                // Si on a une connexion on tente de se connecter au serveur
+                prgDialog.show();
+                String encryptedPassword = PasswordEncryptionService.desEncryptIt(decryptedPassword);
+                Call<ReturnWS> callLogin = retrofitService.login(email, encryptedPassword);
+                callLogin.enqueue(loginCallback);
+            } else {
+                // On envoie un message pour dire qu'on a pas de connexion réseau
+                SendDialogByFragmentManager(getFragmentManager(),
+                        "Aucune connexion réseau disponible pour vous authentifier.",
+                        NoticeDialogFragment.TYPE_BOUTON_OK,
+                        NoticeDialogFragment.TYPE_IMAGE_ERROR,
+                        null);
+            }
         }
     }
 
