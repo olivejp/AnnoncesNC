@@ -1,7 +1,6 @@
 package com.orlanth23.annoncesnc.sync;
 
 import android.accounts.Account;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
@@ -12,8 +11,6 @@ import android.content.SyncResult;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.R;
@@ -27,6 +24,9 @@ import com.orlanth23.annoncesnc.webservice.InfoServer;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+
+import java.io.IOException;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -52,11 +52,13 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     private int nbMessageSend;
     private String textToSend;
     private List<String> exceptionMessage;
+
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         mContentResolver = context.getContentResolver();
         mContext = context;
     }
+
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
         mContentResolver = context.getContentResolver();
@@ -84,19 +86,17 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void sendNotification(String textToSend) {
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(mContext)
-                        .setSmallIcon(R.mipmap.ic_annonces)
-                        .setContentTitle(mContext.getString(R.string.app_name))
-                        .setContentText(textToSend);
+            new NotificationCompat.Builder(mContext)
+                .setSmallIcon(R.mipmap.ic_annonces)
+                .setContentTitle(mContext.getString(R.string.app_name))
+                .setContentText(textToSend);
 
         // Sets an ID for the notification
         int mNotificationId = 001;
 
         // Gets an instance of the NotificationManager service
-        NotificationManager mNotifyMgr = (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
-            // Gets an instance of the NotificationManager service
-            NotificationManager mNotifyMgr =
-                    (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
+        NotificationManager mNotifyMgr =
+            (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
 
         // Builds the notification and issues it.
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
@@ -113,10 +113,10 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                     ListeStats.setNbUsers(infoServer.getNbUtilisateur());
                     ListeStats.setNbAnnonces(infoServer.getNbAnnonce());
                     ListeCategories.setNbAnnonceFromHashMap(mContext, infoServer.getNbAnnonceByCategorie());
-                } else{
+                } else {
                     exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Retour du WS incorrect.");
                 }
-            }else{
+            } else {
                 exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Réponse incorrecte du serveur.");
             }
         } catch (IOException e) {
@@ -242,10 +242,10 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                             String[] whereArgs = new String[]{String.valueOf(idLocal)};
                             mContentResolver.update(AnnonceEntry.CONTENT_URI, contentValues, where, whereArgs);
                             nbAnnoncesSend++;
-                        }else{
+                        } else {
                             exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Retour du WS incorrect.");
                         }
-                    }else{
+                    } else {
                         exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Réponse incorrecte du serveur.");
                     }
                 } catch (IOException e) {

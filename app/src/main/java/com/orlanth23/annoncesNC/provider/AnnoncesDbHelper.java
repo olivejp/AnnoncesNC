@@ -20,6 +20,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
 import com.orlanth23.annoncesnc.provider.contract.MessageContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
@@ -27,7 +28,7 @@ import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
 public class AnnoncesDbHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "annonces.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 10;
 
     public AnnoncesDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -39,6 +40,8 @@ public class AnnoncesDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(AnnonceContract.CREATE_TABLE);
         sqLiteDatabase.execSQL(PhotoContract.CREATE_TABLE);
         sqLiteDatabase.execSQL(MessageContract.CREATE_TABLE);
+        sqLiteDatabase.execSQL(InfosServerContract.CREATE_TABLE);
+        sqLiteDatabase.execSQL(InfosServerContract.FIRST_INSERT_TABLE);
     }
 
     @Override
@@ -47,6 +50,7 @@ public class AnnoncesDbHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + PhotoContract.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + AnnonceContract.TABLE_NAME);
         sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + UtilisateurContract.TABLE_NAME);
+        sqLiteDatabase.execSQL("DROP TABLE IF EXISTS " + InfosServerContract.TABLE_NAME);
         onCreate(sqLiteDatabase);
     }
 }

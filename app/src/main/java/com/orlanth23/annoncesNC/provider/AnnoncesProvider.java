@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
 import com.orlanth23.annoncesnc.provider.contract.MessageContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
@@ -29,6 +30,8 @@ public class AnnoncesProvider extends ContentProvider {
     static final int UTILISATEUR = 300;
     static final int MESSAGE = 400;
     static final int PHOTO = 500;
+    static final int INFOS = 600;
+
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private AnnoncesDbHelper mOpenHelper;
 
@@ -39,6 +42,7 @@ public class AnnoncesProvider extends ContentProvider {
         matcher.addURI(authority, ProviderContract.PATH_UTILISATEURS, UTILISATEUR);
         matcher.addURI(authority, ProviderContract.PATH_MESSAGES, MESSAGE);
         matcher.addURI(authority, ProviderContract.PATH_PHOTOS, PHOTO);
+        matcher.addURI(authority, ProviderContract.PATH_INFOS_SERVER, INFOS);
         return matcher;
     }
 
@@ -67,6 +71,10 @@ public class AnnoncesProvider extends ContentProvider {
             }
             case ANNONCE: {
                 tableName = AnnonceContract.TABLE_NAME;
+                break;
+            }
+            case INFOS: {
+                tableName = InfosServerContract.TABLE_NAME;
                 break;
             }
             default:
@@ -99,6 +107,8 @@ public class AnnoncesProvider extends ContentProvider {
                 return ProviderContract.MessageEntry.CONTENT_TYPE;
             case PHOTO:
                 return ProviderContract.PhotoEntry.CONTENT_TYPE;
+            case INFOS:
+                return ProviderContract.InfosServerEntry.CONTENT_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -143,6 +153,14 @@ public class AnnoncesProvider extends ContentProvider {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;
             }
+            case INFOS: {
+                long _id = db.insert(InfosServerContract.TABLE_NAME, null, values);
+                if (_id > 0)
+                    returnUri = ContentUris.withAppendedId(ProviderContract.InfosServerEntry.CONTENT_URI, _id);
+                else
+                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                break;
+            }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -172,6 +190,10 @@ public class AnnoncesProvider extends ContentProvider {
             case MESSAGE:
                 rowsDeleted = db.delete(
                     MessageContract.TABLE_NAME, selection, selectionArgs);
+                break;
+            case INFOS:
+                rowsDeleted = db.delete(
+                    InfosServerContract.TABLE_NAME, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -203,6 +225,10 @@ public class AnnoncesProvider extends ContentProvider {
                 break;
             case UTILISATEUR:
                 rowsUpdated = db.update(UtilisateurContract.TABLE_NAME, values, selection,
+                    selectionArgs);
+                break;
+            case INFOS:
+                rowsUpdated = db.update(InfosServerContract.TABLE_NAME, values, selection,
                     selectionArgs);
                 break;
             default:

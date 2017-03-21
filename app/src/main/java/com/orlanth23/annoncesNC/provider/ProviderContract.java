@@ -10,10 +10,11 @@ public class ProviderContract {
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
     // public static final String PATH_CATEGORIES = "categories";
-    public static final String PATH_ANNONCES = "annonces";
-    public static final String PATH_MESSAGES = "messages";
-    public static final String PATH_UTILISATEURS = "utilisateurs";
-    public static final String PATH_PHOTOS = "photos";
+    public static final String PATH_ANNONCES        = "annonces";
+    public static final String PATH_MESSAGES        = "messages";
+    public static final String PATH_UTILISATEURS    = "utilisateurs";
+    public static final String PATH_PHOTOS          = "photos";
+    public static final String PATH_INFOS_SERVER    = "infos_server";
 
     public static final class AnnonceEntry {
         public static final Uri CONTENT_URI =
@@ -45,5 +46,13 @@ public class ProviderContract {
 
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_PHOTOS;
+    }
+
+    public static final class InfosServerEntry {
+        public static final Uri CONTENT_URI =
+            BASE_CONTENT_URI.buildUpon().appendPath(PATH_INFOS_SERVER).build();
+
+        public static final String CONTENT_TYPE =
+            ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_INFOS_SERVER;
     }
 }
