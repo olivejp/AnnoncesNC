@@ -1,24 +1,23 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/degrade"
     android:orientation="vertical">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.4"
-            android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.4"
+        android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/imageHomeLogo"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_margin="20dp"
-                android:contentDescription="@string/description_logo_image"
-                android:src="@drawable/ic_action_icon" />
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/imageHomeLogo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="20dp"
+            android:contentDescription="@string/description_logo_image"
+            android:src="@drawable/ic_action_icon" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -48,6 +47,23 @@
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:orientation="vertical">
+
+            <Button
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_centerInParent="true"
+                android:background="@drawable/rounded_button_primary"
+                android:onClick="testFirebaseStorage"
+                android:text="Firebase Test"
+                android:textColor="#fff"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="0.5">
 
             <Button
@@ -63,36 +79,36 @@
     </LinearLayout>
 
     <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.3">
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.3">
 
-            <TextView
-                android:id="@+id/textHomeNbUtilisateur"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/textHomeNbAnnonce"
-                android:layout_centerInParent="true"
-                android:drawableLeft="@drawable/ic_people_inverse"
-                android:drawableStart="@drawable/ic_people_inverse"
-                android:gravity="center_vertical"
-                android:text="@string/textNbUser"
-                android:textColor="@color/white"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textHomeNbUtilisateur"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textHomeNbAnnonce"
+            android:layout_centerInParent="true"
+            android:drawableLeft="@drawable/ic_people_inverse"
+            android:drawableStart="@drawable/ic_people_inverse"
+            android:gravity="center_vertical"
+            android:text="@string/textNbUser"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/textHomeNbAnnonce"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:drawableLeft="@drawable/ic_annonces_inverse"
-                android:drawableStart="@drawable/ic_annonces_inverse"
-                android:gravity="center_vertical"
-                android:text="@string/textNbAnnonces"
-                android:textColor="@color/white"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/textHomeNbAnnonce"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:drawableLeft="@drawable/ic_annonces_inverse"
+            android:drawableStart="@drawable/ic_annonces_inverse"
+            android:gravity="center_vertical"
+            android:text="@string/textNbAnnonces"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
 
-        </RelativeLayout>
+    </RelativeLayout>
 
-    </LinearLayout>
+</LinearLayout>
 

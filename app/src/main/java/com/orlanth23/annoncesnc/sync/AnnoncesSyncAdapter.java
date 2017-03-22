@@ -22,6 +22,7 @@ import com.orlanth23.annoncesnc.provider.ProviderContract;
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
 import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.InfoServer;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
@@ -29,6 +30,7 @@ import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
 import com.orlanth23.annoncesnc.webservice.ServiceRest;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Response;
@@ -47,6 +49,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     private static final Gson gson = new Gson();
     private static final ServiceRest serviceRest = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceRest.class);
     private static final ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
+    private static List<String> exceptionMessage = new ArrayList<>();
     private ContentResolver mContentResolver;
     private Context mContext;
     private int nbAnnoncesDeleted;
@@ -54,7 +57,6 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     private int nbPhotosSend;
     private int nbMessageSend;
     private int nbPhotosDeleted;
-    private List<String> exceptionMessage;
 
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -71,21 +73,23 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
 
-        // Suppression des annonces en attente de suppression
-        deleteAnnonceEnAttente();
+        if (Utility.checkWifiAndMobileData(mContext)) {
+            // Suppression des annonces en attente de suppression
+            deleteAnnonceEnAttente();
 
-        // On envoie les annonces qui sont en attente
-        postAnnonceEnAttente();
+            // On envoie les annonces qui sont en attente
+            postAnnonceEnAttente();
 
-        // Suppression des photos
-        deletePhotoEnAttente();
+            // Suppression des photos
+            deletePhotoEnAttente();
 
-        // Récupération du nombre d'utilisateur
-        getInfoServer();
+            // Récupération du nombre d'utilisateur
+            getInfoServer();
 
-        // Envoie d'une notification si quelque chose a été fait
-        if (nbAnnoncesDeleted + nbAnnoncesSend + nbPhotosSend + nbMessageSend + nbPhotosDeleted > 0) {
-            sendNotification();
+            // Envoie d'une notification si quelque chose a été fait
+            if (nbAnnoncesDeleted + nbAnnoncesSend + nbPhotosSend + nbMessageSend + nbPhotosDeleted > 0) {
+                sendNotification();
+            }
         }
     }
 
@@ -113,17 +117,17 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         NotificationCompat.Builder mBuilder =
-            new NotificationCompat.Builder(mContext)
-                .setSmallIcon(R.mipmap.ic_annonces)
-                .setContentTitle(mContext.getString(R.string.app_name))
-                .setContentText(textToSend);
+                new NotificationCompat.Builder(mContext)
+                        .setSmallIcon(R.mipmap.ic_annonces)
+                        .setContentTitle(mContext.getString(R.string.app_name))
+                        .setContentText(textToSend);
 
         // Sets an ID for the notification
         int mNotificationId = 001;
 
         // Gets an instance of the NotificationManager service
         NotificationManager mNotifyMgr =
-            (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
+                (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
 
         // Builds the notification and issues it.
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
@@ -145,12 +149,12 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                     String where = InfosServerContract._ID + "=?";
                     String[] args = new String[]{"1"};
                     int rowUpdated = mContentResolver.update(ProviderContract.InfosServerEntry.CONTENT_URI, contentValues, where, args);
-                    if (rowUpdated == 1){
+                    if (rowUpdated == 1) {
                         // Mise à jour réussie
                         ListeStats listeStats = ListeStats.getInstance(mContext);
                         ListeStats.getDataFromProvider(mContext);
                         listeStats.notifyObservers();
-                    } else{
+                    } else {
                         exceptionMessage.add("getInfoServer:Mise à jour du Provider échouée");
                     }
 
@@ -181,9 +185,9 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                 PhotoForWs photoForWs = getPhotoFromCursor(cursorPhotosToDelete);
                 try {
                     Response<ReturnWS> response = serviceAnnonce.deletePhoto(photoForWs.idAnnonce, photoForWs.idPhoto).execute();
-                    if (response.isSuccessful()){
+                    if (response.isSuccessful()) {
                         ReturnWS rs = response.body();
-                        if (rs.statusValid()){
+                        if (rs.statusValid()) {
                             nbPhotosDeleted++;
                         }
                     }
@@ -246,11 +250,11 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                 AnnonceForWs annonceWs = getAnnonceFromCursor(cursorAnnoncesToSend);
                 try {
                     Response<ReturnWS> response = serviceAnnonce.postAnnonce(annonceWs.idCategory,
-                        annonceWs.idUtilisateur,
-                        annonceWs.titreAnnonce,
-                        annonceWs.descriptionAnnonce,
-                        annonceWs.prixAnnonce,
-                        annonceWs.idLocal).execute();
+                            annonceWs.idUtilisateur,
+                            annonceWs.titreAnnonce,
+                            annonceWs.descriptionAnnonce,
+                            annonceWs.prixAnnonce,
+                            annonceWs.idLocal).execute();
 
                     if (response.isSuccessful()) {
                         ReturnWS rs = response.body();
@@ -313,6 +317,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
         return annonceForWs;
     }
+
     // Création des classes privées pour récupérer des infos à partir des curseurs
     private class AnnonceForWs {
         Integer idAnnonce;

@@ -2,6 +2,7 @@ package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
@@ -15,6 +16,9 @@ import android.widget.TextView;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeStats;
+import com.orlanth23.annoncesnc.provider.AnnoncesProvider;
+import com.orlanth23.annoncesnc.provider.ProviderContract;
+import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -32,8 +36,6 @@ public class HomeFragment extends Fragment {
     TextView textHomeNbAnnonce;
     @BindView(R.id.imageHomeLogo)
     ImageView imageHomeLogo;
-
-    private ListeStats listeStats = ListeStats.getInstance(getActivity());
 
     private View rootView;
     // This observer will update textView on the layout when ListeStats change.
@@ -90,7 +92,15 @@ public class HomeFragment extends Fragment {
     }
 
     private void updateInfosServer(){
-        textHomeNbUtilisateur.setText(getString(R.string.textNbUser).concat(String.valueOf(listeStats.getNbUtilisateurs())));
-        textHomeNbAnnonce.setText(getString(R.string.textNbAnnonces).concat(String.valueOf(listeStats.getNbAnnonces())));
+        Cursor cursor = getActivity().getContentResolver().query(ProviderContract.InfosServerEntry.CONTENT_URI, null, AnnoncesProvider.sSelectionInfosServer, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                int nbAnnonce = cursor.getInt(cursor.getColumnIndex(InfosServerContract.COL_NB_ANNONCE));
+                int nbUtilisateur = cursor.getInt(cursor.getColumnIndex(InfosServerContract.COL_NB_UTILISATEUR));
+                textHomeNbUtilisateur.setText(getString(R.string.textNbUser).concat(String.valueOf(nbAnnonce)));
+                textHomeNbAnnonce.setText(getString(R.string.textNbAnnonces).concat(String.valueOf(nbUtilisateur)));
+            }
+            cursor.close();
+        }
     }
 }

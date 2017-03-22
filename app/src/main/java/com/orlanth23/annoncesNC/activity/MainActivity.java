@@ -127,6 +127,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
         }
     };
+
     private Callback<ReturnWS> callbackAutoLogin = new Callback<ReturnWS>() {
         @Override
         public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
@@ -158,6 +159,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     private void sendOkLoginToast() {
         Toast.makeText(mActivity, mActivity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
     }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -381,6 +383,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     /**
      * ToDo Supprimer cette méthode dès que l'envoi fonctionnera
      * Cette méthode est un test pour voir si on arrive à envoyer un fichier image à Firebase
+     * 23.03.2017 Jarrive bien a creer limage.Hurray !!
      */
     public void testFirebaseStorage(View view) {
         StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
@@ -618,6 +621,6 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         @Override
         public void onItemClick(AdapterView parent, View view, int position, long id) {
             onSelectCategorie(position);
-    }
+        }
     }
 }
