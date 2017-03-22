@@ -36,8 +36,8 @@ import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
 
 import java.io.File;
 
@@ -318,7 +318,7 @@ public class DetailAnnonceFragment extends Fragment {
 
                 // Envoi d'un webservice pour supprimer l'annonce en question
                 // Définition d'un nouveau callback
-                RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+
                 Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
                     @Override
                     public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
@@ -341,7 +341,8 @@ public class DetailAnnonceFragment extends Fragment {
                     }
                 };
                 prgDialog.show();
-                Call<ReturnWS> call = retrofitService.deleteAnnonce(mAnnonce.getIdANO());
+                ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
+                Call<ReturnWS> call = serviceAnnonce.deleteAnnonce(mAnnonce.getIdANO());
                 call.enqueue(myCallback);
             }
         });

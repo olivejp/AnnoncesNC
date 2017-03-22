@@ -10,7 +10,9 @@ import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -18,6 +20,8 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
@@ -31,6 +35,8 @@ public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
     EditText newPassword;
     @BindView(R.id.newPasswordConfirm)
     EditText newPasswordConfirm;
+
+    private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
 
     private CustomRetrofitCompatActivity mActivity = this;
 
@@ -71,8 +77,7 @@ public class ChangePasswordActivity extends CustomRetrofitCompatActivity {
             String newPass = newPassword.getText().toString().replace("'", "''");
             String oldPasswordEncrypted = PasswordEncryptionService.desEncryptIt(oldPass);
             String newPasswordEncrypted = PasswordEncryptionService.desEncryptIt(newPass);
-
-            Call<ReturnWS> call = retrofitService.changePassword(CurrentUser.getInstance().getIdUTI(), oldPasswordEncrypted, newPasswordEncrypted);
+            Call<ReturnWS> call = serviceUtilisateur.changePassword(CurrentUser.getInstance().getIdUTI(), oldPasswordEncrypted, newPasswordEncrypted);
             call.enqueue(changePasswordCallback);
         }
     }

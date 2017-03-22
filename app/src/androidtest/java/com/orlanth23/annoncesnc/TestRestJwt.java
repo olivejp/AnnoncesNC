@@ -4,8 +4,8 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,7 +31,7 @@ public class TestRestJwt {
     private static String PASSWORD = "1234";
     private static String WRONG_PASSWORD = "5486146";
     private static String token;
-    private RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+    private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
 
     @Test
     public void testOkRestJwt() {
@@ -68,7 +68,7 @@ public class TestRestJwt {
                         assertTrue(Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody().getSubject().equals(Proprietes.getProperty(Proprietes.JWT_SUBJECT_LOGIN)));
                         assertTrue(Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody().getAudience().equals(LOGIN));
 
-                        Call<ReturnWS> callTestJwt = retrofitService.testJwtHeader(token);
+                        Call<ReturnWS> callTestJwt = serviceUtilisateur.testJwtHeader(token);
                         callTestJwt.enqueue(callbackTestJwt);
 
 
@@ -85,7 +85,7 @@ public class TestRestJwt {
         };
 
         // Appel du service pour OBTENTION d'un JWT
-        Call<ReturnWS> callOkLogin = retrofitService.loginJwt(LOGIN, PasswordEncryptionService.desEncryptIt(PASSWORD));
+        Call<ReturnWS> callOkLogin = serviceUtilisateur.loginJwt(LOGIN, PasswordEncryptionService.desEncryptIt(PASSWORD));
         try {
             Response<ReturnWS> response = callOkLogin.execute();
             if (response.isSuccessful()) {
@@ -101,7 +101,7 @@ public class TestRestJwt {
                     assertTrue("Sujet bien récupéré", subject.equals(Proprietes.getProperty(Proprietes.JWT_SUBJECT_LOGIN)));
                     assertTrue("Login bien récupéré", audience.equals(LOGIN));
 
-                    Call<ReturnWS> callTestJwt = retrofitService.testJwtHeader(token);
+                    Call<ReturnWS> callTestJwt = serviceUtilisateur.testJwtHeader(token);
                     response = callTestJwt.execute();
                     if (response.isSuccessful()) {
                         rs = response.body();
@@ -150,7 +150,7 @@ public class TestRestJwt {
         };
 
         // Appel du service pour tester que le WS n'arrive pas à s'authentifier
-        Call<ReturnWS> callKoLogin = retrofitService.loginJwt(LOGIN, PasswordEncryptionService.desEncryptIt(WRONG_PASSWORD));
+        Call<ReturnWS> callKoLogin = serviceUtilisateur.loginJwt(LOGIN, PasswordEncryptionService.desEncryptIt(WRONG_PASSWORD));
         callKoLogin.enqueue(callbackKoLoginJwt);
     }
 }

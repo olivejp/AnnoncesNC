@@ -1,37 +1,54 @@
 package com.orlanth23.annoncesnc.list;
 
 import android.content.Context;
+import android.database.Cursor;
 
-import com.orlanth23.annoncesnc.provider.ProviderContract;
+import com.orlanth23.annoncesnc.provider.ProviderContract.InfosServerEntry;
+import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
 
-public class ListeStats {
+import java.util.Observable;
+
+import static com.orlanth23.annoncesnc.provider.AnnoncesProvider.sSelectionInfosServer;
+
+public class ListeStats extends Observable{
 
     private static ListeStats INSTANCE = null;
     private static Integer nbAnnonces;
-    private static Integer nbUsers;
+    private static Integer nbUtilisateurs;
 
     public static ListeStats getInstance(Context context) {
         if (INSTANCE == null) {
-            // ToDo finir l'appel du Query
-            context.getContentResolver().query(ProviderContract.InfosServerEntry.CONTENT_URI, projection, selection, selectionArgs, sortBy);
             INSTANCE = new ListeStats();
+            getDataFromProvider(context);
         }
         return INSTANCE;
     }
 
-    public static Integer getNbAnnonces() {
+    public static void getDataFromProvider(Context context){
+        // Récupération des données à partir du contentProvider
+        Cursor cursor = context.getContentResolver().query(InfosServerEntry.CONTENT_URI, null, sSelectionInfosServer, null, null);
+        if (cursor!= null) {
+            if (cursor.moveToFirst()) {
+                nbAnnonces = cursor.getInt(cursor.getColumnIndex(InfosServerContract.COL_NB_ANNONCE));
+                nbUtilisateurs = cursor.getInt(cursor.getColumnIndex(InfosServerContract.COL_NB_UTILISATEUR));
+            }
+            cursor.close();
+        }
+    }
+
+    public Integer getNbAnnonces() {
         return nbAnnonces;
     }
 
-    public static void setNbAnnonces(Integer nbAnnonces) {
+    public void setNbAnnonces(Integer nbAnnonces) {
         ListeStats.nbAnnonces = nbAnnonces;
     }
 
-    public static Integer getNbUsers() {
-        return nbUsers;
+    public Integer getNbUtilisateurs() {
+        return nbUtilisateurs;
     }
 
-    public static void setNbUsers(Integer nbUsers) {
-        ListeStats.nbUsers = nbUsers;
+    public void setNbUtilisateurs(Integer nbUtilisateurs) {
+        ListeStats.nbUtilisateurs = nbUtilisateurs;
     }
 }

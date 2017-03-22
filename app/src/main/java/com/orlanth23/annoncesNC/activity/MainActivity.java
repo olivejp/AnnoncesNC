@@ -54,7 +54,9 @@ import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.sync.SyncUtils;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import java.io.ByteArrayOutputStream;
 
@@ -63,6 +65,8 @@ import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 import static junit.framework.Assert.assertTrue;
@@ -95,7 +99,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     private ListeCategories listeCategories;
     private Fragment mContent;
     private Activity mActivity = this;
-    private StorageReference mStorageRef;
+
+    private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
 
     private Callback<ReturnWS> callbackUnregisterUser = new Callback<ReturnWS>() {
         @Override
@@ -161,7 +166,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         ButterKnife.bind(this);
 
         // Instanciation des singletons
-        ListeStats.getInstance();
+        ListeStats.getInstance(this);
         listeCategories = ListeCategories.getInstance(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add);
@@ -271,7 +276,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 break;
             case Utility.DIALOG_TAG_UNREGISTER:
                 // On lance le webservice pour se désinscrire
-                Call<ReturnWS> callUnregisterUser = retrofitService.unregisterUser(CurrentUser.getInstance().getIdUTI());
+                Call<ReturnWS> callUnregisterUser = serviceUtilisateur.unregisterUser(CurrentUser.getInstance().getIdUTI());
                 callUnregisterUser.enqueue(callbackUnregisterUser);
                 break;
         }
@@ -312,7 +317,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
 
                 // On tente de se connecter au serveur.
-                Call<ReturnWS> callLogin = retrofitService.login(email, password);
+                Call<ReturnWS> callLogin = serviceUtilisateur.login(email, password);
                 callLogin.enqueue(callbackAutoLogin);
             }
         } else {
@@ -373,8 +378,12 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     }
 
 
+    /**
+     * ToDo Supprimer cette méthode dès que l'envoi fonctionnera
+     * Cette méthode est un test pour voir si on arrive à envoyer un fichier image à Firebase
+     */
     public void testFirebaseStorage(View view) {
-        mStorageRef = FirebaseStorage.getInstance().getReference();
+        StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
         Bitmap bitmap = BitmapFactory.decodeResource(mActivity.getResources(), R.mipmap.ic_annonces);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);

@@ -2,10 +2,10 @@ package com.orlanth23.annoncesnc.webservice;
 
 import java.util.HashMap;
 
-public class InfoServer {
-    int nbUtilisateur;
-    int nbAnnonce;
-    HashMap<Integer, Integer> nbAnnonceByCategorie;
+public class InfoServer{
+    private int nbUtilisateur;
+    private int nbAnnonce;
+    private HashMap<Integer, Integer> nbAnnonceByCategorie;
 
     public int getNbUtilisateur() {
         return nbUtilisateur;

@@ -21,8 +21,9 @@ import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceRest;
+import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -52,7 +53,7 @@ public class MyProfileFragment extends Fragment{
     @BindView(R.id.action_deconnexion)
     Button action_deconnexion;
 
-    private RetrofitService retrofitService;
+    private ServiceRest serviceRest;
     private String newEmail;
     private Integer newTelephone;
     private Callback<ReturnWS> callback = new Callback<ReturnWS>() {
@@ -112,7 +113,7 @@ public class MyProfileFragment extends Fragment{
             myCustomActivity.changeColorToolBar(color);
         }
 
-        retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+
 
         // Création d'un listener pour se déconnecter
         View.OnClickListener onClickListenerDeconnexion = new View.OnClickListener() {
@@ -167,13 +168,16 @@ public class MyProfileFragment extends Fragment{
                         emailMyProfile.setError(getString(R.string.error_invalid_email));
                         emailMyProfile.requestFocus();
                     }else{
+                        ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder()
+                            .baseUrl(Proprietes.getServerEndpoint())
+                            .addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
 
                         // On désactive le bouton, le temps qu'on récupère une réponse
                         action_save_change.setEnabled(false);
 
                         newEmail = emailMyProfile.getText().toString();
                         newTelephone = Integer.valueOf(telephoneMyProfile.getText().toString());
-                        Call<ReturnWS> call = retrofitService.updateUser(CurrentUser.getInstance().getIdUTI(), newEmail, newTelephone);
+                        Call<ReturnWS> call = serviceUtilisateur.updateUser(CurrentUser.getInstance().getIdUTI(), newEmail, newTelephone);
                         call.enqueue(callback);
                     }
                 } else {

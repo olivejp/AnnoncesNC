@@ -62,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:padding="10dip"
-                android:textColor="@color/colorErrorText"
+                android:textColor="@color/ColorAccent"
                 android:textStyle="bold" />
             <Button
                 android:id="@+id/login_btnLogin"

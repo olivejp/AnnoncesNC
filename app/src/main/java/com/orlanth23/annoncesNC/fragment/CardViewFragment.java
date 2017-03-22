@@ -27,8 +27,10 @@ import com.orlanth23.annoncesnc.listener.EndlessRecyclerOnScrollListener;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
+import com.orlanth23.annoncesnc.webservice.ServiceRest;
+import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -284,27 +286,29 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
 
     private void loadData(int currentPage) {
         // Création d'un RestAdapter pour le futur appel de mon RestService
-        RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+        ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
+        ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
+        ServiceRest serviceRest = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceRest.class);
         Call<ReturnWS> call = null;
 
         switch (action) {
             case ACTION_ANNONCE_BY_CATEGORY:
                 // Appel du service RETROFIT
                 if (category != null) {
-                    call = retrofitService.getListAnnonceByCategoryWithPage(category.getIdCAT(), currentPage);
+                    call = serviceRest.getListAnnonceByCategoryWithPage(category.getIdCAT(), currentPage);
                 }
                 break;
             case ACTION_ANNONCE_BY_KEYWORD:
                 // Appel du service RETROFIT
-                call = retrofitService.searchAnnonceWithPage(keyword, currentPage);
+                call = serviceAnnonce.searchAnnonceWithPage(keyword, currentPage);
                 break;
             case ACTION_ANNONCE_BY_USER:
                 // Appel du service RETROFIT
-                call = retrofitService.getListAnnonceByUser(idUser, currentPage);
+                call = serviceUtilisateur.getListAnnonceByUser(idUser, currentPage);
                 break;
             case ACTION_MULTI_PARAM:
                 // Appel du service RETROFIT multiparamètre
-                call = retrofitService.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage);
+                call = serviceAnnonce.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage);
                 break;
         }
         if (call != null) {

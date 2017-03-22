@@ -15,7 +15,7 @@ import com.orlanth23.annoncesnc.provider.contract.MessageContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
 
-public class AnnoncesProvider extends ContentProvider {
+public class AnnoncesProvider extends ContentProvider{
 
     public static final String sSelectionAnnonceById =
         AnnonceContract.TABLE_NAME + "." + AnnonceContract._ID + " = ?";
@@ -24,7 +24,11 @@ public class AnnoncesProvider extends ContentProvider {
         AnnonceContract.TABLE_NAME + "." + AnnonceContract.COL_STATUT_ANNONCE + " = ?";
 
     public static final String sSelectionPhotosByStatut =
-            PhotoContract.TABLE_NAME + "." + PhotoContract.COL_STATUT_PHOTO + " = ?";
+        PhotoContract.TABLE_NAME + "." + PhotoContract.COL_STATUT_PHOTO + " = ?";
+
+    // On ne renverra jamais qu'une seule ligne pour InfosServer
+    public static final String sSelectionInfosServer =
+        InfosServerContract.TABLE_NAME + "." + InfosServerContract._ID + " = 1";
 
     static final int ANNONCE = 200;
     static final int UTILISATEUR = 300;
@@ -154,12 +158,8 @@ public class AnnoncesProvider extends ContentProvider {
                 break;
             }
             case INFOS: {
-                long _id = db.insert(InfosServerContract.TABLE_NAME, null, values);
-                if (_id > 0)
-                    returnUri = ContentUris.withAppendedId(ProviderContract.InfosServerEntry.CONTENT_URI, _id);
-                else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
-                break;
+                // Les infos servers ne peuvent pas être insérées, juste mises à jour.
+                throw new UnsupportedOperationException("The table InfosServer could only be updated.");
             }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
@@ -192,9 +192,7 @@ public class AnnoncesProvider extends ContentProvider {
                     MessageContract.TABLE_NAME, selection, selectionArgs);
                 break;
             case INFOS:
-                rowsDeleted = db.delete(
-                    InfosServerContract.TABLE_NAME, selection, selectionArgs);
-                break;
+                throw new UnsupportedOperationException("The table InfosServer could only be updated.");
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }

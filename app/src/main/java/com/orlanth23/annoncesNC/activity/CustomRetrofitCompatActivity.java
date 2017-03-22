@@ -7,16 +7,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
-
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class CustomRetrofitCompatActivity extends AppCompatActivity {
 
     protected ProgressDialog prgDialog;
-    protected RetrofitService retrofitService;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -24,7 +18,6 @@ public class CustomRetrofitCompatActivity extends AppCompatActivity {
         prgDialog = new ProgressDialog(this);
         prgDialog.setMessage(getString(R.string.dialog_msg_patience));
         prgDialog.setCancelable(true);
-        retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
     }
 
     public void changeActionBarTitle(int resIdTitle, boolean setHomeEnabled) {

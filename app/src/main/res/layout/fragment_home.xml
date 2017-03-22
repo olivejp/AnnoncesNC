@@ -68,7 +68,7 @@
             android:layout_weight="0.3">
 
             <TextView
-                android:id="@+id/textHomeNbUser"
+                android:id="@+id/textHomeNbUtilisateur"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/textHomeNbAnnonce"

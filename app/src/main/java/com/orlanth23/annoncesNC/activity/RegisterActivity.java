@@ -16,13 +16,17 @@ import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
@@ -44,6 +48,8 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
     CheckBox checkBox_register_remember_me;
     private ProgressDialog prgDialog;
     private AppCompatActivity mActivity = this;
+
+    private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
 
     private String mEmail;
     private Integer mTelephone;
@@ -214,7 +220,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
 
             prgDialog.show();
 
-            Call<ReturnWS> call = retrofitService.register(email, motDePasseEncrypted, telephone);
+            Call<ReturnWS> call = serviceUtilisateur.register(email, motDePasseEncrypted, telephone);
             call.enqueue(myCallback);
         }
     }

@@ -19,6 +19,6 @@
         android:layout_width="300dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/list_background"
+        android:background="@color/listCategorieBackground"
         android:choiceMode="singleChoice" />
 </android.support.v4.widget.DrawerLayout>

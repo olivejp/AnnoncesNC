@@ -20,7 +20,9 @@ import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,6 +30,8 @@ import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
@@ -46,6 +50,8 @@ public class LoginActivity extends CustomRetrofitCompatActivity implements Notic
     TextView errorMsg;
     @BindView(R.id.text_login_msg_accueil)
     TextView textLoginMsgAccueil;
+
+    private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
 
     private CustomRetrofitCompatActivity mActivity = this;
 
@@ -180,7 +186,7 @@ public class LoginActivity extends CustomRetrofitCompatActivity implements Notic
                 // Si on a une connexion on tente de se connecter au serveur
                 prgDialog.show();
                 String encryptedPassword = PasswordEncryptionService.desEncryptIt(decryptedPassword);
-                Call<ReturnWS> callLogin = retrofitService.login(email, encryptedPassword);
+                Call<ReturnWS> callLogin = serviceUtilisateur.login(email, encryptedPassword);
                 callLogin.enqueue(loginCallback);
             } else {
                 // On envoie un message pour dire qu'on a pas de connexion réseau

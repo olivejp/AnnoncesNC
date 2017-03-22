@@ -18,17 +18,19 @@ import com.orlanth23.annoncesnc.dto.StatutAnnonce;
 import com.orlanth23.annoncesnc.dto.StatutPhoto;
 import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.list.ListeStats;
+import com.orlanth23.annoncesnc.provider.ProviderContract;
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.webservice.InfoServer;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.RetrofitService;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
+import com.orlanth23.annoncesnc.webservice.ServiceRest;
 
 import java.io.IOException;
 import java.util.List;
 
-import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -43,14 +45,15 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static final String TAG = AnnoncesSyncAdapter.class.getName();
     private static final Gson gson = new Gson();
-    private static final RetrofitService retrofitService = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(RetrofitService.class);
+    private static final ServiceRest serviceRest = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceRest.class);
+    private static final ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
     private ContentResolver mContentResolver;
     private Context mContext;
     private int nbAnnoncesDeleted;
     private int nbAnnoncesSend;
     private int nbPhotosSend;
     private int nbMessageSend;
-    private String textToSend;
+    private int nbPhotosDeleted;
     private List<String> exceptionMessage;
 
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize) {
@@ -80,11 +83,35 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         // Récupération du nombre d'utilisateur
         getInfoServer();
 
-        // Envoie d'une notification si on a envoyé quelque chose.
-        sendNotification(textToSend);
+        // Envoie d'une notification si quelque chose a été fait
+        if (nbAnnoncesDeleted + nbAnnoncesSend + nbPhotosSend + nbMessageSend + nbPhotosDeleted > 0) {
+            sendNotification();
+        }
     }
 
-    private void sendNotification(String textToSend) {
+    private void sendNotification() {
+        String textToSend = "";
+
+        if (nbAnnoncesDeleted > 0) {
+            textToSend = textToSend.concat("Nombre d'annonce(s) supprimée(s) : ").concat(String.valueOf(nbAnnoncesDeleted));
+        }
+
+        if (nbPhotosDeleted > 0) {
+            textToSend = textToSend.concat("\n").concat("Nombre de photo(s) supprimée(s) : ").concat(String.valueOf(nbPhotosDeleted));
+        }
+
+        if (nbAnnoncesSend > 0) {
+            textToSend = textToSend.concat("\n").concat("Nombre d'annonce(s) postée(s) : ").concat(String.valueOf(nbAnnoncesSend));
+        }
+
+        if (nbPhotosSend > 0) {
+            textToSend = textToSend.concat("\n").concat("Nombre de photo(s) envoyée(s) : ").concat(String.valueOf(nbPhotosSend));
+        }
+
+        if (nbMessageSend > 0) {
+            textToSend = textToSend.concat("\n").concat("Nombre de message(s) envoyé(s) : ").concat(String.valueOf(nbMessageSend));
+        }
+
         NotificationCompat.Builder mBuilder =
             new NotificationCompat.Builder(mContext)
                 .setSmallIcon(R.mipmap.ic_annonces)
@@ -103,24 +130,151 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void getInfoServer() {
-        Call<ReturnWS> callGetInfoServer = retrofitService.infoServer();
         try {
-            Response<ReturnWS> response = callGetInfoServer.execute();
+            Response<ReturnWS> response = serviceRest.infoServer().execute();
             if (response.isSuccessful()) {
                 ReturnWS rs = response.body();
                 if (rs.statusValid()) {
+                    // Récupération des données du serveur
                     InfoServer infoServer = gson.fromJson(rs.getMsg(), InfoServer.class);
-                    ListeStats.setNbUsers(infoServer.getNbUtilisateur());
-                    ListeStats.setNbAnnonces(infoServer.getNbAnnonce());
+
+                    // Mise à jour des informations dans le ContentProvider
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(InfosServerContract.COL_NB_ANNONCE, infoServer.getNbAnnonce());
+                    contentValues.put(InfosServerContract.COL_NB_UTILISATEUR, infoServer.getNbUtilisateur());
+                    String where = InfosServerContract._ID + "=?";
+                    String[] args = new String[]{"1"};
+                    int rowUpdated = mContentResolver.update(ProviderContract.InfosServerEntry.CONTENT_URI, contentValues, where, args);
+                    if (rowUpdated == 1){
+                        // Mise à jour réussie
+                        ListeStats listeStats = ListeStats.getInstance(mContext);
+                        ListeStats.getDataFromProvider(mContext);
+                        listeStats.notifyObservers();
+                    } else{
+                        exceptionMessage.add("getInfoServer:Mise à jour du Provider échouée");
+                    }
+
+                    // Mise à jour de la liste des catégories avec le nombre reçu par le WS
                     ListeCategories.setNbAnnonceFromHashMap(mContext, infoServer.getNbAnnonceByCategorie());
                 } else {
-                    exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Retour du WS incorrect.");
+                    exceptionMessage.add("getInfoServer:Les infos serveur n'ont pas pu être récupérées. Retour du WS incorrect.");
                 }
             } else {
-                exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Réponse incorrecte du serveur.");
+                exceptionMessage.add("getInfoServer:Les infos serveur n'ont pas pu être récupérées. Réponse incorrecte du serveur.");
             }
         } catch (IOException e) {
             e.printStackTrace();
+            exceptionMessage.add("getInfoServer:IOException rencontrée.");
+        }
+    }
+
+    private void deletePhotoEnAttente() {
+        nbPhotosDeleted = 0;
+
+        // Lecture des photos supprimées Hors Connexion qui sont maintenant à supprimer sur le serveur
+        Cursor cursorPhotosToDelete;
+        String[] selectionArgs = new String[]{StatutPhoto.ToDelete.valeur()};
+        cursorPhotosToDelete = mContentResolver.query(PhotoEntry.CONTENT_URI, null, sSelectionPhotosByStatut, selectionArgs, null);
+
+        if (cursorPhotosToDelete != null) {
+            while (cursorPhotosToDelete.moveToNext()) {
+                PhotoForWs photoForWs = getPhotoFromCursor(cursorPhotosToDelete);
+                try {
+                    Response<ReturnWS> response = serviceAnnonce.deletePhoto(photoForWs.idAnnonce, photoForWs.idPhoto).execute();
+                    if (response.isSuccessful()){
+                        ReturnWS rs = response.body();
+                        if (rs.statusValid()){
+                            nbPhotosDeleted++;
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    exceptionMessage.add("deletePhotoEnAttente:IOException rencontrée.");
+                }
+            }
+            cursorPhotosToDelete.close();
+        }
+    }
+
+    private void deleteAnnonceEnAttente() {
+        nbAnnoncesDeleted = 0;
+
+        // Lecture des annonces supprimées Hors Connexion qui sont maintenant à supprimer sur le serveur
+        Cursor cursorAnnoncesToDelete;
+        String[] selectionArgs = new String[]{StatutAnnonce.ToDelete.valeur()};
+        cursorAnnoncesToDelete = mContentResolver.query(AnnonceEntry.CONTENT_URI, null, sSelectionAnnoncesByStatut, selectionArgs, null);
+
+        if (cursorAnnoncesToDelete != null) {
+            while (cursorAnnoncesToDelete.moveToNext()) {
+                AnnonceForWs annonceWs = getAnnonceFromCursor(cursorAnnoncesToDelete);
+                try {
+                    // Appel de mon WS
+                    Response<ReturnWS> response = serviceAnnonce.deleteAnnonce(annonceWs.idAnnonce).execute();
+                    if (response.isSuccessful()) {
+                        ReturnWS rs = response.body();
+                        if (rs.statusValid()) {
+                            // Si la suppression à bien eu lieu sur le serveur, on va supprimer l'annonce dans notre ContentProvider
+                            Integer idLocal = rs.getIdLocal();
+                            String where = AnnonceContract._ID + " = ?";
+                            String[] whereArgs = new String[]{String.valueOf(idLocal)};
+                            mContentResolver.delete(AnnonceEntry.CONTENT_URI, where, whereArgs);
+                            nbAnnoncesDeleted++;
+                        } else {
+                            exceptionMessage.add(rs.getMsg());
+                        }
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    exceptionMessage.add("deleteAnnonceEnAttente:IOException rencontrée.");
+                }
+            }
+            cursorAnnoncesToDelete.close();
+        }
+    }
+
+    private void postAnnonceEnAttente() {
+        nbAnnoncesSend = 0;
+
+        // Lecture des annonces postées Hors Connexion qui sont maintenant à envoyer
+        Cursor cursorAnnoncesToSend;
+        String[] selectionArgs = new String[]{StatutAnnonce.ToPost.valeur()};
+        cursorAnnoncesToSend = mContentResolver.query(AnnonceEntry.CONTENT_URI, null, sSelectionAnnoncesByStatut, selectionArgs, null);
+
+        if (cursorAnnoncesToSend != null) {
+            while (cursorAnnoncesToSend.moveToNext()) {
+                AnnonceForWs annonceWs = getAnnonceFromCursor(cursorAnnoncesToSend);
+                try {
+                    Response<ReturnWS> response = serviceAnnonce.postAnnonce(annonceWs.idCategory,
+                        annonceWs.idUtilisateur,
+                        annonceWs.titreAnnonce,
+                        annonceWs.descriptionAnnonce,
+                        annonceWs.prixAnnonce,
+                        annonceWs.idLocal).execute();
+
+                    if (response.isSuccessful()) {
+                        ReturnWS rs = response.body();
+                        if (rs.statusValid()) {
+                            // Si la mise à jour à bien eu lieu sur le serveur, on va mettre à jour l'annonce dans notre ContentProvider
+                            Integer idLocal = rs.getIdLocal();
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, StatutAnnonce.Valid.valeur());
+                            String where = AnnonceContract._ID + " = ?";
+                            String[] whereArgs = new String[]{String.valueOf(idLocal)};
+                            mContentResolver.update(AnnonceEntry.CONTENT_URI, contentValues, where, whereArgs);
+                            nbAnnoncesSend++;
+                        } else {
+                            exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Retour du WS incorrect.");
+                        }
+                    } else {
+                        exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Réponse incorrecte du serveur.");
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    exceptionMessage.add("postAnnonceEnAttente:IOException rencontrée.");
+                }
+            }
+            cursorAnnoncesToSend.close();
         }
     }
 
@@ -159,106 +313,6 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
         return annonceForWs;
     }
-
-    private void deletePhotoEnAttente() {
-        // Lecture des photos supprimées Hors Connexion qui sont maintenant à supprimer sur le serveur
-        Cursor cursorPhotosToDelete;
-        String[] selectionArgs = new String[]{StatutPhoto.ToDelete.valeur()};
-        cursorPhotosToDelete = mContentResolver.query(PhotoEntry.CONTENT_URI, null, sSelectionPhotosByStatut, selectionArgs, null);
-
-        if (cursorPhotosToDelete != null) {
-            while (cursorPhotosToDelete.moveToNext()) {
-                PhotoForWs photoForWs = getPhotoFromCursor(cursorPhotosToDelete);
-                try {
-                    retrofitService.deletePhoto(photoForWs.idAnnonce, photoForWs.idPhoto).execute();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            cursorPhotosToDelete.close();
-        }
-    }
-
-    private void deleteAnnonceEnAttente() {
-        // Lecture des annonces supprimées Hors Connexion qui sont maintenant à supprimer sur le serveur
-        Cursor cursorAnnoncesToDelete;
-        String[] selectionArgs = new String[]{StatutAnnonce.ToDelete.valeur()};
-        cursorAnnoncesToDelete = mContentResolver.query(AnnonceEntry.CONTENT_URI, null, sSelectionAnnoncesByStatut, selectionArgs, null);
-
-        if (cursorAnnoncesToDelete != null) {
-            while (cursorAnnoncesToDelete.moveToNext()) {
-                AnnonceForWs annonceWs = getAnnonceFromCursor(cursorAnnoncesToDelete);
-                try {
-                    // Appel de mon WS
-                    Response<ReturnWS> response = retrofitService.deleteAnnonce(annonceWs.idAnnonce).execute();
-                    if (response.isSuccessful()) {
-                        ReturnWS rs = response.body();
-                        if (rs.statusValid()) {
-                            // Si la suppression à bien eu lieu sur le serveur, on va supprimer l'annonce dans notre ContentProvider
-                            Integer idLocal = rs.getIdLocal();
-                            String where = AnnonceContract._ID + " = ?";
-                            String[] whereArgs = new String[]{String.valueOf(idLocal)};
-                            mContentResolver.delete(AnnonceEntry.CONTENT_URI, where, whereArgs);
-                            nbAnnoncesDeleted++;
-                        } else {
-                            exceptionMessage.add(rs.getMsg());
-                        }
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    exceptionMessage.add(e.getMessage());
-                }
-            }
-            cursorAnnoncesToDelete.close();
-        }
-    }
-
-    private void postAnnonceEnAttente() {
-        // Lecture des annonces postées Hors Connexion qui sont maintenant à envoyer
-        Cursor cursorAnnoncesToSend;
-        String[] selectionArgs = new String[]{StatutAnnonce.ToPost.valeur()};
-        cursorAnnoncesToSend = mContentResolver.query(AnnonceEntry.CONTENT_URI, null, sSelectionAnnoncesByStatut, selectionArgs, null);
-
-        if (cursorAnnoncesToSend != null) {
-            while (cursorAnnoncesToSend.moveToNext()) {
-                AnnonceForWs annonceWs = getAnnonceFromCursor(cursorAnnoncesToSend);
-                try {
-                    Response<ReturnWS> response = retrofitService.postAnnonce(annonceWs.idCategory,
-                        annonceWs.idUtilisateur,
-                        annonceWs.titreAnnonce,
-                        annonceWs.descriptionAnnonce,
-                        annonceWs.prixAnnonce,
-                        annonceWs.idLocal).execute();
-
-                    if (response.isSuccessful()) {
-                        ReturnWS rs = response.body();
-                        if (rs.statusValid()) {
-                            // Si la mise à jour à bien eu lieu sur le serveur, on va mettre à jour l'annonce dans notre ContentProvider
-                            Integer idLocal = rs.getIdLocal();
-                            ContentValues contentValues = new ContentValues();
-                            contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, StatutAnnonce.Valid.valeur());
-                            String where = AnnonceContract._ID + " = ?";
-                            String[] whereArgs = new String[]{String.valueOf(idLocal)};
-                            mContentResolver.update(AnnonceEntry.CONTENT_URI, contentValues, where, whereArgs);
-                            nbAnnoncesSend++;
-                        } else {
-                            exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Retour du WS incorrect.");
-                        }
-                    } else {
-                        exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Réponse incorrecte du serveur.");
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    exceptionMessage.add(e.getMessage());
-                }
-
-
-            }
-            cursorAnnoncesToSend.close();
-        }
-    }
-
     // Création des classes privées pour récupérer des infos à partir des curseurs
     private class AnnonceForWs {
         Integer idAnnonce;
@@ -272,16 +326,16 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private class PhotoForWs {
         Integer idAnnonce;
-        Integer idLocal;
         Integer idPhoto;
         String nomPhoto;
+        Integer idLocal;
     }
 
     private class MessageForWs {
         Integer idMessage;
-        Integer idLocal;
         Integer idSender;
         Integer idReceiver;
         String message;
+        Integer idLocal;
     }
 }

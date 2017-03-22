@@ -55,6 +55,8 @@ import com.orlanth23.annoncesnc.utility.UploadFileToServer;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
+import com.orlanth23.annoncesnc.webservice.ServicePhoto;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -70,6 +72,8 @@ import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
@@ -115,6 +119,9 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     private ArrayList<Photo> P_PHOTO_TO_DELETE = new ArrayList<>();
     private ArrayList<Photo> P_PHOTO_TO_UPDATE = new ArrayList<>();
     private int mCptPhotoTotal;
+
+    private ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
+    private ServicePhoto servicePhoto = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServicePhoto.class);
 
     private Integer mIdCat;
     private Integer mIdUser;
@@ -371,7 +378,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         if (!P_PHOTO_TO_DELETE.isEmpty()) {
             for (Photo photo : P_PHOTO_TO_DELETE) {
                 Integer idPhoto = photo.getIdPhoto();
-                Call<ReturnWS> callDeletePhoto = retrofitService.deletePhoto(mAnnonce.getIdANO(), idPhoto);
+                Call<ReturnWS> callDeletePhoto = serviceAnnonce.deletePhoto(mAnnonce.getIdANO(), idPhoto);
                 callDeletePhoto.enqueue(callbackDeletePhoto);
             }
         }
@@ -612,7 +619,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         prgDialog.setProgress(0);
         mCptPhotoTotal = 0;
         for (Photo photo : mAnnonce.getPhotos()) {
-            Call<ReturnWS> callPostUploadPhoto = retrofitService.postPhoto(mAnnonce.getIdANO(), photo.getIdPhoto(), photo.getNamePhoto());
+            Call<ReturnWS> callPostUploadPhoto = servicePhoto.postPhoto(mAnnonce.getIdANO(), photo.getIdPhoto(), photo.getNamePhoto());
             callPostUploadPhoto.enqueue(callbackPostUploadPhoto);
         }
 

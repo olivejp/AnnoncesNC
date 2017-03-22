@@ -13,13 +13,17 @@ import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.utility.Utility;
+import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
+import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
@@ -32,6 +36,8 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
     AutoCompleteTextView mEmailView;
     @BindView(R.id.login_error)
     TextView errorMsg;
+
+    private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
 
     // Création d'un RestAdapter pour le futur appel de mon RestService
     private Callback<ReturnWS> callbackLostPassword = new Callback<ReturnWS>() {
@@ -106,7 +112,7 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
 
 
             prgDialog.show();
-            Call<ReturnWS> call = retrofitService.doLostPassword(email);
+            Call<ReturnWS> call = serviceUtilisateur.doLostPassword(email);
             call.enqueue(callbackLostPassword);
 
         }
