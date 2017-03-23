@@ -19,13 +19,11 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
-import com.orlanth23.annoncesnc.dto.Utilisateur;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -53,17 +51,17 @@ public class Utility {
 
     //Email Pattern
     private static final String EMAIL_PATTERN =
-            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-                    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
+        "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
+            + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
-    public static boolean isTextViewOnError(boolean condition, TextView textView, String msgError, boolean requestFocus){
+    public static boolean isTextViewOnError(boolean condition, TextView textView, String msgError, boolean requestFocus) {
         if (condition) {
             textView.setError(msgError);
-            if (requestFocus){
+            if (requestFocus) {
                 textView.requestFocus();
             }
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -168,32 +166,32 @@ public class Utility {
         return txt != null && txt.trim().length() > 0;
     }
 
-    private static boolean isWifiActivated(Context context){
+    private static boolean isWifiActivated(Context context) {
         // Test de la connexion WIFI
         ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
     }
 
-    private static boolean is3GActivated(Context context){
+    private static boolean is3GActivated(Context context) {
         // Test de la connexion 3g
         ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = connManager.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE;
     }
 
-    private static int getColorFromString(String color){
+    private static int getColorFromString(String color) {
         String colorComplete = "#".concat(color);
         return Color.parseColor(colorComplete);
     }
 
-    public static int getColorFromInteger(Integer color){
+    public static int getColorFromInteger(Integer color) {
         String colorString = color.toString();
         return getColorFromString(colorString);
     }
 
     // Récupération des préférences du nombre de caractère
-    public static int getPrefNumberCar(Context context){
+    public static int getPrefNumberCar(Context context) {
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         String number = sharedPrefs.getString("pref_key_number_car", context.getResources().getString(R.string.pref_default_number_car));
         return Integer.valueOf(number);
@@ -224,39 +222,39 @@ public class Utility {
     /**
      * Créer un URI pour stocker l'image/la video
      */
-    public static Uri getOutputMediaFileUri(int type, Integer preName, String TAG) {
+    public static Uri getOutputMediaFileUri(int type, String preName, String TAG) {
         return Uri.fromFile(getOutputMediaFile(type, preName, TAG));
     }
 
     /**
      * retourne le nom d'une image / d'une video
      */
-    public static File getOutputMediaFile(int type, Integer preName, String TAG) {
+    public static File getOutputMediaFile(int type, String preName, String TAG) {
         // External sdcard location
         File mediaStorageDir = new File(
-                Environment
-                        .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                Constants.IMAGE_DIRECTORY_NAME);
+            Environment
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+            Constants.IMAGE_DIRECTORY_NAME);
 
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists()) {
             if (!mediaStorageDir.mkdirs()) {
                 Log.d(TAG, "Oops! Failed create "
-                        + Constants.IMAGE_DIRECTORY_NAME + " directory");
+                    + Constants.IMAGE_DIRECTORY_NAME + " directory");
                 return null;
             }
         }
 
         // Create a media file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmssSSS",
-                Locale.getDefault()).format(new Date());
+            Locale.getDefault()).format(new Date());
         File mediaFile;
         if (type == Constants.MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator
-                    + String.valueOf(preName) +  "_IMG_" + timeStamp + ".jpg");
+                + String.valueOf(preName) + "_IMG_" + timeStamp + ".jpg");
         } else if (type == Constants.MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator
-                    + String.valueOf(preName) +  "_VID_" + timeStamp + ".mp4");
+                + String.valueOf(preName) + "_VID_" + timeStamp + ".mp4");
         } else {
             return null;
         }
@@ -264,19 +262,19 @@ public class Utility {
         return mediaFile;
     }
 
-    public static String convertDate(String dateYMDHM){
+    public static String convertDate(String dateYMDHM) {
         SimpleDateFormat originalDateFormat = new SimpleDateFormat("yyyyMMddHHmm", Locale.FRENCH);
         SimpleDateFormat newDateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.FRENCH);
         Date dateOriginal = null;
         try {
             dateOriginal = originalDateFormat.parse(dateYMDHM);
         } catch (ParseException e) {
-            Log.e("convertDate",e.getMessage());
+            Log.e("convertDate", e.getMessage());
         }
         return newDateFormat.format(dateOriginal);
     }
 
-    public static String convertPrice(Integer prix){
+    public static String convertPrice(Integer prix) {
         return NumberFormat.getNumberInstance(Locale.FRENCH).format(prix) + " " + Constants.CURRENCY;
     }
 
@@ -286,7 +284,7 @@ public class Utility {
 
     public static void hideKeyboard(Context ctx) {
         InputMethodManager inputManager = (InputMethodManager) ctx
-                .getSystemService(Context.INPUT_METHOD_SERVICE);
+            .getSystemService(Context.INPUT_METHOD_SERVICE);
 
         View v = ((Activity) ctx).getCurrentFocus();
         if (v == null)
@@ -295,22 +293,21 @@ public class Utility {
         inputManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
-    public static boolean saveAutoComplete(Context context, Utilisateur utilisateur, EditText passwordText) {
+    public static boolean saveAutoComplete(Context context, String idUser, String emailUser, String telephoneUser, String password) {
         boolean retourLogin;
         boolean retourPassword;
         boolean retourAutoConnect;
         boolean retourIdUser;
         boolean retourTelephoneUser;
-        String valeur;
 
         if (existDictionary(context, Dictionary.DB_CLEF_LOGIN)) {
-            retourLogin = update(context, Dictionary.DB_CLEF_LOGIN, utilisateur.getEmailUTI());
+            retourLogin = update(context, Dictionary.DB_CLEF_LOGIN, emailUser);
         } else {
-            retourLogin = insertInto(context, Dictionary.DB_CLEF_LOGIN, utilisateur.getEmailUTI());
+            retourLogin = insertInto(context, Dictionary.DB_CLEF_LOGIN, emailUser);
         }
 
         // Encryptage du mot de passe
-        String motDePasseEncrypted = PasswordEncryptionService.desEncryptIt(passwordText.getText().toString());
+        String motDePasseEncrypted = PasswordEncryptionService.desEncryptIt(password);
         if (existDictionary(context, Dictionary.DB_CLEF_MOT_PASSE)) {
             retourPassword = update(context, Dictionary.DB_CLEF_MOT_PASSE, motDePasseEncrypted);
         } else {
@@ -324,15 +321,15 @@ public class Utility {
         }
 
         if (existDictionary(context, Dictionary.DB_CLEF_ID_USER)) {
-            retourIdUser = update(context, Dictionary.DB_CLEF_ID_USER, String.valueOf(utilisateur.getIdUTI()));
+            retourIdUser = update(context, Dictionary.DB_CLEF_ID_USER, idUser);
         } else {
-            retourIdUser = insertInto(context, Dictionary.DB_CLEF_ID_USER, String.valueOf(utilisateur.getIdUTI()));
+            retourIdUser = insertInto(context, Dictionary.DB_CLEF_ID_USER, idUser);
         }
 
         if (existDictionary(context, Dictionary.DB_CLEF_TELEPHONE)) {
-            retourTelephoneUser = update(context, Dictionary.DB_CLEF_TELEPHONE, String.valueOf(utilisateur.getTelephoneUTI()));
+            retourTelephoneUser = update(context, Dictionary.DB_CLEF_TELEPHONE, telephoneUser);
         } else {
-            retourTelephoneUser = insertInto(context, Dictionary.DB_CLEF_TELEPHONE, String.valueOf(utilisateur.getTelephoneUTI()));
+            retourTelephoneUser = insertInto(context, Dictionary.DB_CLEF_TELEPHONE, telephoneUser);
         }
 
         return retourLogin && retourPassword && retourAutoConnect && retourIdUser;

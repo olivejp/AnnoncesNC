@@ -1,6 +1,5 @@
 package com.orlanth23.annoncesnc.activity;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
@@ -13,7 +12,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -29,12 +27,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
-import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
@@ -50,13 +42,7 @@ import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.utility.Constants;
-import com.orlanth23.annoncesnc.utility.ReturnClassUFTS;
-import com.orlanth23.annoncesnc.utility.UploadFileToServer;
 import com.orlanth23.annoncesnc.utility.Utility;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.ReturnWS;
-import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
-import com.orlanth23.annoncesnc.webservice.ServicePhoto;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -65,17 +51,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.UUID;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
-import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
     // Activity request codes
@@ -114,128 +92,15 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     private String mTitreActivity;
     private Dialog dialogImageChoice;
     private AppCompatActivity mActivity = this;
-    private UploadFileToServer mUploadFileToServer;
     private ArrayList<String> P_PHOTO_TO_SEND = new ArrayList<>();
     private ArrayList<Photo> P_PHOTO_TO_DELETE = new ArrayList<>();
-    private ArrayList<Photo> P_PHOTO_TO_UPDATE = new ArrayList<>();
-    private int mCptPhotoTotal;
-
-    private ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
-    private ServicePhoto servicePhoto = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServicePhoto.class);
 
     private Integer mIdCat;
-    private Integer mIdUser;
+    private String mIdUser;
     private String mTitre;
     private String mDescription;
     private Integer mPrix;
     private Integer mIdAnnonce;
-    private AppCompatActivity mContext = this;
-
-    private StorageReference mStorageRef;
-
-    private Callback<ReturnWS> callbackDeletePhoto = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                Log.d("callbackDeletePhoto", "Suppression achevée avec succès");
-            } else {
-                Log.d("callbackDeletePhoto", response.body().getMsg());
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            t.printStackTrace();
-            SendDialogByFragmentManager(getFragmentManager(), "Erreur lors de l'appel d'un Webservice", NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
-        }
-    };
-    private Callback<ReturnWS> callbackPostUploadPhoto = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                mCptPhotoTotal++;
-                if (rs.statusValid()) {
-                    // Si la photo n'existe pas encore, on l'ajoute à la liste des photos à envoyer
-                    if (!rs.getMsg().equals("PHOTO_ALREADY_EXIST")) {
-                        P_PHOTO_TO_SEND.add(rs.getMsg()); // Ajout de la photo à la liste des photos à envoyer
-                    }
-
-                    // Quand on a parcouru toutes les photos, on les envoie.
-                    if (mCptPhotoTotal == mAnnonce.getPhotos().size()) {
-                        mUploadFileToServer.execute();
-                    }
-                } else {
-                    SendDialogByFragmentManager(getFragmentManager(), rs.getMsg(), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
-                }
-            } else {
-                onFailurePostUploadPhoto();
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            onFailurePostUploadPhoto();
-        }
-    };
-    private Callback<ReturnWS> callbackPostAnnonce = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    prgDialog.setProgress(100);
-                    mAnnonce.setIdANO(rs.getIdServer());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
-
-                    deletePhotos(); // S'il y a des photos à supprimer on le fait ici
-
-                    if (!mAnnonce.getPhotos().isEmpty()) { // On a réussi à sauver l'annonce, on va maintenant uploader les photos
-                        postPhotos();
-                    } else {
-                        endPostAnnonceActivity(Activity.RESULT_OK, getString(R.string.dialog_success_post));
-                    }
-                } else {
-                    endPostAnnonceActivity(Activity.RESULT_CANCELED, rs.getMsg());
-                }
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            ContentValues contentValues = getAnnonceInContentValue(StatutAnnonce.ToUpdate.valeur());
-            getContentResolver().insert(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues);
-            Toast.makeText(mActivity, "Le service n'a pas pu être contacté. L'annonce est sauvegardée et sera envoyée à la prochaine connexion.", Toast.LENGTH_LONG).show();
-        }
-    };
-    private Callback<ReturnWS> callbackPutAnnonce = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    prgDialog.setProgress(100);
-                    mAnnonce.setIdANO(rs.getIdServer());  // Récupération de l'ID de l'annonce, dans le cas d'une mise à jour c'est utile, sinon c'est inutile mais on le fait quand meme
-
-                    deletePhotos(); // S'il y a des photos à supprimer on le fait ici
-
-                    if (!mAnnonce.getPhotos().isEmpty()) { // On a réussi à sauver l'annonce, on va maintenant uploader les photos
-                        postPhotos();
-                    } else {
-                        endPostAnnonceActivity(Activity.RESULT_OK, getString(R.string.dialog_success_post));
-                    }
-                } else {
-                    endPostAnnonceActivity(Activity.RESULT_CANCELED, rs.getMsg());
-                }
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            ContentValues contentValues = getAnnonceInContentValue(StatutAnnonce.ToUpdate.valeur());
-            getContentResolver().insert(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues);
-            Toast.makeText(mActivity, "Le service n'a pas pu être contacté. L'annonce est sauvegardée et sera envoyée à la prochaine connexion.", Toast.LENGTH_LONG).show();
-        }
-    };
     // Création du listener sur chaque image du scrollView
     private View.OnClickListener clickListenerImageView = new View.OnClickListener() {
         @Override
@@ -245,7 +110,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
 
             // Transformation de l'image en byteArray, avant de le mettre dans un bundle et de le filer à l'activité suivante
-            byte[] p_BYTEARRAY = Utility.transformBitmapToByteArray(bitmap);
+            byte[] byteArray = Utility.transformBitmapToByteArray(bitmap);
 
             // On va appeler l'activity avec le bitmap qu'on veut modifier et son numéro dans l'arraylist
             // qui servira à son retour pour le mettre à jour.
@@ -253,7 +118,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             Bundle bundle = new Bundle();
             intent.setClass(mActivity, WorkImageActivity.class);
             bundle.putString(WorkImageActivity.BUNDLE_KEY_MODE, Constants.PARAM_MAJ);
-            bundle.putByteArray(WorkImageActivity.BUNDLE_IN_IMAGE, p_BYTEARRAY);
+            bundle.putByteArray(WorkImageActivity.BUNDLE_IN_IMAGE, byteArray);
             bundle.putInt(WorkImageActivity.BUNDLE_KEY_ID, v.getId());
             intent.putExtras(bundle);
             startActivityForResult(intent, CODE_WORK_IMAGE_MODIFICATION);
@@ -261,15 +126,13 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     };
     /**
      * Création du listener pour sauver l'annonce
-     * Appel des webServices pour poster l'annonce et pour poster la photo
+     * On va l'insérer dans le content Provider avec un statut ToSend
      */
     private View.OnClickListener clickListenerSaveButton = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             // Vérification que tous les champs soient remplis
             if (validateAnnonce()) {
-                prgDialog.setMessage(getString(R.string.dialog_sending_post));
-                prgDialog.show();
 
                 // Récupération des données sur le layout
                 mIdAnnonce = mAnnonce.getIdANO();
@@ -293,16 +156,15 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 }
 
                 // Sauvegarde de l'annonce dans le contentProvider avant d'appeler le syncAdapter pour envoi
-                ContentValues contentValues = getAnnonceInContentValue(statut);
+                ContentValues contentValues = getAnnonceInContentValue(mIdAnnonce, mIdCat, mIdUser, mTitre, mDescription, mPrix, statut);
                 getContentResolver().insert(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues);
-                Toast.makeText(mActivity, "Annonce en cours d'envoi.", Toast.LENGTH_LONG).show();
 
                 // Insertion dans le contentProvider des photos a supprimer
                 for (Photo photo : P_PHOTO_TO_DELETE) {
                     ContentValues values = new ContentValues();
                     if (photo.getIdPhoto() != null && photo.getIdPhoto() != 0) {
-                        values.clear();
-                        values.put(PhotoContract.COL_ID_ANNONCE, photo.getIdPhoto());
+                        values.put(PhotoContract.COL_ID_PHOTO_SERVER, photo.getIdPhoto());
+                        values.put(PhotoContract.COL_ID_ANNONCE, photo.getIdAnnoncePhoto());
                         values.put(PhotoContract.COL_STATUT_PHOTO, StatutPhoto.ToDelete.valeur());
                         getContentResolver().insert(ProviderContract.PhotoEntry.CONTENT_URI, values);
                     }
@@ -311,12 +173,10 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 // Insertion dans le contentProvider des photos a envoyer
                 for (String sourceFile : P_PHOTO_TO_SEND) {
                     ContentValues values = new ContentValues();
-                    values.clear();
-                    values.put(PhotoContract.COL_NOM_PHOTO, sourceFile);
+                    values.put(PhotoContract.COL_CHEMIN_LOCAL_PHOTO, sourceFile);
                     values.put(PhotoContract.COL_STATUT_PHOTO, StatutPhoto.ToSend.valeur());
                     getContentResolver().insert(ProviderContract.PhotoEntry.CONTENT_URI, values);
                 }
-
 
                 // Appel du Sync pour envoyer la données
                 ContentResolver.requestSync(AnnoncesAuthenticatorService.getAccount(), ProviderContract.CONTENT_AUTHORITY, Bundle.EMPTY);
@@ -330,58 +190,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             dialogImageChoice.show();
         }
     };
-
-    // Constructor du fragment
+    // Constructor de l'activité
     public PostAnnonceActivity() {
-    }
-
-    public void onSendPhotoClick(View view){
-// Création d'une image
-        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_action_accept);
-
-        if (bitmap != null) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-            byte[] data = baos.toByteArray();
-
-            StorageReference storageRef = mStorageRef.child("images/" + UUID.randomUUID() + ".png");
-
-            storageRef.putBytes(data).
-                addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // Get a URL to the uploaded content
-                        // Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        Toast.makeText(mContext, "Success FIREBASE", Toast.LENGTH_LONG).show();
-                    }
-                }).
-                addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                        Toast.makeText(mContext, "Failure FIREBASE", Toast.LENGTH_LONG).show();
-                    }
-                });
-        }
-    }
-
-    private void onFailurePostUploadPhoto() {
-        mCptPhotoTotal++;
-        if (mCptPhotoTotal == mAnnonce.getPhotos().size()) {
-            mUploadFileToServer.execute();
-        }
-        SendDialogByFragmentManager(getFragmentManager(), getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
-    }
-
-    private void deletePhotos() {
-        // In update case, user could have delete some photos. So we call deletePhoto WS.
-        if (!P_PHOTO_TO_DELETE.isEmpty()) {
-            for (Photo photo : P_PHOTO_TO_DELETE) {
-                Integer idPhoto = photo.getIdPhoto();
-                Call<ReturnWS> callDeletePhoto = serviceAnnonce.deletePhoto(mAnnonce.getIdANO(), idPhoto);
-                callDeletePhoto.enqueue(callbackDeletePhoto);
-            }
-        }
     }
 
     @Override
@@ -393,9 +203,6 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
         // Récupération des zones graphiques
         ButterKnife.bind(this);
-
-        // Get the Firebase Storage reference
-        mStorageRef = FirebaseStorage.getInstance().getReference();
 
         ListeCategories listeCategories = ListeCategories.getInstance(this);
 
@@ -425,45 +232,6 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-
-
-        // Création d'un UploadFileToServer
-        mUploadFileToServer = new UploadFileToServer() {
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                prgDialog.setMessage("Envoi des photos...");
-                prgDialog.setMax(P_PHOTO_TO_SEND.size());
-            }
-
-            @Override
-            protected String doInBackground(Void... params) {
-                Gson gson = new Gson();
-                String reponse = null;
-                for (String sourceFile : P_PHOTO_TO_SEND) {
-                    reponse = postHttpRequest(sourceFile, Proprietes.getServerPageUpload(), Proprietes.getServerDirectoryUploads());
-                    if (reponse != null) {
-                        if (!reponse.isEmpty()) {
-                            ReturnClassUFTS rs = gson.fromJson(reponse, ReturnClassUFTS.class);
-                            if (rs != null) {
-                                if (rs.getError().equals("false")) {
-                                    prgDialog.setProgress(prgDialog.getProgress() + 1);
-                                }
-                            }
-                        }
-                    }
-                }
-                return reponse;
-            }
-
-            @Override
-            protected void onPostExecute(String result) {
-                super.onPostExecute(result);
-                endPostAnnonceActivity(Activity.RESULT_OK, getString(R.string.dialog_success_post));
-            }
-        };
-
 
         // Création du dialog qui va nous permettre de choisir d'où viennent les images
         createDialogImageChoice();
@@ -596,52 +364,16 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
         super.onSaveInstanceState(outState);
     }
 
-    private ContentValues getAnnonceInContentValue(String statutAnnonce) {
+    private ContentValues getAnnonceInContentValue(int idAnnonce, int idCat, String idUser, String titre, String description, int prix, String statutAnnonce) {
         ContentValues contentValues = new ContentValues();
-        contentValues.put(AnnonceContract.COL_ID_ANNONCE_SERVER, mIdAnnonce);
-        contentValues.put(AnnonceContract.COL_ID_CATEGORY, mIdCat);
-        contentValues.put(AnnonceContract.COL_ID_UTILISATEUR, mIdUser);
-        contentValues.put(AnnonceContract.COL_TITRE_ANNONCE, mTitre);
-        contentValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE, mDescription);
-        contentValues.put(AnnonceContract.COL_PRIX_ANNONCE, mPrix);
+        contentValues.put(AnnonceContract.COL_ID_ANNONCE_SERVER, idAnnonce);
+        contentValues.put(AnnonceContract.COL_ID_CATEGORY, idCat);
+        contentValues.put(AnnonceContract.COL_ID_UTILISATEUR, idUser);
+        contentValues.put(AnnonceContract.COL_TITRE_ANNONCE, titre);
+        contentValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE, description);
+        contentValues.put(AnnonceContract.COL_PRIX_ANNONCE, prix);
         contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, statutAnnonce);
         return contentValues;
-    }
-
-    /**
-     * Lecture de la liste mAnnonce.getPhotos()
-     * pour chaque enregistrement, on va vérifier si l'enregistrement existe déjà sur notre serveur, avec le même nom.
-     * -s'il existe déjà avec le même nom, on ne fait rien : ça veut dire que l'utilisateur n'a pas touché à cette image.
-     * -si on trouve un nom différent, il faut faire une mise à jour et renvoyer la nouvelle Bitmap.
-     * -si on ne trouve rien, c'est qu'on a une nouvelle image, on envoie donc les infos de cette photo plus le Bitmap
-     */
-    private void postPhotos() {
-        prgDialog.setProgress(0);
-        mCptPhotoTotal = 0;
-        for (Photo photo : mAnnonce.getPhotos()) {
-            Call<ReturnWS> callPostUploadPhoto = servicePhoto.postPhoto(mAnnonce.getIdANO(), photo.getIdPhoto(), photo.getNamePhoto());
-            callPostUploadPhoto.enqueue(callbackPostUploadPhoto);
-        }
-
-    }
-
-    private void endPostAnnonceActivity(int p_activityResult, String message) {
-        prgDialog.hide();
-
-        Utility.hideKeyboard(this);
-
-        if (p_activityResult == Activity.RESULT_OK) {
-            if (getParent() == null) {
-                setResult(p_activityResult, new Intent());
-            } else {
-                getParent().setResult(p_activityResult, new Intent());
-            }
-            Toast.makeText(PostAnnonceActivity.this, message, Toast.LENGTH_LONG).show();
-            finish();
-        } else {
-            SendDialogByFragmentManager(getFragmentManager(), message, NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_INFORMATION, null);
-        }
-
     }
 
     private Boolean validateAnnonce() {

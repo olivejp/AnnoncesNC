@@ -9,9 +9,17 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.SyncResult;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageMetadata;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.dto.StatutAnnonce;
@@ -29,9 +37,11 @@ import com.orlanth23.annoncesnc.webservice.ReturnWS;
 import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
 import com.orlanth23.annoncesnc.webservice.ServiceRest;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -57,17 +67,21 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     private int nbPhotosSend;
     private int nbMessageSend;
     private int nbPhotosDeleted;
+    private StorageReference mStorageRef;
+    private String photoPath;
 
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         mContentResolver = context.getContentResolver();
         mContext = context;
+        mStorageRef = FirebaseStorage.getInstance().getReference();
     }
 
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
         mContentResolver = context.getContentResolver();
         mContext = context;
+        mStorageRef = FirebaseStorage.getInstance().getReference();
     }
 
     @Override
@@ -79,6 +93,9 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
             // On envoie les annonces qui sont en attente
             postAnnonceEnAttente();
+
+            // On envoie les photos
+            postPhotoEnAttente();
 
             // Suppression des photos
             deletePhotoEnAttente();
@@ -117,17 +134,17 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(mContext)
-                        .setSmallIcon(R.mipmap.ic_annonces)
-                        .setContentTitle(mContext.getString(R.string.app_name))
-                        .setContentText(textToSend);
+            new NotificationCompat.Builder(mContext)
+                .setSmallIcon(R.mipmap.ic_annonces)
+                .setContentTitle(mContext.getString(R.string.app_name))
+                .setContentText(textToSend);
 
         // Sets an ID for the notification
         int mNotificationId = 001;
 
         // Gets an instance of the NotificationManager service
         NotificationManager mNotifyMgr =
-                (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
+            (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
 
         // Builds the notification and issues it.
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
@@ -237,6 +254,45 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    private void postPhotoEnAttente() {
+
+        Cursor cursorPhotoToSend;
+        String[] selectionArgs = new String[]{StatutPhoto.ToSend.valeur()};
+        cursorPhotoToSend = mContentResolver.query(PhotoEntry.CONTENT_URI, null, sSelectionPhotosByStatut, selectionArgs, null);
+
+        if (cursorPhotoToSend != null) {
+            while (cursorPhotoToSend.moveToNext()) {
+                int columnIndex = cursorPhotoToSend.getColumnIndex(PhotoContract.COL_CHEMIN_LOCAL_PHOTO);
+                photoPath = cursorPhotoToSend.getString(columnIndex);
+                Uri file = Uri.fromFile(new File(photoPath));
+
+                // On attache des metadata au fichier
+                StorageMetadata metadata = new StorageMetadata.Builder()
+                    .setContentType("image/png")
+                    .setCustomMetadata("Id annonce", String.valueOf(cursorPhotoToSend.getInt(cursorPhotoToSend.getColumnIndex(PhotoContract.COL_ID_ANNONCE))))
+                    .build();
+
+                StorageReference photoRef = mStorageRef.child("images/" + UUID.randomUUID() + ".png");
+                photoRef.updateMetadata(metadata);
+
+                photoRef.putFile(file)
+                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            nbPhotosSend++;
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            exceptionMessage.add("postPhotoEnAttente:Impossible d'envoyer la photo " + photoPath);
+                        }
+                    });
+            }
+            cursorPhotoToSend.close();
+        }
+    }
+
     private void postAnnonceEnAttente() {
         nbAnnoncesSend = 0;
 
@@ -250,11 +306,11 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                 AnnonceForWs annonceWs = getAnnonceFromCursor(cursorAnnoncesToSend);
                 try {
                     Response<ReturnWS> response = serviceAnnonce.postAnnonce(annonceWs.idCategory,
-                            annonceWs.idUtilisateur,
-                            annonceWs.titreAnnonce,
-                            annonceWs.descriptionAnnonce,
-                            annonceWs.prixAnnonce,
-                            annonceWs.idLocal).execute();
+                        annonceWs.idUtilisateur,
+                        annonceWs.titreAnnonce,
+                        annonceWs.descriptionAnnonce,
+                        annonceWs.prixAnnonce,
+                        annonceWs.idLocal).execute();
 
                     if (response.isSuccessful()) {
                         ReturnWS rs = response.body();
@@ -286,7 +342,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         PhotoForWs photoForWs = new PhotoForWs();
         int indexColIdLocal = cursor.getColumnIndex(PhotoContract._ID);
         int indexColIdAnnonce = cursor.getColumnIndex(PhotoContract.COL_ID_ANNONCE);
-        int indexColNomPhoto = cursor.getColumnIndex(PhotoContract.COL_NOM_PHOTO);
+        int indexColNomPhoto = cursor.getColumnIndex(PhotoContract.COL_CHEMIN_LOCAL_PHOTO);
         int indexColIdPhoto = cursor.getColumnIndex(PhotoContract.COL_ID_PHOTO_SERVER);
 
         photoForWs.idLocal = cursor.getInt(indexColIdLocal);

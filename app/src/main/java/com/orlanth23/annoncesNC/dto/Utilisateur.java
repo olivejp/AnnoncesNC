@@ -18,27 +18,27 @@ public class Utilisateur implements Parcelable {
         }
     };
 
-    private Integer idUTI;
+    private String idUTI;
     private String emailUTI;
     private Integer telephoneUTI;
 
     public Utilisateur() {
-        this.idUTI = 0;
+        this.idUTI = "";
         this.emailUTI = "";
         this.telephoneUTI = 0;
     }
 
     public Utilisateur(Parcel in) {
-        idUTI = in.readInt();
+        idUTI = in.readString();
         emailUTI = in.readString();
         telephoneUTI = in.readInt();
     }
 
-    public Integer getIdUTI() {
+    public String getIdUTI() {
         return idUTI;
     }
 
-    public void setIdUTI(Integer idUTI) {
+    public void setIdUTI(String idUTI) {
         this.idUTI = idUTI;
     }
 
@@ -65,7 +65,7 @@ public class Utilisateur implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(idUTI);
+        dest.writeString(idUTI);
         dest.writeString(emailUTI);
         dest.writeInt(telephoneUTI);
     }

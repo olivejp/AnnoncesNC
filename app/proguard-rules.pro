@@ -29,6 +29,9 @@
 # http://stackoverflow.com/questions/18646899/proguard-cant-find-referenced-class-com-google-android-gms-r
 -keep public class com.google.android.gms.* { public *; }
 
+#-Firebase Auth recommandations
+-keepattributes Signature
+-keepattributes *Annotation*
 
 # ----------------------
 # Butterknife

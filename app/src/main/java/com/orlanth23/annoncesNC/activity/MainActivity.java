@@ -29,8 +29,12 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -99,34 +103,10 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     private ListeCategories listeCategories;
     private Fragment mContent;
     private Activity mActivity = this;
+    private FirebaseUser mFirebaseUser;
+    private FirebaseAuth mAtuh;
 
     private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
-
-    private Callback<ReturnWS> callbackUnregisterUser = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    CurrentUser cu = CurrentUser.getInstance();
-                    cu.setTelephoneUTI(0);
-                    cu.setEmailUTI(null);
-                    cu.setIdUTI(0);
-                    CurrentUser.getInstance().setConnected(false);
-                    Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
-                    refreshMenu();
-                    getFragmentManager().popBackStackImmediate();
-                } else {
-                    Toast.makeText(getApplicationContext(), rs.getMsg(), Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-        }
-    };
 
     private Callback<ReturnWS> callbackAutoLogin = new Callback<ReturnWS>() {
         @Override
@@ -181,8 +161,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         mTitle = getString(R.string.app_name);  // Récupération du titre
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                new Toolbar(this),
-                R.string.app_name, R.string.app_name) {
+            new Toolbar(this),
+            R.string.app_name, R.string.app_name) {
             public void onDrawerClosed(View view) {
                 setTitle(mTitle);
                 invalidateOptionsMenu();
@@ -277,9 +257,24 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 finish();
                 break;
             case Utility.DIALOG_TAG_UNREGISTER:
-                // On lance le webservice pour se désinscrire
-                Call<ReturnWS> callUnregisterUser = serviceUtilisateur.unregisterUser(CurrentUser.getInstance().getIdUTI());
-                callUnregisterUser.enqueue(callbackUnregisterUser);
+                mFirebaseUser.delete()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                CurrentUser cu = CurrentUser.getInstance();
+                                cu.setTelephoneUTI(0);
+                                cu.setEmailUTI(null);
+                                cu.setIdUTI("");
+                                CurrentUser.getInstance().setConnected(false);
+                                Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
+                                refreshMenu();
+                                getFragmentManager().popBackStackImmediate();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Impossible de supprimer cet utilisateur.", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
                 break;
         }
     }
@@ -395,22 +390,22 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         StorageReference riversRef = mStorageRef.child("images/rivers.png");
 
         riversRef.putBytes(byteArray)
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        // Get a URL to the uploaded content
-                        // Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                        assertTrue(true);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                        // ...
-                        assertTrue(false);
-                    }
-                });
+            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    // Get a URL to the uploaded content
+                    // Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    assertTrue(true);
+                }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    // Handle unsuccessful uploads
+                    // ...
+                    assertTrue(false);
+                }
+            });
     }
 
 
@@ -421,7 +416,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         // Vérification que l'utilisateur est connecté
         if (!CurrentUser.getInstance().isConnected()) {
             // Ouverture de l'activity pour connecter l'utilisateur
-            intent.setClass(this, LoginActivity.class);
+            intent.setClass(this, LoginFirebaseActivity.class);
             b.putInt(PARAM_REQUEST_CODE, CODE_POST_NOT_LOGGED); //Your id
             intent.putExtras(b);
             startActivityForResult(intent, CODE_POST_NOT_LOGGED);
@@ -447,7 +442,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 setTitle(getString(R.string.searchTitle));
                 mContent = searchFragment;
                 getFragmentManager().beginTransaction()
-                        .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
+                    .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
                 mDrawerLayout.closeDrawer(mDrawerListCategorie);
                 return true;
             } else {
@@ -541,7 +536,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 if (!CurrentUser.getInstance().isConnected()) {
                     // Ouverture de l'activity pour connecter l'utilisateur
                     Intent intent = new Intent();
-                    intent.setClass(this, LoginActivity.class);
+                    intent.setClass(this, LoginFirebaseActivity.class);
                     startActivityForResult(intent, CODE_CONNECT_USER);
                     return true;
                 } else {

@@ -48,6 +48,15 @@
                 android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
+            android:name="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity"
+            android:label="@string/title_activity_login"
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
+        </activity>
+        <activity
             android:name="com.orlanth23.annoncesnc.activity.PostAnnonceActivity"
             android:label="@string/action_post"
             android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity"
@@ -64,6 +73,15 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.orlanth23.annoncesnc.activity.LoginActivity" />
+        </activity>
+        <activity
+            android:name="com.orlanth23.annoncesnc.activity.RegisterFirebaseActivity"
+            android:label="@string/title_register"
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity" />
         </activity>
         <activity
             android:name="com.orlanth23.annoncesnc.activity.SettingsActivity"
@@ -83,6 +101,14 @@
         </activity>
         <activity
             android:name="com.orlanth23.annoncesnc.activity.ChangePasswordActivity"
+            android:label="@string/change_password"
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
+        </activity>
+        <activity
+            android:name="com.orlanth23.annoncesnc.activity.ChangePasswordFirebaseActivity"
             android:label="@string/change_password"
             android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity">
             <meta-data

@@ -45,7 +45,7 @@ public class TestUtilities {
         if (photoId != null) {
             testValues.put(PhotoContract._ID, photoId);
         }
-        testValues.put(PhotoContract.COL_NOM_PHOTO, "snow.jpg");
+        testValues.put(PhotoContract.COL_CHEMIN_LOCAL_PHOTO, "snow.jpg");
         testValues.put(PhotoContract.COL_STATUT_PHOTO, StatutPhoto.ToSend.valeur());
         testValues.put(PhotoContract.COL_ID_ANNONCE, idAnnonce);
         return testValues;

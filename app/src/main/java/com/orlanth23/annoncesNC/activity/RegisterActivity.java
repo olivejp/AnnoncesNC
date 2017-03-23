@@ -53,6 +53,8 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
 
     private String mEmail;
     private Integer mTelephone;
+    private String mPassword;
+
     // Retour du webservice Register
     private Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
         @Override
@@ -74,14 +76,14 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
 
                     // Récupération de l'utilisateur comme étant l'utilisateur courant
                     CurrentUser cu = CurrentUser.getInstance();
-                    cu.setIdUTI(idUser);
+                    cu.setIdUTI(String.valueOf(idUser));
                     cu.setEmailUTI(mEmail);
                     cu.setTelephoneUTI(mTelephone);
                     cu.setConnected(true);
 
                     // Si on a coché la case pour se souvenir de l'utilisateur
                     if (checkBox_register_remember_me.isChecked()) {
-                        Utility.saveAutoComplete(mActivity, cu, pwdET);
+                        Utility.saveAutoComplete(mActivity, String.valueOf(idUser), mEmail, String.valueOf(mTelephone), mPassword);
                     }
 
                     Utility.hideKeyboard(mActivity);
@@ -142,7 +144,10 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
     }
 
     private boolean checkRegister() {
+        mEmail = "";
+        mPassword = "";
         mTelephone = 0;
+
         View focusView = null;
         boolean cancel = false;
 
@@ -153,7 +158,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
             mTelephone = Integer.parseInt(monTelephone);
         }
         mEmail = emailET.getText().toString().replace("'", "''");
-        String password = pwdET.getText().toString().replace("'", "''");
+        mPassword = pwdET.getText().toString().replace("'", "''");
         String passwordConfirm = pwdConfirmET.getText().toString().replace("'", "''");
 
         // When Email Edit View and Password Edit View have values other than Null
@@ -169,7 +174,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
             cancel = true;
         }
 
-        if (!Utility.isNotNull(password)) {
+        if (!Utility.isNotNull(mPassword)) {
             pwdET.setError(getString(R.string.error_field_required));
             focusView = pwdET;
             cancel = true;
@@ -189,7 +194,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
         }
 
 
-        if (!password.equals(passwordConfirm)) {
+        if (!mPassword.equals(passwordConfirm)) {
             pwdConfirmET.setError(getString(R.string.error_incorrect_password));
             focusView = pwdConfirmET;
             cancel = true;
