@@ -88,7 +88,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
         // Required empty public constructor
     }
 
-    public static CardViewFragment newInstance(String action, String keyword, Categorie categorie, Integer idUser,
+    public static CardViewFragment newInstance(String action, String keyword, Categorie categorie, String idUser,
                                                Integer minPrice, Integer maxPrice, boolean photo) {
         CardViewFragment fragment = new CardViewFragment();
         Bundle args = new Bundle();
@@ -100,7 +100,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
             args.putString(PARAM_KEYWORD, keyword);
         }
         if (idUser != null) {
-            args.putInt(PARAM_ID_USER, idUser);
+            args.putString(PARAM_ID_USER, idUser);
         }
         if (minPrice != null) {
             args.putInt(PARAM_MIN_PRICE, minPrice);

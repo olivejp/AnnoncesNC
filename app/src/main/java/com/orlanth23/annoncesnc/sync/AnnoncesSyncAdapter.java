@@ -12,10 +12,15 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
@@ -68,7 +73,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     private int nbMessageSend;
     private int nbPhotosDeleted;
     private StorageReference mStorageRef;
-    private String photoPath;
+    private String photoLocalPath;
 
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -254,40 +259,86 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    private void sendPhotoToFirebaseDatabase(UUID idPhoto, PhotoForWs photo){
+        // Insertion de notre photo dans notre FirebaseDatabase
+        FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference photoDatabaseRef = mDatabase.getReference("photos/" + idPhoto);
+        photoDatabaseRef.setValue(photo).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (!task.isSuccessful()) {
+                    exceptionMessage.add("postPhotoEnAttente:Insertion dans Firebase échouée.");
+                }
+            }
+        });
+    }
+
+    private void sendPhotoToFirebaseStorage(UUID UUIDPhoto, Uri fileImage, @Nullable Integer idAnnonce){
+        // Récupération de la référence
+        StorageReference photoRef = mStorageRef.child("photos/" + UUIDPhoto + ".png");
+
+        // On initialise la metadata, s'il y a quelque chose à mettre dedans
+        StorageMetadata metadata = null;
+        if (idAnnonce != null) {
+            // On attache des metadata au fichier
+            metadata = new StorageMetadata.Builder()
+                .setContentType("image/png")
+                .setCustomMetadata("Id annonce", String.valueOf(idAnnonce))
+                .build();
+
+            // On met à jour les métadata
+            photoRef.updateMetadata(metadata);
+        }
+
+        // On envoie le fichier
+        photoRef.putFile(fileImage)
+            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    nbPhotosSend++;
+                }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception exception) {
+                    exceptionMessage.add("postPhotoEnAttente:Impossible d'envoyer la photo " + photoLocalPath);
+                }
+            });
+    }
+
+    /**
+     * Cette méthode va lire toutes les photos présentes dans le content provider avec le statut ToSend.
+     * Pour chaque enregistrement, on va envoyer la photo sur Firebase Storage
+     * On va ensuite créer un enregistrement dans Firebase Database pour l'archiver.
+     */
     private void postPhotoEnAttente() {
 
+        // Recherche dans le ContentProvider de toutes les photos à envoyer
         Cursor cursorPhotoToSend;
         String[] selectionArgs = new String[]{StatutPhoto.ToSend.valeur()};
         cursorPhotoToSend = mContentResolver.query(PhotoEntry.CONTENT_URI, null, sSelectionPhotosByStatut, selectionArgs, null);
 
         if (cursorPhotoToSend != null) {
             while (cursorPhotoToSend.moveToNext()) {
+                // Récupération de la photo présente dans le curseur
+                PhotoForWs photoWs = getPhotoFromCursor(cursorPhotoToSend);
+
                 int columnIndex = cursorPhotoToSend.getColumnIndex(PhotoContract.COL_CHEMIN_LOCAL_PHOTO);
-                photoPath = cursorPhotoToSend.getString(columnIndex);
-                Uri file = Uri.fromFile(new File(photoPath));
+                photoLocalPath = cursorPhotoToSend.getString(columnIndex);
+                Uri file = Uri.fromFile(new File(photoLocalPath));
 
-                // On attache des metadata au fichier
-                StorageMetadata metadata = new StorageMetadata.Builder()
-                    .setContentType("image/png")
-                    .setCustomMetadata("Id annonce", String.valueOf(cursorPhotoToSend.getInt(cursorPhotoToSend.getColumnIndex(PhotoContract.COL_ID_ANNONCE))))
-                    .build();
+                // On trouve une ID pour la photo
+                UUID UUIDPhoto = UUID.randomUUID();
 
-                StorageReference photoRef = mStorageRef.child("images/" + UUID.randomUUID() + ".png");
-                photoRef.updateMetadata(metadata);
+                // Récupération de l'id de l'annonce pour la mettre dans la metadata de la photo
+                Integer idAnnonce = cursorPhotoToSend.getInt(cursorPhotoToSend.getColumnIndex(PhotoContract.COL_ID_ANNONCE));
 
-                photoRef.putFile(file)
-                    .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            nbPhotosSend++;
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception exception) {
-                            exceptionMessage.add("postPhotoEnAttente:Impossible d'envoyer la photo " + photoPath);
-                        }
-                    });
+                // Upload du fichier de l'image sur FirebaseStorage
+                sendPhotoToFirebaseStorage(UUIDPhoto, file, idAnnonce);
+
+                // Enregistrement de la photo dans la FirebaseDatabase
+                sendPhotoToFirebaseDatabase(UUIDPhoto, photoWs);
+
             }
             cursorPhotoToSend.close();
         }
@@ -304,6 +355,8 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         if (cursorAnnoncesToSend != null) {
             while (cursorAnnoncesToSend.moveToNext()) {
                 AnnonceForWs annonceWs = getAnnonceFromCursor(cursorAnnoncesToSend);
+
+                // Insertion de notre annonce dans notre BackEnd
                 try {
                     Response<ReturnWS> response = serviceAnnonce.postAnnonce(annonceWs.idCategory,
                         annonceWs.idUtilisateur,
@@ -333,6 +386,18 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                     e.printStackTrace();
                     exceptionMessage.add("postAnnonceEnAttente:IOException rencontrée.");
                 }
+
+                // Insertion de notre annonce dans notre FirebaseDatabase
+                FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
+                DatabaseReference annonceRef = mDatabase.getReference("annonces/" + UUID.randomUUID());
+                annonceRef.setValue(annonceWs).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (!task.isSuccessful()) {
+                            exceptionMessage.add("postAnnonceEnAttente:Insertion dans Firebase échouée.");
+                        }
+                    }
+                });
             }
             cursorAnnoncesToSend.close();
         }

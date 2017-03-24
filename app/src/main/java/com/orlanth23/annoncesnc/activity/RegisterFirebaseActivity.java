@@ -163,12 +163,14 @@ public class RegisterFirebaseActivity extends CustomRetrofitCompatActivity {
     }
 
     public void register(View view) {
-
         if (checkRegister(vEmail, vPassword, vPasswordConfirm, vTelephone)) {
+            // On cache le clavier
+            Utility.hideKeyboard(mActivity);
 
+            // On affiche la barre de progression
             prgDialog.show();
 
-            // Création de l'utilisateur dans notre base
+            // Création de l'utilisateur sur Firebase Auth
             mAuth.createUserWithEmailAndPassword(mEmail, mPassword)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -177,6 +179,7 @@ public class RegisterFirebaseActivity extends CustomRetrofitCompatActivity {
                         if (!task.isSuccessful()) {
                             // Display failed message using Toast
                             Toast.makeText(mActivity, getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+                            prgDialog.hide();
                         }
 
                         if (task.isSuccessful()) {
@@ -189,51 +192,60 @@ public class RegisterFirebaseActivity extends CustomRetrofitCompatActivity {
                                 // On remet les zones à blank
                                 setDefaultValues();
 
-                                // Récupération de l'utilisateur
-                                Utilisateur user = new Utilisateur();
-                                user.setIdUTI(mIdUser);
-                                user.setEmailUTI(mEmail);
-                                user.setTelephoneUTI(Integer.valueOf(mTelephone));
-
-                                // Enregistrement de cet utilisateur dans la RealTimeDatabase de Firebase
-                                DatabaseReference userRef = mDatabase.getReference("users/" + mIdUser);
-                                userRef.setValue(user).addOnCompleteListener(mActivity, new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        if (task.isSuccessful()) {
-                                            // Si on a coché la case pour se souvenir de l'utilisateur
-                                            if (vCheckBoxRegisterRememberMe.isChecked()) {
-                                                Utility.saveAutoComplete(mActivity, mIdUser, mEmail, mTelephone, mPassword);
-                                            }
-
-                                            Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
-
-                                            // On retourne un résultat dans un intent
-                                            Intent returnIntent = new Intent();
-                                            setResult(RESULT_OK, returnIntent);                             // On retourne un résultat RESULT_OK
-                                            finish();
-                                        } else {
-                                            // On a pas réussi à insérer dans RealTimeDatabase
-                                            Toast.makeText(mActivity, getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-
-                                            // On retourne un résultat dans un intent
-                                            Intent returnIntent = new Intent();
-                                            setResult(RESULT_CANCELED, returnIntent);                             // On retourne un résultat RESULT_OK
-                                            finish();
-                                        }
-                                    }
-                                });
-
-                                // On enlève la barre de progression
+                                // Création d'un utilisateur dans notre Firebase Database
+                                createFirebaseDatabaseUser();
+                            }else{
                                 prgDialog.hide();
-
-                                // On cache le clavier
-                                Utility.hideKeyboard(mActivity);
                             }
+                        }else{
+                            prgDialog.hide();
                         }
                     }
                 });
         }
+    }
+
+    private void createFirebaseDatabaseUser(){
+
+        // Récupération de l'utilisateur
+        Utilisateur user = new Utilisateur();
+        user.setIdUTI(mIdUser);
+        user.setEmailUTI(mEmail);
+        user.setTelephoneUTI(Integer.valueOf(mTelephone));
+
+        // Enregistrement de cet utilisateur dans la RealTimeDatabase de Firebase
+        DatabaseReference userRef = mDatabase.getReference("users/" + mIdUser);
+
+        userRef.setValue(user).addOnCompleteListener(mActivity, new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                // On enlève la barre de progression
+                prgDialog.hide();
+
+                if (task.isSuccessful()) {
+                    // Si on a coché la case pour se souvenir de l'utilisateur
+                    if (vCheckBoxRegisterRememberMe.isChecked()) {
+                        Utility.saveAutoComplete(mActivity, mIdUser, mEmail, mTelephone, mPassword);
+                    }
+
+                    Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
+
+                    // On retourne un résultat dans un intent
+                    Intent returnIntent = new Intent();
+                    setResult(RESULT_OK, returnIntent);                             // On retourne un résultat RESULT_OK
+                    finish();
+                } else {
+                    // On a pas réussi à insérer dans RealTimeDatabase
+                    Toast.makeText(mActivity, getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+
+                    // On retourne un résultat dans un intent
+                    Intent returnIntent = new Intent();
+                    setResult(RESULT_CANCELED, returnIntent);                       // On retourne un résultat RESULT_CANCELED
+                    finish();
+                }
+            }
+        });
     }
 
     @Override

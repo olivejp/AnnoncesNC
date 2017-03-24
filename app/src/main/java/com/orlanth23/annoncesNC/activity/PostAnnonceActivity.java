@@ -101,6 +101,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
     private String mDescription;
     private Integer mPrix;
     private Integer mIdAnnonce;
+
     // Création du listener sur chaque image du scrollView
     private View.OnClickListener clickListenerImageView = new View.OnClickListener() {
         @Override
@@ -164,7 +165,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                     ContentValues values = new ContentValues();
                     if (photo.getIdPhoto() != null && photo.getIdPhoto() != 0) {
                         values.put(PhotoContract.COL_ID_PHOTO_SERVER, photo.getIdPhoto());
-                        values.put(PhotoContract.COL_ID_ANNONCE, photo.getIdAnnoncePhoto());
+                        values.put(PhotoContract.COL_ID_ANNONCE, photo.getIdAnnonce());
                         values.put(PhotoContract.COL_STATUT_PHOTO, StatutPhoto.ToDelete.valeur());
                         getContentResolver().insert(ProviderContract.PhotoEntry.CONTENT_URI, values);
                     }
@@ -447,14 +448,14 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 image.setMinimumHeight(dimension);
                 image.setMaxHeight(dimension);
                 image.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                image.setContentDescription(photo.getNamePhoto());
+                image.setContentDescription(photo.getNomPhoto());
 
-                if (photo.getNamePhoto().contains("http://") || photo.getNamePhoto().contains("https://")) {
+                if (photo.getNomPhoto().contains("http://") || photo.getNomPhoto().contains("https://")) {
                     // Chargement d'une photo à partir d'internet
-                    Glide.with(this).load(photo.getNamePhoto()).placeholder(R.drawable.ic_camera).error(R.drawable.ic_camera_black).into(image);
+                    Glide.with(this).load(photo.getNomPhoto()).placeholder(R.drawable.ic_camera).error(R.drawable.ic_camera_black).into(image);
                 } else {
                     // Chargement à partir du local
-                    Uri uri = Uri.parse(photo.getNamePhoto());
+                    Uri uri = Uri.parse(photo.getNomPhoto());
                     Glide.with(this).load(new File(String.valueOf(uri))).placeholder(R.drawable.ic_camera).error(R.drawable.ic_camera_black).into(image);
                 }
                 imageContainer.addView(image);
@@ -499,7 +500,7 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
                 } else {
                     // On est en mode modification
                     // On va se positionner sur la bonne photo pour faire la modification de chemin
-                    mAnnonce.getPhotos().get(position).setNamePhoto(path);
+                    mAnnonce.getPhotos().get(position).setNomPhoto(path);
                 }
                 // Si le fichier temporaire existe, il faut le supprimer
                 File file = new File(String.valueOf(mFileUriTemp));

@@ -27,7 +27,7 @@ public class AnnonceContract implements BaseColumns {
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + " (" +
         _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
         COL_ID_CATEGORY + " INTEGER NOT NULL, " +
-        COL_ID_UTILISATEUR + " INTEGER NOT NULL, " +
+        COL_ID_UTILISATEUR + " TEXT NOT NULL, " +
         COL_ID_ANNONCE_SERVER + " INTEGER NULL, " +
         COL_TITRE_ANNONCE + " TEXT NULL, " +
         COL_DESCRIPTION_ANNONCE + " TEXT NULL, " +

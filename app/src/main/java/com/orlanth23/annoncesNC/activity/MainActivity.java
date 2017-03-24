@@ -103,8 +103,8 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     private ListeCategories listeCategories;
     private Fragment mContent;
     private Activity mActivity = this;
-    private FirebaseUser mFirebaseUser;
-    private FirebaseAuth mAtuh;
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    private FirebaseUser mFirebaseUser = mAuth.getCurrentUser();
 
     private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
 
