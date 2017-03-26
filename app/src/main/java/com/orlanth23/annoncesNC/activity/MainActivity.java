@@ -7,8 +7,6 @@ import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -30,14 +28,9 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.BuildConfig;
 import com.orlanth23.annoncesnc.R;
@@ -62,8 +55,6 @@ import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
-import java.io.ByteArrayOutputStream;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
@@ -73,7 +64,6 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
-import static junit.framework.Assert.assertTrue;
 
 public class MainActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface {
 
@@ -263,7 +253,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()) {
                                 CurrentUser cu = CurrentUser.getInstance();
-                                cu.setTelephoneUTI(0);
+                                cu.setTelephoneUTI("");
                                 cu.setEmailUTI(null);
                                 cu.setIdUTI("");
                                 CurrentUser.getInstance().setConnected(false);
@@ -373,41 +363,6 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
 
         return super.onPrepareOptionsMenu(menu);
     }
-
-
-    /**
-     * ToDo Supprimer cette méthode dès que l'envoi fonctionnera
-     * Cette méthode est un test pour voir si on arrive à envoyer un fichier image à Firebase
-     * 23.03.2017 Jarrive bien a creer limage.Hurray !!
-     */
-    public void testFirebaseStorage(View view) {
-        StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
-        Bitmap bitmap = BitmapFactory.decodeResource(mActivity.getResources(), R.mipmap.ic_annonces);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
-        byte[] byteArray = baos.toByteArray();
-
-        StorageReference riversRef = mStorageRef.child("images/rivers.png");
-
-        riversRef.putBytes(byteArray)
-            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    // Get a URL to the uploaded content
-                    // Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                    assertTrue(true);
-                }
-            })
-            .addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    // Handle unsuccessful uploads
-                    // ...
-                    assertTrue(false);
-                }
-            });
-    }
-
 
     public void mainPost(View view) {
         Intent intent = new Intent();
@@ -520,7 +475,7 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                         MyProfileFragment myProfileFragment = MyProfileFragment.newInstance();
 
                         // On va remplacer le fragment par celui de la liste d'annonce
-                        getFragmentManager().beginTransaction().replace(R.id.frame_container, myProfileFragment, MyProfileFragment.tag).addToBackStack(null).commit();
+                        getFragmentManager().beginTransaction().replace(R.id.frame_container, myProfileFragment, MyProfileFragment.TAG).addToBackStack(null).commit();
                         return true;
                     } else {
                         return false;

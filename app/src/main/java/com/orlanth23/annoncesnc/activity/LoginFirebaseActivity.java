@@ -23,6 +23,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
 
@@ -49,17 +50,20 @@ public class LoginFirebaseActivity extends CustomRetrofitCompatActivity implemen
     TextView textLoginMsgAccueil;
     private Context mContext = this;
     private CustomRetrofitCompatActivity mActivity = this;
-    private FirebaseAuth mAuth;
     private String password;
+    private FirebaseAuth mAuth;
     private FirebaseUser firebaseUser;
 
     private FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
         @Override
         public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
             FirebaseUser user = firebaseAuth.getCurrentUser();
+            CurrentUser cu = CurrentUser.getInstance();
             if (user != null) {
+                cu.setConnected(true);
                 Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
             } else {
+                cu.setConnected(false);
                 Log.d(TAG, "onAuthStateChanged:signed_out");
             }
         }
@@ -147,6 +151,17 @@ public class LoginFirebaseActivity extends CustomRetrofitCompatActivity implemen
         finish();
     }
 
+    /**
+     * Verification que les champs soient bien renseignes avant de passer à l'authentification.
+     * On vérifie que l'email soit assez long >= 4 caractères
+     * On vérifie que le champ email ne soit pas vide
+     * On vérifie que l'email est valide
+     *
+     * @param email             L'email de l'utilisateur
+     * @param decryptedPassword Mot de passe en clair
+     * @return True si toute les vérifications sont passées sans problème
+     * False sinon
+     */
     private boolean checkLogin(String email, String decryptedPassword) {
         boolean condition;
         mEmailView.setError(null);
@@ -171,6 +186,7 @@ public class LoginFirebaseActivity extends CustomRetrofitCompatActivity implemen
         String email = mEmailView.getText().toString().replace("'", "''");
         password = mPasswordView.getText().toString().replace("'", "''");
 
+        // On envoie un message d'erreur s'il n'y a pas de connexion
         if (!Utility.checkWifiAndMobileData(this)) {
             // On envoie un message pour dire qu'on a pas de connexion réseau
             SendDialogByFragmentManager(getFragmentManager(),

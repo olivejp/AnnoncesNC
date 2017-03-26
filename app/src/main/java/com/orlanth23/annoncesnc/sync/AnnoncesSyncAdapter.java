@@ -27,6 +27,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.dto.AnnonceFirebase;
+import com.orlanth23.annoncesnc.dto.PhotoFirebase;
 import com.orlanth23.annoncesnc.dto.StatutAnnonce;
 import com.orlanth23.annoncesnc.dto.StatutPhoto;
 import com.orlanth23.annoncesnc.list.ListeCategories;
@@ -204,19 +206,18 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
         if (cursorPhotosToDelete != null) {
             while (cursorPhotosToDelete.moveToNext()) {
-                PhotoForWs photoForWs = getPhotoFromCursor(cursorPhotosToDelete);
-                try {
-                    Response<ReturnWS> response = serviceAnnonce.deletePhoto(photoForWs.idAnnonce, photoForWs.idPhoto).execute();
-                    if (response.isSuccessful()) {
-                        ReturnWS rs = response.body();
-                        if (rs.statusValid()) {
-                            nbPhotosDeleted++;
+                PhotoFirebase photoFirebase = getPhotoFromCursor(cursorPhotosToDelete);
+                FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
+                DatabaseReference dRef = firebaseDatabase.getReference("photos/" + photoFirebase.getIdPhoto());
+                dRef.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (!task.isSuccessful()) {
+                            exceptionMessage.add("Suppression de la photo échouée.");
                         }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    exceptionMessage.add("deletePhotoEnAttente:IOException rencontrée.");
-                }
+                });
+
             }
             cursorPhotosToDelete.close();
         }
@@ -232,34 +233,13 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
         if (cursorAnnoncesToDelete != null) {
             while (cursorAnnoncesToDelete.moveToNext()) {
-                AnnonceForWs annonceWs = getAnnonceFromCursor(cursorAnnoncesToDelete);
-                try {
-                    // Appel de mon WS
-                    Response<ReturnWS> response = serviceAnnonce.deleteAnnonce(annonceWs.idAnnonce).execute();
-                    if (response.isSuccessful()) {
-                        ReturnWS rs = response.body();
-                        if (rs.statusValid()) {
-                            // Si la suppression à bien eu lieu sur le serveur, on va supprimer l'annonce dans notre ContentProvider
-                            Integer idLocal = rs.getIdLocal();
-                            String where = AnnonceContract._ID + " = ?";
-                            String[] whereArgs = new String[]{String.valueOf(idLocal)};
-                            mContentResolver.delete(AnnonceEntry.CONTENT_URI, where, whereArgs);
-                            nbAnnoncesDeleted++;
-                        } else {
-                            exceptionMessage.add(rs.getMsg());
-                        }
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    exceptionMessage.add("deleteAnnonceEnAttente:IOException rencontrée.");
-                }
+                AnnonceFirebase annonceWs = getAnnonceFromCursor(cursorAnnoncesToDelete);
             }
             cursorAnnoncesToDelete.close();
         }
     }
 
-    private void sendPhotoToFirebaseDatabase(UUID idPhoto, PhotoForWs photo){
+    private void sendPhotoToFirebaseDatabase(UUID idPhoto, PhotoFirebase photo) {
         // Insertion de notre photo dans notre FirebaseDatabase
         FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
         DatabaseReference photoDatabaseRef = mDatabase.getReference("photos/" + idPhoto);
@@ -321,7 +301,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         if (cursorPhotoToSend != null) {
             while (cursorPhotoToSend.moveToNext()) {
                 // Récupération de la photo présente dans le curseur
-                PhotoForWs photoWs = getPhotoFromCursor(cursorPhotoToSend);
+                PhotoFirebase photoFirebase = getPhotoFromCursor(cursorPhotoToSend);
 
                 int columnIndex = cursorPhotoToSend.getColumnIndex(PhotoContract.COL_CHEMIN_LOCAL_PHOTO);
                 photoLocalPath = cursorPhotoToSend.getString(columnIndex);
@@ -331,13 +311,13 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
                 UUID UUIDPhoto = UUID.randomUUID();
 
                 // Récupération de l'id de l'annonce pour la mettre dans la metadata de la photo
-                Integer idAnnonce = cursorPhotoToSend.getInt(cursorPhotoToSend.getColumnIndex(PhotoContract.COL_ID_ANNONCE));
+                Integer idAnnonce = cursorPhotoToSend.getInt(cursorPhotoToSend.getColumnIndex(PhotoContract.COL_UUID_ANNONCE));
 
                 // Upload du fichier de l'image sur FirebaseStorage
                 sendPhotoToFirebaseStorage(UUIDPhoto, file, idAnnonce);
 
                 // Enregistrement de la photo dans la FirebaseDatabase
-                sendPhotoToFirebaseDatabase(UUIDPhoto, photoWs);
+                sendPhotoToFirebaseDatabase(UUIDPhoto, photoFirebase);
 
             }
             cursorPhotoToSend.close();
@@ -348,53 +328,40 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         nbAnnoncesSend = 0;
 
         // Lecture des annonces postées Hors Connexion qui sont maintenant à envoyer
-        Cursor cursorAnnoncesToSend;
+        final Cursor cursorAnnoncesToSend;
         String[] selectionArgs = new String[]{StatutAnnonce.ToPost.valeur()};
         cursorAnnoncesToSend = mContentResolver.query(AnnonceEntry.CONTENT_URI, null, sSelectionAnnoncesByStatut, selectionArgs, null);
 
         if (cursorAnnoncesToSend != null) {
             while (cursorAnnoncesToSend.moveToNext()) {
-                AnnonceForWs annonceWs = getAnnonceFromCursor(cursorAnnoncesToSend);
+                // On récupère les données du curseur pour les insérer dans un POJO afin de pouvoir l'envoyer sur
+                // La base de données Firebase.
+                final AnnonceFirebase annonceFirebase = getAnnonceFromCursor(cursorAnnoncesToSend);
 
-                // Insertion de notre annonce dans notre BackEnd
-                try {
-                    Response<ReturnWS> response = serviceAnnonce.postAnnonce(annonceWs.idCategory,
-                        annonceWs.idUtilisateur,
-                        annonceWs.titreAnnonce,
-                        annonceWs.descriptionAnnonce,
-                        annonceWs.prixAnnonce,
-                        annonceWs.idLocal).execute();
-
-                    if (response.isSuccessful()) {
-                        ReturnWS rs = response.body();
-                        if (rs.statusValid()) {
-                            // Si la mise à jour à bien eu lieu sur le serveur, on va mettre à jour l'annonce dans notre ContentProvider
-                            Integer idLocal = rs.getIdLocal();
-                            ContentValues contentValues = new ContentValues();
-                            contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, StatutAnnonce.Valid.valeur());
-                            String where = AnnonceContract._ID + " = ?";
-                            String[] whereArgs = new String[]{String.valueOf(idLocal)};
-                            mContentResolver.update(AnnonceEntry.CONTENT_URI, contentValues, where, whereArgs);
-                            nbAnnoncesSend++;
-                        } else {
-                            exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Retour du WS incorrect.");
-                        }
-                    } else {
-                        exceptionMessage.add("Les infos serveur n'ont pas pu être récupérées. Réponse incorrecte du serveur.");
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    exceptionMessage.add("postAnnonceEnAttente:IOException rencontrée.");
-                }
+                // Création d'une nouvelle id pour l'annonce
+                String idAnnonce = String.valueOf(UUID.randomUUID());
+                annonceFirebase.setIdAnnonce(idAnnonce);
 
                 // Insertion de notre annonce dans notre FirebaseDatabase
                 FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-                DatabaseReference annonceRef = mDatabase.getReference("annonces/" + UUID.randomUUID());
-                annonceRef.setValue(annonceWs).addOnCompleteListener(new OnCompleteListener<Void>() {
+                DatabaseReference annonceRef = mDatabase.getReference("annonces/" + annonceFirebase.getIdAnnonce());
+                annonceRef.setValue(annonceFirebase).addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (!task.isSuccessful()) {
                             exceptionMessage.add("postAnnonceEnAttente:Insertion dans Firebase échouée.");
+                        } else {
+                            // Mise à jour de l'annonce dans le content Provider
+                            ContentValues contentValues = new ContentValues();
+                            contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, StatutAnnonce.Valid.valeur());
+
+                            String where = AnnonceContract._ID + "=?";
+                            String[] args = new String[]{String.valueOf(annonceFirebase.getIdLocal())};
+
+                            int rowUpdated = mContentResolver.update(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues, where, args);
+                            if (rowUpdated != 1) {
+                                exceptionMessage.add("getInfoServer:Mise à jour du Provider échouée");
+                            }
                         }
                     }
                 });
@@ -403,58 +370,44 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
-    private PhotoForWs getPhotoFromCursor(Cursor cursor) {
-        PhotoForWs photoForWs = new PhotoForWs();
+    private PhotoFirebase getPhotoFromCursor(Cursor cursor) {
+        PhotoFirebase photoForWs = new PhotoFirebase();
         int indexColIdLocal = cursor.getColumnIndex(PhotoContract._ID);
-        int indexColIdAnnonce = cursor.getColumnIndex(PhotoContract.COL_ID_ANNONCE);
+        int indexColIdAnnonce = cursor.getColumnIndex(PhotoContract.COL_UUID_ANNONCE);
         int indexColNomPhoto = cursor.getColumnIndex(PhotoContract.COL_CHEMIN_LOCAL_PHOTO);
-        int indexColIdPhoto = cursor.getColumnIndex(PhotoContract.COL_ID_PHOTO_SERVER);
+        int indexColIdPhoto = cursor.getColumnIndex(PhotoContract.COL_UUID_PHOTO);
 
-        photoForWs.idLocal = cursor.getInt(indexColIdLocal);
-        photoForWs.idAnnonce = cursor.getInt(indexColIdAnnonce);
-        photoForWs.nomPhoto = cursor.getString(indexColNomPhoto);
-        photoForWs.idPhoto = cursor.getInt(indexColIdPhoto);
+        photoForWs.setIdLocal(cursor.getInt(indexColIdLocal));
+        photoForWs.setIdAnnonce(cursor.getInt(indexColIdAnnonce));
+        photoForWs.setNomPhoto(cursor.getString(indexColNomPhoto));
+        photoForWs.setIdPhoto(cursor.getInt(indexColIdPhoto));
 
         return photoForWs;
     }
 
-    private AnnonceForWs getAnnonceFromCursor(Cursor cursor) {
-        AnnonceForWs annonceForWs = new AnnonceForWs();
+    private AnnonceFirebase getAnnonceFromCursor(Cursor cursor) {
+        AnnonceFirebase annonceFirebase = new AnnonceFirebase();
         int indexColIdLocal = cursor.getColumnIndex(AnnonceContract._ID);
-        int indexColIdAnnonce = cursor.getColumnIndex(AnnonceContract.COL_ID_ANNONCE_SERVER);
+        int indexColIdAnnonce = cursor.getColumnIndex(AnnonceContract.COL_UUID_ANNONCE);
         int indexColIdCategory = cursor.getColumnIndex(AnnonceContract.COL_ID_CATEGORY);
         int indexColIdUtilisateur = cursor.getColumnIndex(AnnonceContract.COL_ID_UTILISATEUR);
         int indexColTitreAnnonce = cursor.getColumnIndex(AnnonceContract.COL_TITRE_ANNONCE);
         int indexColDescriptionAnnonce = cursor.getColumnIndex(AnnonceContract.COL_DESCRIPTION_ANNONCE);
         int indexColPrixAnnonce = cursor.getColumnIndex(AnnonceContract.COL_PRIX_ANNONCE);
 
-        annonceForWs.idAnnonce = cursor.getInt(indexColIdAnnonce);
-        annonceForWs.idCategory = cursor.getInt(indexColIdCategory);
-        annonceForWs.idUtilisateur = cursor.getInt(indexColIdUtilisateur);
-        annonceForWs.titreAnnonce = cursor.getString(indexColTitreAnnonce);
-        annonceForWs.descriptionAnnonce = cursor.getString(indexColDescriptionAnnonce);
-        annonceForWs.prixAnnonce = cursor.getInt(indexColPrixAnnonce);
-        annonceForWs.idLocal = cursor.getInt(indexColIdLocal);
+        annonceFirebase.setIdAnnonce(String.valueOf(cursor.getInt(indexColIdAnnonce)));
+        annonceFirebase.setIdCategory(cursor.getInt(indexColIdCategory));
+        annonceFirebase.setIdUtilisateur(cursor.getInt(indexColIdUtilisateur));
+        annonceFirebase.setTitreAnnonce(cursor.getString(indexColTitreAnnonce));
+        annonceFirebase.setDescriptionAnnonce(cursor.getString(indexColDescriptionAnnonce));
+        annonceFirebase.setPrixAnnonce(cursor.getInt(indexColPrixAnnonce));
+        annonceFirebase.setIdLocal(cursor.getInt(indexColIdLocal));
 
-        return annonceForWs;
-    }
-
-    // Création des classes privées pour récupérer des infos à partir des curseurs
-    private class AnnonceForWs {
-        Integer idAnnonce;
-        Integer idCategory;
-        Integer idUtilisateur;
-        String titreAnnonce;
-        String descriptionAnnonce;
-        Integer prixAnnonce;
-        Integer idLocal;
+        return annonceFirebase;
     }
 
     private class PhotoForWs {
-        Integer idAnnonce;
-        Integer idPhoto;
-        String nomPhoto;
-        Integer idLocal;
+
     }
 
     private class MessageForWs {

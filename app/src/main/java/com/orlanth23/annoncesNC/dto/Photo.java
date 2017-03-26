@@ -2,6 +2,7 @@ package com.orlanth23.annoncesnc.dto;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.Nullable;
 
 public class Photo implements Parcelable {
     public static final Parcelable.Creator<Photo> CREATOR = new Parcelable.Creator<Photo>() {
@@ -16,48 +17,59 @@ public class Photo implements Parcelable {
             return new Photo[size];
         }
     };
-    private Integer idPhoto;
-    private String namePhoto;
-    private Integer idAnnoncePhoto;
+    private String UUIDPhoto;
+    private String pathPhoto;
+    private String idAnnoncePhoto;
+    private String statutPhoto;
 
     public Photo() {
         super();
     }
 
-    public Photo(Integer p_idPhoto, String p_namePhoto, Integer idAnnonce) {
-        this.idPhoto = p_idPhoto;
-        this.namePhoto = p_namePhoto;
-        this.idAnnoncePhoto = idAnnonce;
+    public Photo(@Nullable String UUIDPhoto, String p_namePhoto, String idAnnoncePhoto, String statutPhoto) {
+        this.UUIDPhoto = UUIDPhoto;
+        this.pathPhoto = p_namePhoto;
+        this.idAnnoncePhoto = idAnnoncePhoto;
+        this.statutPhoto = statutPhoto;
     }
 
     public Photo(Parcel in) {
-        idPhoto = in.readInt();
-        namePhoto = in.readString();
-        idAnnoncePhoto = in.readInt();
+        UUIDPhoto = in.readString();
+        pathPhoto = in.readString();
+        idAnnoncePhoto = in.readString();
+        statutPhoto = in.readString();
     }
 
-    public Integer getIdPhoto() {
-        return idPhoto;
+    public String getUUIDPhoto() {
+        return UUIDPhoto;
     }
 
-    public void setIdPhoto(Integer idPhoto) {
-        this.idPhoto = idPhoto;
+    public void setUUIDPhoto(String UUIDPhoto) {
+        this.UUIDPhoto = UUIDPhoto;
     }
 
-    public String getNamePhoto() {
-        return namePhoto;
+    public String getPathPhoto() {
+        return pathPhoto;
     }
 
-    public void setNamePhoto(String namePhoto) {
-        this.namePhoto = namePhoto;
+    public void setPathPhoto(String pathPhoto) {
+        this.pathPhoto = pathPhoto;
     }
 
-    public Integer getIdAnnoncePhoto() {
+    public String getIdAnnoncePhoto() {
         return idAnnoncePhoto;
     }
 
-    public void setIdAnnoncePhoto(Integer idAnnoncePhoto) {
+    public void setIdAnnoncePhoto(String idAnnoncePhoto) {
         this.idAnnoncePhoto = idAnnoncePhoto;
+    }
+
+    public String getStatutPhoto() {
+        return statutPhoto;
+    }
+
+    public void setStatutPhoto(String statutPhoto) {
+        this.statutPhoto = statutPhoto;
     }
 
     @Override
@@ -67,8 +79,9 @@ public class Photo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(this.idPhoto);
-        dest.writeString(this.namePhoto);
-        dest.writeInt(this.idAnnoncePhoto);
+        dest.writeString(this.UUIDPhoto);
+        dest.writeString(this.pathPhoto);
+        dest.writeString(this.idAnnoncePhoto);
+        dest.writeString(this.statutPhoto);
     }
 }

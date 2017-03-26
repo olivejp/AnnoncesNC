@@ -82,10 +82,17 @@ public class CurrentUser extends Utilisateur implements Parcelable {
 
         // Si les données d'identification ont été saisies
         INSTANCE.setConnected(true);
-        INSTANCE.setIdUTI(Integer.valueOf(idUser));
+        INSTANCE.setIdUTI(idUser);
         INSTANCE.setEmailUTI(email);
-        INSTANCE.setTelephoneUTI(Integer.valueOf(telephone));
+        INSTANCE.setTelephoneUTI(telephone);
         return INSTANCE;
 
+    }
+
+    public void clear() {
+        INSTANCE.setConnected(false);
+        INSTANCE.setIdUTI("");
+        INSTANCE.setTelephoneUTI("");
+        INSTANCE.setEmailUTI("");
     }
 }

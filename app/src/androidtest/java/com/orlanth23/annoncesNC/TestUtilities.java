@@ -47,7 +47,7 @@ public class TestUtilities {
         }
         testValues.put(PhotoContract.COL_CHEMIN_LOCAL_PHOTO, "snow.jpg");
         testValues.put(PhotoContract.COL_STATUT_PHOTO, StatutPhoto.ToSend.valeur());
-        testValues.put(PhotoContract.COL_ID_ANNONCE, idAnnonce);
+        testValues.put(PhotoContract.COL_UUID_ANNONCE, idAnnonce);
         return testValues;
     }
 
@@ -56,7 +56,7 @@ public class TestUtilities {
         testValues.put(AnnonceContract.COL_CONTACT_MEL, "0");
         testValues.put(AnnonceContract.COL_CONTACT_MSG, "0");
         testValues.put(AnnonceContract.COL_CONTACT_TEL, "0");
-        testValues.put(AnnonceContract.COL_ID_ANNONCE_SERVER, "1");
+        testValues.put(AnnonceContract.COL_UUID_ANNONCE, "1");
         testValues.put(AnnonceContract.COL_TITRE_ANNONCE, "Titre d'annonce");
         testValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE, "Description d'annonce");
         testValues.put(AnnonceContract.COL_PRIX_ANNONCE, "123456");
@@ -72,7 +72,7 @@ public class TestUtilities {
         testValues.put(AnnonceContract.COL_CONTACT_MEL, "0");
         testValues.put(AnnonceContract.COL_CONTACT_MSG, "0");
         testValues.put(AnnonceContract.COL_CONTACT_TEL, "0");
-        testValues.put(AnnonceContract.COL_ID_ANNONCE_SERVER, "1");
+        testValues.put(AnnonceContract.COL_UUID_ANNONCE, "1");
         testValues.put(AnnonceContract.COL_TITRE_ANNONCE, "Titre d'annonce");
         testValues.put(AnnonceContract.COL_DESCRIPTION_ANNONCE, "Description d'annonce");
         testValues.put(AnnonceContract.COL_PRIX_ANNONCE, "123456");

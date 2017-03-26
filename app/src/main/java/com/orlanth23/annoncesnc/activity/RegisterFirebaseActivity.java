@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.utility.Utility;
 
@@ -58,9 +59,12 @@ public class RegisterFirebaseActivity extends CustomRetrofitCompatActivity {
         @Override
         public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
             FirebaseUser user = firebaseAuth.getCurrentUser();
+            CurrentUser cu = CurrentUser.getInstance();
             if (user != null) {
+                cu.setConnected(true);
                 Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
             } else {
+                cu.setConnected(false);
                 Log.d(TAG, "onAuthStateChanged:signed_out");
             }
         }
@@ -206,12 +210,11 @@ public class RegisterFirebaseActivity extends CustomRetrofitCompatActivity {
     }
 
     private void createFirebaseDatabaseUser(){
-
         // Récupération de l'utilisateur
         Utilisateur user = new Utilisateur();
         user.setIdUTI(mIdUser);
         user.setEmailUTI(mEmail);
-        user.setTelephoneUTI(Integer.valueOf(mTelephone));
+        user.setTelephoneUTI(mTelephone);
 
         // Enregistrement de cet utilisateur dans la RealTimeDatabase de Firebase
         DatabaseReference userRef = mDatabase.getReference("users/" + mIdUser);
@@ -229,6 +232,13 @@ public class RegisterFirebaseActivity extends CustomRetrofitCompatActivity {
                         Utility.saveAutoComplete(mActivity, mIdUser, mEmail, mTelephone, mPassword);
                     }
 
+                    // Récupération des infos dans notre CurrentUser
+                    CurrentUser cu = CurrentUser.getInstance();
+                    cu.setConnected(true);
+                    cu.setEmailUTI(mEmail);
+                    cu.setTelephoneUTI(mTelephone);
+                    cu.setIdUTI(mIdUser);
+
                     Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
 
                     // On retourne un résultat dans un intent
@@ -238,6 +248,9 @@ public class RegisterFirebaseActivity extends CustomRetrofitCompatActivity {
                 } else {
                     // On a pas réussi à insérer dans RealTimeDatabase
                     Toast.makeText(mActivity, getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+
+                    // RAZ du CurrentUser
+                    CurrentUser.getInstance().clear();
 
                     // On retourne un résultat dans un intent
                     Intent returnIntent = new Intent();

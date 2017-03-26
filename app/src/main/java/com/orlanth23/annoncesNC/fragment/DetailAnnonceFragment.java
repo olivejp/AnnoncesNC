@@ -5,12 +5,14 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,29 +27,28 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.activity.ImageViewerActivity;
 import com.orlanth23.annoncesnc.activity.PostAnnonceActivity;
 import com.orlanth23.annoncesnc.dto.Annonce;
 import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.dto.Photo;
+import com.orlanth23.annoncesnc.dto.StatutPhoto;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.provider.ProviderContract;
+import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.ReturnWS;
-import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
 
 import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class DetailAnnonceFragment extends Fragment {
 
@@ -179,7 +180,7 @@ public class DetailAnnonceFragment extends Fragment {
             Intent i = new Intent();
             i.setClass(getActivity(), ImageViewerActivity.class);
             Bundle bundle = new Bundle();
-            bundle.putString(ImageViewerActivity.BUNDLE_KEY_URI, mAnnonce.getPhotos().get(v.getId()).getNamePhoto());
+            bundle.putString(ImageViewerActivity.BUNDLE_KEY_URI, mAnnonce.getPhotos().get(v.getId()).getPathPhoto());
             i.putExtras(bundle);
             startActivity(i);
         }
@@ -278,12 +279,12 @@ public class DetailAnnonceFragment extends Fragment {
                 image.setMaxHeight(dimension);
                 image.setScaleType(ImageView.ScaleType.FIT_CENTER);
 
-                if (photo.getNamePhoto().contains("http://") || photo.getNamePhoto().contains("https://")) {
+                if (photo.getPathPhoto().contains("http://") || photo.getPathPhoto().contains("https://")) {
                     // Chargement d'une photo à partir d'internet
-                    Glide.with(this).load(photo.getNamePhoto()).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(image);
+                    Glide.with(this).load(photo.getPathPhoto()).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(image);
                 } else {
                     // Chargement à partir du local
-                    Uri uri = Uri.parse(photo.getNamePhoto());
+                    Uri uri = Uri.parse(photo.getPathPhoto());
                     Glide.with(this).load(new File(String.valueOf(uri))).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(image);
                 }
                 P_IMAGE_CONTAINER.addView(image);
@@ -315,35 +316,33 @@ public class DetailAnnonceFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 prgDialog.setMessage(getString(R.string.dialog_msg_patience));
+                prgDialog.show();
+
+                // Sauvegarde de l'annonce dans le contentProvider avant d'appeler le syncAdapter pour envoi
+                ContentValues values = new ContentValues();
+                values.put(AnnonceContract.COL_STATUT_ANNONCE, StatutPhoto.ToDelete.valeur());
+
+                String where = AnnonceContract._ID + "=?";
+
+                String[] args = new String[]{mAnnonce.getUUIDANO()};
+
+                getActivity().getContentResolver().update(ProviderContract.AnnonceEntry.CONTENT_URI, values, where, args);
 
                 // Envoi d'un webservice pour supprimer l'annonce en question
-                // Définition d'un nouveau callback
-
-                Callback<ReturnWS> myCallback = new Callback<ReturnWS>() {
+                DatabaseReference dRef = FirebaseDatabase.getInstance().getReference("annonces/" + mAnnonce.getUUIDANO());
+                dRef.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
-                    public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-                        if (response.isSuccessful()) {
-                            ReturnWS rs = response.body();
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
                             prgDialog.hide();
-                            // Suppression de l'enregistrement dans la liste
-                            if (rs.statusValid()) {
-                                // Retour au fragment précédent
-                                Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
-                                getFragmentManager().popBackStackImmediate();
-                            }
+                            Toast.makeText(getActivity(), "Suppression de l'annonce effectuée.", Toast.LENGTH_LONG).show();
+                            getFragmentManager().popBackStackImmediate();
+                        } else {
+                            prgDialog.hide();
+                            Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
                         }
                     }
-
-                    @Override
-                    public void onFailure(Call<ReturnWS> call, Throwable t) {
-                        prgDialog.hide();
-                        Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-                    }
-                };
-                prgDialog.show();
-                ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
-                Call<ReturnWS> call = serviceAnnonce.deleteAnnonce(mAnnonce.getIdANO());
-                call.enqueue(myCallback);
+                });
             }
         });
 
@@ -376,7 +375,7 @@ public class DetailAnnonceFragment extends Fragment {
         String color = "#00000";
 
         // Récupération de toutes les valeurs de l'annonce dans les zones graphiques
-        value_id_annonce.setText(String.valueOf(mAnnonce.getIdANO()));
+        value_id_annonce.setText(String.valueOf(mAnnonce.getUUIDANO()));
         value_titre.setText(mAnnonce.getTitreANO());
         value_description.setText(mAnnonce.getDescriptionANO());
         value_prix_annonce.setText(Utility.convertPrice(mAnnonce.getPriceANO()));
@@ -387,7 +386,7 @@ public class DetailAnnonceFragment extends Fragment {
             emailUser = mAnnonce.getUtilisateurANO().getEmailUTI();
         }
 
-        if (mAnnonce.getIdCategorieANO() != null){
+        if (mAnnonce.getIdCategorieANO() != null) {
             Categorie categorie = ListeCategories.getInstance(getActivity()).getCategorieById(mAnnonce.getIdCategorieANO());
             color = categorie.getCouleurCAT();
         }

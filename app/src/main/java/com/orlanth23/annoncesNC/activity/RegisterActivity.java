@@ -52,7 +52,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
     private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
 
     private String mEmail;
-    private Integer mTelephone;
+    private String mTelephone;
     private String mPassword;
 
     // Retour du webservice Register
@@ -146,7 +146,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
     private boolean checkRegister() {
         mEmail = "";
         mPassword = "";
-        mTelephone = 0;
+        mTelephone = "";
 
         View focusView = null;
         boolean cancel = false;
@@ -155,7 +155,7 @@ public class RegisterActivity extends CustomRetrofitCompatActivity {
         // Téléphone, email et password
         String monTelephone = telephoneET.getText().toString();
         if (!monTelephone.equals("")) {
-            mTelephone = Integer.parseInt(monTelephone);
+            mTelephone = monTelephone;
         }
         mEmail = emailET.getText().toString().replace("'", "''");
         mPassword = pwdET.getText().toString().replace("'", "''");

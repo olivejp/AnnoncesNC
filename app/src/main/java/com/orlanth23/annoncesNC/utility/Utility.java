@@ -159,7 +159,7 @@ public class Utility {
     }
 
     public static boolean isPasswordValid(String password) {
-        return password.length() >= 4;
+        return password.length() >= 6;
     }
 
     public static boolean isNotNull(String txt) {

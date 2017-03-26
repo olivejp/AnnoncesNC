@@ -5,7 +5,9 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,30 +16,29 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.activity.ChangePasswordActivity;
+import com.orlanth23.annoncesnc.activity.ChangePasswordFirebaseActivity;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.utility.Utility;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.ReturnWS;
-import com.orlanth23.annoncesnc.webservice.ServiceRest;
-import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
+import butterknife.OnClick;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
-public class MyProfileFragment extends Fragment{
+public class MyProfileFragment extends Fragment {
 
-    public static final String tag = MyProfileFragment.class.getName();
+    public static final String TAG = MyProfileFragment.class.getName();
     public final static int CODE_CHANGE_PASSWORD = 600;
 
     @BindView(R.id.emailMyProfile)
@@ -53,37 +54,22 @@ public class MyProfileFragment extends Fragment{
     @BindView(R.id.action_deconnexion)
     Button action_deconnexion;
 
-    private ServiceRest serviceRest;
-    private String newEmail;
-    private Integer newTelephone;
-    private Callback<ReturnWS> callback = new Callback<ReturnWS>() {
+    private FirebaseAuth mAuth;
+    private FirebaseUser mFirebaseUser;
+    private FirebaseDatabase mFirebaseDatabase;
+
+    private FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
         @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    CurrentUser.getInstance().setEmailUTI(newEmail);
-                    CurrentUser.getInstance().setTelephoneUTI(newTelephone);
-                    Toast.makeText(getActivity(), getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
-
-                    View view = getView();
-                    if (view != null) {
-                        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                    }
-                    getFragmentManager().popBackStackImmediate();
-                } else {
-                    Toast.makeText(getActivity(), rs.getMsg(), Toast.LENGTH_LONG).show();
-
-                    // Le web service a échoué, on réactive quand même le bouton
-                    action_save_change.setEnabled(true);
-                }
+        public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+            mFirebaseUser = firebaseAuth.getCurrentUser();
+            CurrentUser cu = CurrentUser.getInstance();
+            if (mFirebaseUser != null) {
+                cu.setConnected(true);
+                Log.d(TAG, "onAuthStateChanged:signed_in:" + mFirebaseUser.getUid());
+            } else {
+                cu.setConnected(false);
+                Log.d(TAG, "onAuthStateChanged:signed_out");
             }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
         }
     };
 
@@ -94,6 +80,8 @@ public class MyProfileFragment extends Fragment{
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
     }
 
     @Override
@@ -113,100 +101,143 @@ public class MyProfileFragment extends Fragment{
             myCustomActivity.changeColorToolBar(color);
         }
 
-
-
-        // Création d'un listener pour se déconnecter
-        View.OnClickListener onClickListenerDeconnexion = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CurrentUser.getInstance().setIdUTI(null);
-                CurrentUser.getInstance().setEmailUTI(null);
-                CurrentUser.getInstance().setTelephoneUTI(null);
-                CurrentUser.getInstance().setConnected(false);
-
-                // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
-                Activity myActivity = getActivity();
-                if (myActivity instanceof CustomActivityInterface) {
-                    CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
-                    myCustomActivity.refreshMenu();
-                }
-
-                getFragmentManager().popBackStackImmediate();
-            }
-        };
-
-        // Création du listener pour se désinscrire
-        View.OnClickListener onClickListenerChangePassword = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setClass(getActivity(), ChangePasswordActivity.class);
-                startActivityForResult(intent, CODE_CHANGE_PASSWORD);
-            }
-        };
-
-
-        // Création du listener pour se désinscrire
-        View.OnClickListener onClickListenerUnregister = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // On va envoyer un message de confirmation à l'utilisateur
-                SendDialogByActivity(getActivity(), getString(R.string.dialog_confirm_unregister), NoticeDialogFragment.TYPE_BOUTON_YESNO, NoticeDialogFragment.TYPE_IMAGE_ERROR, Utility.DIALOG_TAG_UNREGISTER);
-                Utility.hideKeyboard(getActivity());
-            }
-        };
-
-        // Création d'un listener pour la mise à jour
-        View.OnClickListener onClickListenerSave = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (checkUpdate()){
-
-                    // When Email entered is invalid
-                    String email = emailMyProfile.getText().toString();
-                    if (!Utility.validateEmail(email)) {
-                        emailMyProfile.setError(getString(R.string.error_invalid_email));
-                        emailMyProfile.requestFocus();
-                    }else{
-                        ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder()
-                            .baseUrl(Proprietes.getServerEndpoint())
-                            .addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
-
-                        // On désactive le bouton, le temps qu'on récupère une réponse
-                        action_save_change.setEnabled(false);
-
-                        newEmail = emailMyProfile.getText().toString();
-                        newTelephone = Integer.valueOf(telephoneMyProfile.getText().toString());
-                        Call<ReturnWS> call = serviceUtilisateur.updateUser(CurrentUser.getInstance().getIdUTI(), newEmail, newTelephone);
-                        call.enqueue(callback);
-                    }
-                } else {
-                    Toast.makeText(getActivity(), R.string.dialog_no_update, Toast.LENGTH_LONG).show();
-                }
-            }
-        };
-
-        // On attribue le onClickListener à notre bouton
-        action_save_change.setOnClickListener(onClickListenerSave);
-        action_desinscrire.setOnClickListener(onClickListenerUnregister);
-        action_change_password.setOnClickListener(onClickListenerChangePassword);
-        action_deconnexion.setOnClickListener(onClickListenerDeconnexion);
-
         return rootView;
     }
 
-    private boolean checkUpdate(){
-        boolean retour = false;
-        String email = emailMyProfile.getText().toString();
+    @Override
+    public void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
+    }
 
-        if (!email.equals(CurrentUser.getInstance().getEmailUTI())){
-            retour = true;
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
+    }
+
+    // Création d'un listener pour la mise à jour
+    @OnClick(R.id.action_save_change)
+    public void onSaveClick() {
+        final String email = emailMyProfile.getText().toString();
+        final String telephone = telephoneMyProfile.getText().toString();
+        if (checkUserHasChanged(email, telephone)) {
+            if (checkUpdate(email)) {
+
+                mFirebaseUser = mAuth.getCurrentUser();
+
+                // On désactive le bouton, le temps qu'on récupère une réponse
+                action_save_change.setEnabled(false);
+
+                // Tentative de mise à jour dans la Firebase Auth
+                mFirebaseUser.updateEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+
+                            Utilisateur utilisateur = new Utilisateur();
+                            utilisateur.setIdUTI(mFirebaseUser.getUid());
+                            utilisateur.setTelephoneUTI(telephone);
+                            utilisateur.setEmailUTI(email);
+
+                            // Tentative de mise à jour dans Firebase Database
+                            DatabaseReference userRef = mFirebaseDatabase.getReference("users/" + mFirebaseUser.getUid());
+                            userRef.setValue(utilisateur).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        CurrentUser.getInstance().setEmailUTI(email);
+                                        CurrentUser.getInstance().setTelephoneUTI(telephone);
+                                        Toast.makeText(getActivity(), getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
+
+                                        View view = getView();
+                                        if (view != null) {
+                                            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                                        }
+                                        getFragmentManager().popBackStackImmediate();
+                                    } else {
+                                        Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        } else {
+            Toast.makeText(getActivity(), R.string.dialog_no_update, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    // Création du listener pour se désinscrire
+    @OnClick(R.id.action_desinscrire)
+    public void onUnregisterClick() {
+        // On va envoyer un message de confirmation à l'utilisateur
+        SendDialogByActivity(getActivity(), getString(R.string.dialog_confirm_unregister), NoticeDialogFragment.TYPE_BOUTON_YESNO, NoticeDialogFragment.TYPE_IMAGE_ERROR, Utility.DIALOG_TAG_UNREGISTER);
+        Utility.hideKeyboard(getActivity());
+    }
+
+    // Création du listener pour se désinscrire, on va appeler l'activity ChangePassword
+    @OnClick(R.id.action_change_password)
+    public void onChangePasswordClick() {
+        Intent intent = new Intent();
+        intent.setClass(getActivity(), ChangePasswordFirebaseActivity.class);
+        startActivityForResult(intent, CODE_CHANGE_PASSWORD);
+    }
+
+    // Création d'un listener pour se déconnecter
+    @OnClick(R.id.action_deconnexion)
+    public void onClick() {
+        CurrentUser.getInstance().setIdUTI(null);
+        CurrentUser.getInstance().setEmailUTI(null);
+        CurrentUser.getInstance().setTelephoneUTI(null);
+        CurrentUser.getInstance().setConnected(false);
+
+        // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
+        Activity myActivity = getActivity();
+        if (myActivity instanceof CustomActivityInterface) {
+            CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
+            myCustomActivity.refreshMenu();
         }
 
-        if (!telephoneMyProfile.getText().toString().equals(String.valueOf(CurrentUser.getInstance().getTelephoneUTI()))){
-            retour = true;
+        getFragmentManager().popBackStackImmediate();
+    }
+
+    private boolean checkUserHasChanged(String email, String telephone) {
+        Boolean hasChanged = false;
+
+        if (!email.equals(CurrentUser.getInstance().getEmailUTI())) {
+            hasChanged = true;
         }
 
-        return retour;
+        if (!telephone.equals(String.valueOf(CurrentUser.getInstance().getTelephoneUTI()))) {
+            hasChanged = true;
+        }
+
+        return hasChanged;
+    }
+
+    private boolean checkUpdate(String email) {
+        boolean retourOK = true;
+
+        // Vérification que l'utilisateur est bien connecté
+        mFirebaseUser = mAuth.getCurrentUser();
+        if (mFirebaseUser == null) {
+            emailMyProfile.setError("Vous n'êtes pas connecté.");
+            emailMyProfile.requestFocus();
+            retourOK = false;
+        }
+
+        // When Email entered is invalid
+        if (!Utility.validateEmail(email)) {
+            emailMyProfile.setError(getString(R.string.error_invalid_email));
+            emailMyProfile.requestFocus();
+            retourOK = false;
+        }
+
+        return retourOK;
     }
 }

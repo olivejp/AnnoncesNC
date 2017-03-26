@@ -119,7 +119,4 @@ dependencies {
     androidTestCompile 'com.android.support.test.espresso:espresso-web:2.2.2'
 }
 
-// Modification pour le MAC, j'enleve le plug in. Pensez à le remettre pour la version Windows
-// apply plugin: 'com.google.gms.google-services'
-
 apply plugin: 'com.google.gms.google-services'

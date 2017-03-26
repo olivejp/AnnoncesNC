@@ -47,23 +47,6 @@
         <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="0.5"
-            android:orientation="vertical">
-
-            <Button
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_centerInParent="true"
-                android:background="@drawable/rounded_button_primary"
-                android:onClick="testFirebaseStorage"
-                android:text="Firebase Test"
-                android:textColor="#fff"
-                android:textStyle="bold" />
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
             android:layout_weight="0.5">
 
             <Button

@@ -53,7 +53,7 @@ public class CardViewDataAdapter extends
         int color = Color.parseColor(categorie.getCouleurCAT());        // Récupération de la couleur
 
         // Attribution des données au valeurs graphiques
-        viewHolder.textIdAnnonce.setText(String.valueOf(annonce.getIdANO()));
+        viewHolder.textIdAnnonce.setText(String.valueOf(annonce.getUUIDANO()));
 
         viewHolder.textTitreAnnonce.setText(annonce.getTitreANO());
         String description = annonce.getDescriptionANO();
