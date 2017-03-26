@@ -3,6 +3,7 @@ package com.orlanth23.annoncesnc.fragment;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -15,15 +16,23 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.CardViewDataAdapter;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.Annonce;
+import com.orlanth23.annoncesnc.dto.AnnonceFirebase;
 import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.listener.EndlessRecyclerOnScrollListener;
+import com.orlanth23.annoncesnc.provider.ProviderContract;
+import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
@@ -76,7 +85,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
     private ArrayList<Annonce> mListAnnonces;
     private Categorie category;
     private String keyword;
-    private Integer idUser;
+    private String idUser;
     private Integer pMinPrice;
     private Integer pMaxPrice;
     private boolean pPhoto;
@@ -126,7 +135,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                 switch (action) {
                     case ACTION_ANNONCE_BY_USER:
                         mode = Constants.PARAM_MAJ;
-                        idUser = getArguments().getInt(PARAM_ID_USER);
+                        idUser = getArguments().getString(PARAM_ID_USER);
                         break;
                     case ACTION_ANNONCE_BY_CATEGORY:
                         mode = Constants.PARAM_VIS;
@@ -169,7 +178,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
             outState.putString(PARAM_KEYWORD, keyword);
         }
         if (idUser != null) {
-            outState.putInt(PARAM_ID_USER, idUser);
+            outState.putString(PARAM_ID_USER, idUser);
         }
         if (pMinPrice != null) {
             outState.putInt(PARAM_MIN_PRICE, pMinPrice);
@@ -199,7 +208,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                 switch (action) {
                     case ACTION_ANNONCE_BY_USER:
                         mode = Constants.PARAM_MAJ;
-                        idUser = savedInstanceState.getInt(PARAM_ID_USER);
+                        idUser = savedInstanceState.getString(PARAM_ID_USER);
                         break;
                     case ACTION_ANNONCE_BY_CATEGORY:
                         mode = Constants.PARAM_VIS;
@@ -231,14 +240,14 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
 
             // Ajout d'un divider entre les éléments
             DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(mRecyclerView.getContext(),
-                mLinearLayoutManager.getOrientation());
+                    mLinearLayoutManager.getOrientation());
             mRecyclerView.addItemDecoration(dividerItemDecoration);
 
             // set the adapter object to the Recyclerview
             mRecyclerView.setAdapter(mAdapter);
 
             mRecyclerView.addOnScrollListener(new EndlessRecyclerOnScrollListener(
-                mLinearLayoutManager) {
+                    mLinearLayoutManager) {
                 @Override
                 public void onLoadMore() {
                     loadData(current_page);
@@ -303,8 +312,37 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                 call = serviceAnnonce.searchAnnonceWithPage(keyword, currentPage);
                 break;
             case ACTION_ANNONCE_BY_USER:
-                // Appel du service RETROFIT
-                call = serviceUtilisateur.getListAnnonceByUser(idUser, currentPage);
+                // S'il y a du réseau on va recuperer la liste des annonces sur le net
+                if (Utility.checkWifiAndMobileData(mContext)) {
+                    Query query = FirebaseDatabase.getInstance().getReference("annonces").orderByChild("idUtilisateur").equalTo(idUser);
+                    query.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
+                                annonceFirebase.getIdAnnonce();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                } else {
+                    // Tentative de récupération dans le contentProvider
+                    String where = AnnonceContract.COL_ID_UTILISATEUR + "=?";
+                    String[] args = new String[]{idUser};
+                    Cursor cursor = getActivity().getContentResolver().query(ProviderContract.AnnonceEntry.CONTENT_URI, null, where, args, null);
+                    if (cursor != null) {
+                        while (cursor.moveToNext()) {
+                            AnnonceFirebase annonceFirebase = new AnnonceFirebase();
+                            annonceFirebase.setIdAnnonce(cursor.getString(cursor.getColumnIndex(AnnonceContract.COL_UUID_ANNONCE)));
+
+                        }
+                        cursor.close();
+                    }
+                }
                 break;
             case ACTION_MULTI_PARAM:
                 // Appel du service RETROFIT multiparamètre
@@ -316,7 +354,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
         }
     }
 
-    private void changeVisibility(){
+    private void changeVisibility() {
         if (linearContent != null && linearEmpty != null) {
             if (mListAnnonces.isEmpty()) {
                 linearContent.setVisibility(View.GONE);

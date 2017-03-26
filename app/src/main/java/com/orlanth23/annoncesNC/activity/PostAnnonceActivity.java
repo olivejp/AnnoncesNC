@@ -371,6 +371,8 @@ public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements
 
             // Appel du Sync pour envoyer la données
             ContentResolver.requestSync(AnnoncesAuthenticatorService.getAccount(), ProviderContract.CONTENT_AUTHORITY, Bundle.EMPTY);
+
+            finish();
         }
     }
 

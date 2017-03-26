@@ -3,7 +3,7 @@ package com.orlanth23.annoncesnc.dto;
 public class AnnonceFirebase {
     private String idAnnonce;
     private Integer idCategory;
-    private Integer idUtilisateur;
+    private String idUtilisateur;
     private String titreAnnonce;
     private String descriptionAnnonce;
     private Integer prixAnnonce;
@@ -25,11 +25,11 @@ public class AnnonceFirebase {
         this.idCategory = idCategory;
     }
 
-    public Integer getIdUtilisateur() {
+    public String getIdUtilisateur() {
         return idUtilisateur;
     }
 
-    public void setIdUtilisateur(Integer idUtilisateur) {
+    public void setIdUtilisateur(String idUtilisateur) {
         this.idUtilisateur = idUtilisateur;
     }
 

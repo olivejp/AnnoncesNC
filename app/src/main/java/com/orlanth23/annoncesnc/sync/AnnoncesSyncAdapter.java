@@ -397,7 +397,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
         annonceFirebase.setIdAnnonce(String.valueOf(cursor.getInt(indexColIdAnnonce)));
         annonceFirebase.setIdCategory(cursor.getInt(indexColIdCategory));
-        annonceFirebase.setIdUtilisateur(cursor.getInt(indexColIdUtilisateur));
+        annonceFirebase.setIdUtilisateur(cursor.getString(indexColIdUtilisateur));
         annonceFirebase.setTitreAnnonce(cursor.getString(indexColTitreAnnonce));
         annonceFirebase.setDescriptionAnnonce(cursor.getString(indexColDescriptionAnnonce));
         annonceFirebase.setPrixAnnonce(cursor.getInt(indexColPrixAnnonce));
