@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
@@ -28,9 +31,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 
-public class LostPasswordActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
+public class LostFirebasePasswordActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
 
-    private static final String tag = LostPasswordActivity.class.getName();
+    private static final String tag = LostFirebasePasswordActivity.class.getName();
 
     @BindView(R.id.email)
     AutoCompleteTextView mEmailView;
@@ -82,7 +85,6 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
         mEmailView.setText(DictionaryDAO.getValueByKey(getApplicationContext(), DictionaryDAO.Dictionary.DB_CLEF_LOGIN));
     }
 
-
     public void lostPassword(View view) {
 
         // Reset errors.
@@ -109,12 +111,24 @@ public class LostPasswordActivity extends CustomRetrofitCompatActivity implement
         if (cancel) {
             focusView.requestFocus();
         } else {
-
-
             prgDialog.show();
-            Call<ReturnWS> call = serviceUtilisateur.doLostPassword(email);
-            call.enqueue(callbackLostPassword);
+            mAuth.sendPasswordResetEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    prgDialog.hide();
+                    if (task.isSuccessful()) {
+                        // Display successfully registered message using Toast
+                        Toast.makeText(getApplicationContext(), getString(R.string.dialog_password_send), Toast.LENGTH_LONG).show();
 
+                        // Si l'authentification a fonctionné, je peux quitter l'activité
+                        Intent resultIntent = new Intent();
+                        setResult(Activity.RESULT_OK, resultIntent);
+                        finish();
+                    } else {
+                        Toast.makeText(getApplicationContext(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
         }
     }
 

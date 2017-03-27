@@ -39,15 +39,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.LoginActivity"
-            android:label="@string/title_activity_login"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity"
-            android:windowSoftInputMode="adjustResize|stateHidden">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
-        </activity>
-        <activity
             android:name="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity"
             android:label="@string/title_activity_login"
             android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity"
@@ -64,15 +55,6 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
-        </activity>
-        <activity
-            android:name="com.orlanth23.annoncesnc.activity.RegisterActivity"
-            android:label="@string/title_register"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginActivity"
-            android:windowSoftInputMode="adjustResize|stateHidden">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.LoginActivity" />
         </activity>
         <activity
             android:name="com.orlanth23.annoncesnc.activity.RegisterFirebaseActivity"
@@ -92,20 +74,12 @@
                 android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.LostPasswordActivity"
+            android:name="com.orlanth23.annoncesnc.activity.LostFirebasePasswordActivity"
             android:label="@string/action_lost_password"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginActivity">
+            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.LoginActivity" />
-        </activity>
-        <activity
-            android:name="com.orlanth23.annoncesnc.activity.ChangePasswordActivity"
-            android:label="@string/change_password"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
+                android:value="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity" />
         </activity>
         <activity
             android:name="com.orlanth23.annoncesnc.activity.ChangePasswordFirebaseActivity"

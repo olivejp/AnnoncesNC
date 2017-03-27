@@ -5,7 +5,7 @@ import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 import android.widget.EditText;
 
-import com.orlanth23.annoncesnc.activity.ChangePasswordActivity;
+import com.orlanth23.annoncesnc.activity.ChangePasswordFirebaseActivity;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -25,8 +25,8 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 public class TestsActivities {
 
     @Rule
-    public ActivityTestRule<ChangePasswordActivity> mActivityRule =
-            new ActivityTestRule<>(ChangePasswordActivity.class, false, false);
+    public ActivityTestRule<ChangePasswordFirebaseActivity> mActivityRule =
+            new ActivityTestRule<>(ChangePasswordFirebaseActivity.class, false, false);
 
     @Contract("_ -> !null")
     private static Matcher<View> withError(final String expected) {
@@ -49,7 +49,7 @@ public class TestsActivities {
 
     @Test
     public void ensureConnectionNeeded() {
-        final ChangePasswordActivity activity = mActivityRule.launchActivity(null);
+        final ChangePasswordFirebaseActivity activity = mActivityRule.launchActivity(null);
 
         // Test que l'ancien mot de passe est obligatoire
         onView(withId(R.id.oldPassword))

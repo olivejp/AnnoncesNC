@@ -63,7 +63,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class PostAnnonceActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
+public class PostAnnonceActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
     // Activity request codes
     public static final int DIALOG_REQUEST_IMAGE = 100;
     public static final String BUNDLE_KEY_ANNONCE = "ANNONCE";

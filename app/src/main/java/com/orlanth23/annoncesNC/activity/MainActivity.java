@@ -58,7 +58,7 @@ import butterknife.ButterKnife;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
-public class MainActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface {
+public class MainActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface {
 
     public final static int CODE_POST_ANNONCE = 100;
     public final static int CODE_CONNECT_USER = 200;

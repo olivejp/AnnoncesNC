@@ -34,7 +34,7 @@ import butterknife.OnClick;
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 
-public class LoginFirebaseActivity extends CustomRetrofitCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
+public class LoginFirebaseActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
 
     private static final String TAG = LoginFirebaseActivity.class.getName();
 
@@ -49,7 +49,7 @@ public class LoginFirebaseActivity extends CustomRetrofitCompatActivity implemen
     @BindView(R.id.text_login_msg_accueil)
     TextView textLoginMsgAccueil;
     private Context mContext = this;
-    private CustomRetrofitCompatActivity mActivity = this;
+    private CustomCompatActivity mActivity = this;
     private String password;
     private FirebaseAuth mAuth;
     private FirebaseUser firebaseUser;
@@ -234,7 +234,7 @@ public class LoginFirebaseActivity extends CustomRetrofitCompatActivity implemen
 
     @OnClick(R.id.lostPassword)
     public void callLostPasswordActivity() {
-        Intent lostPasswordIntent = new Intent(getApplicationContext(), LostPasswordActivity.class);
+        Intent lostPasswordIntent = new Intent(getApplicationContext(), LostFirebasePasswordActivity.class);
         lostPasswordIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivityForResult(lostPasswordIntent, 0);
     }

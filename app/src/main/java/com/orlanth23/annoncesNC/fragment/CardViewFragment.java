@@ -38,8 +38,6 @@ import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
 import com.orlanth23.annoncesnc.webservice.ReturnWS;
 import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
-import com.orlanth23.annoncesnc.webservice.ServiceRest;
-import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -296,15 +294,30 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
     private void loadData(int currentPage) {
         // Création d'un RestAdapter pour le futur appel de mon RestService
         ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
-        ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
-        ServiceRest serviceRest = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceRest.class);
         Call<ReturnWS> call = null;
 
         switch (action) {
             case ACTION_ANNONCE_BY_CATEGORY:
                 // Appel du service RETROFIT
                 if (category != null) {
-                    call = serviceRest.getListAnnonceByCategoryWithPage(category.getIdCAT(), currentPage);
+                    // S'il y a du réseau on va recuperer la liste des annonces sur le net
+                    if (Utility.checkWifiAndMobileData(mContext)) {
+                        Query query = FirebaseDatabase.getInstance().getReference("annonces").orderByChild("idCategory").equalTo(category.getIdCAT());
+                        query.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                    AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
+                                    annonceFirebase.getIdAnnonce();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
                 }
                 break;
             case ACTION_ANNONCE_BY_KEYWORD:

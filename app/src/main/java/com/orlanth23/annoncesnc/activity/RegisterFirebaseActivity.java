@@ -28,7 +28,7 @@ import com.orlanth23.annoncesnc.utility.Utility;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class RegisterFirebaseActivity extends CustomRetrofitCompatActivity {
+public class RegisterFirebaseActivity extends CustomCompatActivity {
 
     public static final int CODE_REGISTER_ACTIVITY = 100;
     private static final String TAG = RegisterFirebaseActivity.class.getName();
