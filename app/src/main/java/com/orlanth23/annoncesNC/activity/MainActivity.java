@@ -7,6 +7,7 @@ import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -29,9 +30,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.BuildConfig;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.ListCategorieAdapter;
@@ -39,7 +40,6 @@ import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
-import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.fragment.CardViewFragment;
 import com.orlanth23.annoncesnc.fragment.HomeFragment;
 import com.orlanth23.annoncesnc.fragment.MyProfileFragment;
@@ -47,21 +47,14 @@ import com.orlanth23.annoncesnc.fragment.SearchFragment;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.list.ListeStats;
+import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.sync.SyncUtils;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.ReturnWS;
-import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
@@ -93,43 +86,14 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     private ListeCategories listeCategories;
     private Fragment mContent;
     private Activity mActivity = this;
-    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    private FirebaseUser mFirebaseUser = mAuth.getCurrentUser();
-
-    private ServiceUtilisateur serviceUtilisateur = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceUtilisateur.class);
-
-    private Callback<ReturnWS> callbackAutoLogin = new Callback<ReturnWS>() {
-        @Override
-        public void onResponse(Call<ReturnWS> call, Response<ReturnWS> response) {
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    Gson gson = new Gson();
-                    Utilisateur user = gson.fromJson(rs.getMsg(), Utilisateur.class);
-                    CurrentUser.getInstance().setUser(user);
-
-                    refreshMenu();
-
-                    // Display successfully registered message using Toast
-                    sendOkLoginToast();
-                } else {
-                    Toast.makeText(mActivity, rs.getMsg(), Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-
-        @Override
-        public void onFailure(Call<ReturnWS> call, Throwable t) {
-            // Si pas de connexion, on récupère l'utilisateur enregistré
-            CurrentUser.getInstance().getUserFromDictionary(mActivity);
-            sendOkLoginToast();
-        }
-    };
+    private AnnoncesReceiver annoncesReceiver;
+    private FirebaseAuth mAuth;
+    private FirebaseUser mFirebaseUser;
+    private FirebaseAuth.AuthStateListener mAuthListener;
 
     private void sendOkLoginToast() {
         Toast.makeText(mActivity, mActivity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,21 +156,53 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
             mContent = getFragmentManager().getFragment(savedInstanceState, PARAM_FRAGMENT);
         }
 
-        // ToDo Reamenager le receiver pour auil ne plante pas
-        // Création d'un broadcast pour écouter si la connectivité à changer
-//        AnnoncesReceiver annoncesReceiver = new AnnoncesReceiver();
-//        IntentFilter ifilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
-//        registerReceiver(annoncesReceiver, ifilter);
-
         // Lancement du service SyncAdapter
         SyncUtils.CreateSyncAccount(this);
         getContentResolver();
         ContentResolver.addPeriodicSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY, SyncUtils.SYNC_FREQUENCY);
 
+        mAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mAuth.getCurrentUser();
+
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                mFirebaseUser = firebaseAuth.getCurrentUser();
+                if (mFirebaseUser != null) {
+                    CurrentUser.getInstance().setConnected(true);
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mFirebaseUser.getUid());
+                } else {
+                    CurrentUser.getInstance().setConnected(false);
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                }
+            }
+        };
+
         // Tentative de connexion avec l'utilisateur par défaut
         tryRemoteConnection();
 
         getFragmentManager().beginTransaction().replace(R.id.frame_container, mContent, null).commit();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
+
+        // Création d'un broadcast pour écouter si la connectivité à changer et appeler le syncAdapter
+        annoncesReceiver = new AnnoncesReceiver();
+        IntentFilter ifilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+        registerReceiver(annoncesReceiver, ifilter);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (mAuthListener != null) {
+            mAuth.removeAuthStateListener(mAuthListener);
+        }
+
+        unregisterReceiver(annoncesReceiver);
     }
 
     @Override
@@ -280,6 +276,9 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
     }
 
     public void tryRemoteConnection() {
+        // On affiche la barre de progression
+        prgDialog.show();
+
         // Récupération de l'utilisateur par défaut
         // Création d'un RestAdapter pour le futur appel de mon RestService
 
@@ -297,17 +296,43 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
         // Si on a une connexion
         if (Utility.checkWifiAndMobileData(this)) {
             // Récupération des données dans le dictionnaire
-            String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
-            String password = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
+            final String idUser = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_ID_USER);
+            final String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
+            final String password = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
+            final String telephone = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_TELEPHONE);
 
             // Si les données d'identification ont été saisies
             if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
 
-                // On tente de se connecter au serveur.
-                Call<ReturnWS> callLogin = serviceUtilisateur.login(email, password);
-                callLogin.enqueue(callbackAutoLogin);
+                // On tente de se connecter au serveur Firebase.
+                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        prgDialog.hide();
+                        if (!task.isSuccessful()) {
+                            CurrentUser cu = CurrentUser.getInstance();
+                            cu.setConnected(true);
+                            cu.setIdUTI(idUser);
+                            cu.setEmailUTI(email);
+                            cu.setTelephoneUTI(telephone);
+
+                            refreshMenu();
+
+                            // Display successfully registered message using Toast
+                            sendOkLoginToast();
+                        } else {
+                            try {
+                                throw task.getException();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            Toast.makeText(mActivity, getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
             }
         } else {
+            prgDialog.hide();
             // Si pas de connexion, on récupère l'utilisateur enregistré
             CurrentUser.getInstance().getUserFromDictionary(this);
             sendOkLoginToast();
@@ -497,6 +522,9 @@ public class MainActivity extends CustomRetrofitCompatActivity implements Notice
                 } else {
                     // On a cliqué sur le l'option Déconnexion
                     // On se déconnecte
+                    if (mAuth != null) {
+                        mAuth.signOut();
+                    }
                     CurrentUser.getInstance().setConnected(false);
                     refreshMenu();
                     return false;

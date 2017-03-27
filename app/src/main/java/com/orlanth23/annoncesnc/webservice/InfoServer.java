@@ -3,23 +3,23 @@ package com.orlanth23.annoncesnc.webservice;
 import java.util.HashMap;
 
 public class InfoServer{
-    private int nbUtilisateur;
-    private int nbAnnonce;
+    private long nbUtilisateur;
+    private long nbAnnonce;
     private HashMap<Integer, Integer> nbAnnonceByCategorie;
 
-    public int getNbUtilisateur() {
+    public long getNbUtilisateur() {
         return nbUtilisateur;
     }
 
-    public void setNbUtilisateur(int nbUtilisateur) {
+    public void setNbUtilisateur(long nbUtilisateur) {
         this.nbUtilisateur = nbUtilisateur;
     }
 
-    public int getNbAnnonce() {
+    public long getNbAnnonce() {
         return nbAnnonce;
     }
 
-    public void setNbAnnonce(int nbAnnonce) {
+    public void setNbAnnonce(long nbAnnonce) {
         this.nbAnnonce = nbAnnonce;
     }
 

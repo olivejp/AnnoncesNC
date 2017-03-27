@@ -19,8 +19,11 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
@@ -40,17 +43,14 @@ import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.InfoServer;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.ReturnWS;
 import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
 import com.orlanth23.annoncesnc.webservice.ServiceRest;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -75,13 +75,17 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     private int nbMessageSend;
     private int nbPhotosDeleted;
     private StorageReference mStorageRef;
+    private FirebaseDatabase mDatabase;
+
     private String photoLocalPath;
+    private InfoServer infoServer = new InfoServer();
 
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
         mContentResolver = context.getContentResolver();
         mContext = context;
         mStorageRef = FirebaseStorage.getInstance().getReference();
+        mDatabase = FirebaseDatabase.getInstance();
     }
 
     public AnnoncesSyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
@@ -89,6 +93,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         mContentResolver = context.getContentResolver();
         mContext = context;
         mStorageRef = FirebaseStorage.getInstance().getReference();
+        mDatabase = FirebaseDatabase.getInstance();
     }
 
     @Override
@@ -158,42 +163,45 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void getInfoServer() {
-        try {
-            Response<ReturnWS> response = serviceRest.infoServer().execute();
-            if (response.isSuccessful()) {
-                ReturnWS rs = response.body();
-                if (rs.statusValid()) {
-                    // Récupération des données du serveur
-                    InfoServer infoServer = gson.fromJson(rs.getMsg(), InfoServer.class);
-
-                    // Mise à jour des informations dans le ContentProvider
-                    ContentValues contentValues = new ContentValues();
-                    contentValues.put(InfosServerContract.COL_NB_ANNONCE, infoServer.getNbAnnonce());
-                    contentValues.put(InfosServerContract.COL_NB_UTILISATEUR, infoServer.getNbUtilisateur());
-                    String where = InfosServerContract._ID + "=?";
-                    String[] args = new String[]{"1"};
-                    int rowUpdated = mContentResolver.update(ProviderContract.InfosServerEntry.CONTENT_URI, contentValues, where, args);
-                    if (rowUpdated == 1) {
-                        // Mise à jour réussie
-                        ListeStats listeStats = ListeStats.getInstance(mContext);
-                        ListeStats.getDataFromProvider(mContext);
-                        listeStats.notifyObservers();
-                    } else {
-                        exceptionMessage.add("getInfoServer:Mise à jour du Provider échouée");
-                    }
-
-                    // Mise à jour de la liste des catégories avec le nombre reçu par le WS
-                    ListeCategories.setNbAnnonceFromHashMap(mContext, infoServer.getNbAnnonceByCategorie());
-                } else {
-                    exceptionMessage.add("getInfoServer:Les infos serveur n'ont pas pu être récupérées. Retour du WS incorrect.");
-                }
-            } else {
-                exceptionMessage.add("getInfoServer:Les infos serveur n'ont pas pu être récupérées. Réponse incorrecte du serveur.");
+        mDatabase.getReference("annonces").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                infoServer.setNbAnnonce(dataSnapshot.getChildrenCount());
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            exceptionMessage.add("getInfoServer:IOException rencontrée.");
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        mDatabase.getReference("utilisateurs").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                infoServer.setNbUtilisateur(dataSnapshot.getChildrenCount());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
+        // Mise à jour des informations dans le ContentProvider
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(InfosServerContract.COL_NB_ANNONCE, infoServer.getNbAnnonce());
+        contentValues.put(InfosServerContract.COL_NB_UTILISATEUR, infoServer.getNbUtilisateur());
+        String where = InfosServerContract._ID + "=?";
+        String[] args = new String[]{"1"};
+        int rowUpdated = mContentResolver.update(ProviderContract.InfosServerEntry.CONTENT_URI, contentValues, where, args);
+        if (rowUpdated == 1) {
+            // Mise à jour réussie
+            ListeStats listeStats = ListeStats.getInstance(mContext);
+            ListeStats.getDataFromProvider(mContext);
+        } else {
+            exceptionMessage.add("getInfoServer:Mise à jour du Provider échouée");
         }
+
+        // Mise à jour de la liste des catégories avec le nombre reçu par le WS
+        ListeCategories.setNbAnnonceFromHashMap(mContext, infoServer.getNbAnnonceByCategorie());
     }
 
     private void deletePhotoEnAttente() {
@@ -253,7 +261,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         });
     }
 
-    private void sendPhotoToFirebaseStorage(UUID UUIDPhoto, Uri fileImage, @Nullable Integer idAnnonce){
+    private void sendPhotoToFirebaseStorage(UUID UUIDPhoto, Uri fileImage, @Nullable Integer idAnnonce) {
         // Récupération de la référence
         StorageReference photoRef = mStorageRef.child("photos/" + UUIDPhoto + ".png");
 

@@ -6,11 +6,9 @@ import android.database.Cursor;
 import com.orlanth23.annoncesnc.provider.ProviderContract.InfosServerEntry;
 import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
 
-import java.util.Observable;
-
 import static com.orlanth23.annoncesnc.provider.AnnoncesProvider.sSelectionInfosServer;
 
-public class ListeStats extends Observable{
+public class ListeStats {
 
     private static ListeStats INSTANCE = null;
     private static Integer nbAnnonces;
