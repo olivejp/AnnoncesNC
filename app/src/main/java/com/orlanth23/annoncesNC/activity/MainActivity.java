@@ -31,8 +31,6 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.orlanth23.annoncesnc.BuildConfig;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.ListCategorieAdapter;
@@ -51,6 +49,7 @@ import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.sync.SyncUtils;
 import com.orlanth23.annoncesnc.utility.Constants;
+import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
 
 import butterknife.BindView;
@@ -64,9 +63,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
     public final static int CODE_CONNECT_USER = 200;
     public final static int CODE_SETTINGS = 300;
     public final static int CODE_POST_NOT_LOGGED = 500;
-
     public final static String PARAM_REQUEST_CODE = "REQUEST_CODE";
-
     private static final String TAG = MainActivity.class.getName();
     private static final String DIALOG_TAG_EXIT = "EXIT";
     private static final String DIALOG_TAG_NO_ACCOUNT = "DIALOG_TAG_NO_ACCOUNT";
@@ -87,9 +84,6 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
     private Fragment mContent;
     private Activity mActivity = this;
     private AnnoncesReceiver annoncesReceiver;
-    private FirebaseAuth mAuth;
-    private FirebaseUser mFirebaseUser;
-    private FirebaseAuth.AuthStateListener mAuthListener;
 
     private void sendOkLoginToast() {
         Toast.makeText(mActivity, mActivity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
@@ -107,9 +101,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add);
         if (fab != null) {
-            if (fab.getVisibility() == View.INVISIBLE) {
-                fab.setVisibility(View.VISIBLE);
-            }
+            fab.setVisibility(View.VISIBLE);
         }
 
         mTitle = getString(R.string.app_name);  // Récupération du titre
@@ -161,23 +153,6 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
         getContentResolver();
         ContentResolver.addPeriodicSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY, SyncUtils.SYNC_FREQUENCY);
 
-        mAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mAuth.getCurrentUser();
-
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                mFirebaseUser = firebaseAuth.getCurrentUser();
-                if (mFirebaseUser != null) {
-                    CurrentUser.getInstance().setConnected(true);
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mFirebaseUser.getUid());
-                } else {
-                    CurrentUser.getInstance().setConnected(false);
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
-                }
-            }
-        };
-
         // Tentative de connexion avec l'utilisateur par défaut
         tryRemoteConnection();
 
@@ -187,7 +162,6 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
     @Override
     protected void onStart() {
         super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
 
         // Création d'un broadcast pour écouter si la connectivité à changer et appeler le syncAdapter
         annoncesReceiver = new AnnoncesReceiver();
@@ -198,10 +172,6 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
     @Override
     protected void onStop() {
         super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
-        }
-
         unregisterReceiver(annoncesReceiver);
     }
 
@@ -277,6 +247,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
 
     public void tryRemoteConnection() {
         // On affiche la barre de progression
+        prgDialog.setMessage("Authentification en cours");
         prgDialog.show();
 
         // Récupération de l'utilisateur par défaut
@@ -298,8 +269,9 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
             // Récupération des données dans le dictionnaire
             final String idUser = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_ID_USER);
             final String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
-            final String password = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
+            final String passwordEncrypted = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
             final String telephone = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_TELEPHONE);
+            String password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
 
             // Si les données d'identification ont été saisies
             if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
@@ -309,7 +281,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         prgDialog.hide();
-                        if (!task.isSuccessful()) {
+                        if (task.isSuccessful()) {
                             CurrentUser cu = CurrentUser.getInstance();
                             cu.setConnected(true);
                             cu.setIdUTI(idUser);

@@ -2,21 +2,22 @@ package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -24,6 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.activity.ChangePasswordFirebaseActivity;
+import com.orlanth23.annoncesnc.activity.CustomCompatActivity;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.dto.Utilisateur;
@@ -53,28 +55,31 @@ public class MyProfileFragment extends Fragment {
     Button action_change_password;
     @BindView(R.id.action_deconnexion)
     Button action_deconnexion;
+    @BindView(R.id.checkBox_remember_me_login)
+    CheckBox checkBoxRememberMe;
 
     private FirebaseAuth mAuth;
     private FirebaseUser mFirebaseUser;
     private FirebaseDatabase mFirebaseDatabase;
+    private OnCompleteListener<Void> onUpdateProfileCompleteListener;
+    private OnFailureListener onUpdateProfileFailureListener;
+    private OnCompleteListener<Void> onFirebaseCompleteListener;
+    private OnFailureListener onFirebaseFailureListener;
+    private String mEmail;
+    private String mIdUser;
+    private String mTelephone;
 
-    private FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
-        @Override
-        public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-            mFirebaseUser = firebaseAuth.getCurrentUser();
-            CurrentUser cu = CurrentUser.getInstance();
-            if (mFirebaseUser != null) {
-                cu.setConnected(true);
-                Log.d(TAG, "onAuthStateChanged:signed_in:" + mFirebaseUser.getUid());
-            } else {
-                cu.setConnected(false);
-                Log.d(TAG, "onAuthStateChanged:signed_out");
-            }
-        }
-    };
+    private CustomCompatActivity mActivity;
+    private ProgressDialog mPrgDialog;
 
     public static MyProfileFragment newInstance() {
         return new MyProfileFragment();
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mActivity = (CustomCompatActivity) getActivity();
     }
 
     @Override
@@ -82,6 +87,55 @@ public class MyProfileFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
         mFirebaseDatabase = FirebaseDatabase.getInstance();
+
+        onFirebaseCompleteListener = new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                mPrgDialog.hide();
+                if (task.isSuccessful()) {
+                    mIdUser = mFirebaseUser.getUid();
+                    CurrentUser.getInstance().setIdUTI(mIdUser);
+                    CurrentUser.getInstance().setEmailUTI(mEmail);
+                    CurrentUser.getInstance().setTelephoneUTI(mTelephone);
+
+                    Toast.makeText(getActivity(), getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
+                    getFragmentManager().popBackStackImmediate();
+                } else {
+                    Toast.makeText(getActivity(), "Appel Firebase effectuée, mais réponse invalide.", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
+
+        onFirebaseFailureListener = new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                mPrgDialog.hide();
+                Toast.makeText(getActivity(), "Appel à la base Firebase échoué.", Toast.LENGTH_LONG).show();
+            }
+        };
+
+        onUpdateProfileFailureListener = new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                mPrgDialog.hide();
+            }
+        };
+
+        onUpdateProfileCompleteListener = new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Utilisateur utilisateur = new Utilisateur();
+                    utilisateur.setIdUTI(mFirebaseUser.getUid());
+                    utilisateur.setEmailUTI(mFirebaseUser.getEmail());
+                    utilisateur.setTelephoneUTI(mTelephone);
+
+                    // Tentative de mise à jour dans Firebase Database
+                    DatabaseReference userRef = mFirebaseDatabase.getReference("users/" + mFirebaseUser.getUid());
+                    userRef.setValue(utilisateur).addOnCompleteListener(onFirebaseCompleteListener).addOnFailureListener(onFirebaseFailureListener);
+                }
+            }
+        };
     }
 
     @Override
@@ -100,74 +154,30 @@ public class MyProfileFragment extends Fragment {
             int color = ContextCompat.getColor(getActivity(), R.color.ColorPrimary);
             myCustomActivity.changeColorToolBar(color);
         }
-
         return rootView;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
-        }
     }
 
     // Création d'un listener pour la mise à jour
     @OnClick(R.id.action_save_change)
     public void onSaveClick() {
-        final String email = emailMyProfile.getText().toString();
-        final String telephone = telephoneMyProfile.getText().toString();
-        if (checkUserHasChanged(email, telephone)) {
-            if (checkUpdate(email)) {
+        Utility.hideKeyboard(getActivity());
 
+        // Affichage d'un message de mise à jour
+        mPrgDialog = mActivity.getPrgDialog();
+        mPrgDialog.setMessage("Mise à jour des informations de l'utilisateur");
+        mPrgDialog.show();
+
+        mEmail = emailMyProfile.getText().toString();
+        mTelephone = telephoneMyProfile.getText().toString();
+        if (checkUserHasChanged(mEmail, mTelephone)) {
+            if (checkUpdate(mEmail)) {
                 mFirebaseUser = mAuth.getCurrentUser();
 
-                // On désactive le bouton, le temps qu'on récupère une réponse
-                action_save_change.setEnabled(false);
-
                 // Tentative de mise à jour dans la Firebase Auth
-                mFirebaseUser.updateEmail(email).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-
-                            Utilisateur utilisateur = new Utilisateur();
-                            utilisateur.setIdUTI(mFirebaseUser.getUid());
-                            utilisateur.setTelephoneUTI(telephone);
-                            utilisateur.setEmailUTI(email);
-
-                            // Tentative de mise à jour dans Firebase Database
-                            DatabaseReference userRef = mFirebaseDatabase.getReference("users/" + mFirebaseUser.getUid());
-                            userRef.setValue(utilisateur).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    if (task.isSuccessful()) {
-                                        CurrentUser.getInstance().setEmailUTI(email);
-                                        CurrentUser.getInstance().setTelephoneUTI(telephone);
-                                        Toast.makeText(getActivity(), getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
-
-                                        View view = getView();
-                                        if (view != null) {
-                                            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                                            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-                                        }
-                                        getFragmentManager().popBackStackImmediate();
-                                    } else {
-                                        Toast.makeText(getActivity(), getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            });
-                        }
-                    }
-                });
+                mFirebaseUser.updateEmail(mEmail).addOnCompleteListener(onUpdateProfileCompleteListener).addOnFailureListener(onUpdateProfileFailureListener);
             }
         } else {
+            mPrgDialog.hide();
             Toast.makeText(getActivity(), R.string.dialog_no_update, Toast.LENGTH_LONG).show();
         }
     }

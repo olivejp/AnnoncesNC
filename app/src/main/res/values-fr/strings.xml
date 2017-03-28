@@ -89,38 +89,6 @@
         <item>-1</item>
     </string-array>
 
-    <string-array name="categorie_title_array">
-        <item>Immobilier</item>
-        <item>Automobile</item>
-        <item>Moto</item>
-        <item>Téléphonie</item>
-        <item>Image &amp; Son</item>
-        <item>Informatique</item>
-        <item>Electroménager</item>
-        <item>Puériculture</item>
-        <item>Sport &amp; Loisir</item>
-        <item>Services</item>
-        <item>Mobilier</item>
-        <item>Musique</item>
-        <item>Bricolage</item>
-    </string-array>
-
-    <string-array name="categorie_color_array">
-        <item>#1BA900</item>
-        <item>#88A900</item>
-        <item>#A98D00</item>
-        <item>#A94700</item>
-        <item>#A90013</item>
-        <item>#A90062</item>
-        <item>#A9009D</item>
-        <item>#4100A9</item>
-        <item>#003FA9</item>
-        <item>#40D5DA</item>
-        <item>#40DA97</item>
-        <item>#1B36BF</item>
-        <item>#BF4A1B</item>
-    </string-array>
-
     <!-- Example settings for Notifications -->
     <string name="pref_title_system_sync_settings">System sync settings</string>
     <string name="pref_header_notifications">Notifications</string>

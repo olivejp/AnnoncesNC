@@ -13,6 +13,12 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeStats;
@@ -20,8 +26,7 @@ import com.orlanth23.annoncesnc.provider.AnnoncesProvider;
 import com.orlanth23.annoncesnc.provider.ProviderContract;
 import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
 
-import java.util.Observable;
-import java.util.Observer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -38,13 +43,6 @@ public class HomeFragment extends Fragment {
     ImageView imageHomeLogo;
 
     private View rootView;
-    // This observer will update textView on the layout when ListeStats change.
-    private Observer listeInfosServerObserver = new Observer() {
-        @Override
-        public void update(Observable o, Object arg) {
-            updateInfosServer();
-        }
-    };
 
     public HomeFragment() {
         // Required empty public constructor
@@ -83,10 +81,75 @@ public class HomeFragment extends Fragment {
         }
 
         // On ajoute l'observer à notre liste de stats. Quand elle bougera, on mettra à jour les views
-        ListeStats listStats = ListeStats.getInstance(getActivity());
-        listStats.addObserver(listeInfosServerObserver);
+        ListeStats.getInstance(getActivity());
 
-        updateInfosServer();
+        FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
+
+        DatabaseReference annoncesRef = mDatabase.getReference("annonces");
+        DatabaseReference usersRef = mDatabase.getReference("users");
+
+        final AtomicInteger countAnnonces = new AtomicInteger();
+        final AtomicInteger countUsers = new AtomicInteger();
+
+        annoncesRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+                textHomeNbAnnonce.setText(getString(R.string.textNbAnnonces).concat(String.valueOf(countAnnonces.incrementAndGet())));
+            }
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                textHomeNbAnnonce.setText(getString(R.string.textNbAnnonces).concat(String.valueOf(countAnnonces.decrementAndGet())));
+            }
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) { }
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
+
+        usersRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String prevChildKey) {
+                textHomeNbUtilisateur.setText(getString(R.string.textNbUser).concat(String.valueOf(countUsers.incrementAndGet())));
+            }
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                textHomeNbUtilisateur.setText(getString(R.string.textNbUser).concat(String.valueOf(countUsers.decrementAndGet())));
+            }
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) { }
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+            @Override
+            public void onCancelled(DatabaseError databaseError) {}
+        });
+
+
+        annoncesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long childCount = dataSnapshot.getChildrenCount();
+                countAnnonces.set((int) childCount);
+                textHomeNbAnnonce.setText(getString(R.string.textNbAnnonces).concat(String.valueOf(countAnnonces.get())));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) { }
+        });
+
+        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                long childCount = dataSnapshot.getChildrenCount();
+                countUsers.set((int) childCount);
+                textHomeNbUtilisateur.setText(getString(R.string.textNbUser).concat(String.valueOf(countUsers.get())));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
 
         return rootView;
     }

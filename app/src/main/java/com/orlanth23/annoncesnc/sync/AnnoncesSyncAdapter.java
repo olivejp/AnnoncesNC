@@ -28,7 +28,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.google.gson.Gson;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.dto.AnnonceFirebase;
 import com.orlanth23.annoncesnc.dto.PhotoFirebase;
@@ -42,17 +41,11 @@ import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
 import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.InfoServer;
-import com.orlanth23.annoncesnc.webservice.Proprietes;
-import com.orlanth23.annoncesnc.webservice.ServiceAnnonce;
-import com.orlanth23.annoncesnc.webservice.ServiceRest;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
 import static com.orlanth23.annoncesnc.provider.AnnoncesProvider.sSelectionAnnoncesByStatut;
@@ -63,9 +56,7 @@ import static com.orlanth23.annoncesnc.provider.ProviderContract.PhotoEntry;
 public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static final String TAG = AnnoncesSyncAdapter.class.getName();
-    private static final Gson gson = new Gson();
-    private static final ServiceRest serviceRest = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceRest.class);
-    private static final ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
+
     private static List<String> exceptionMessage = new ArrayList<>();
     private ContentResolver mContentResolver;
     private Context mContext;
@@ -174,7 +165,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
             }
         });
 
-        mDatabase.getReference("utilisateurs").addListenerForSingleValueEvent(new ValueEventListener() {
+        mDatabase.getReference("users").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 infoServer.setNbUtilisateur(dataSnapshot.getChildrenCount());

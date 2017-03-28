@@ -16,10 +16,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.dto.Utilisateur;
@@ -47,28 +44,10 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
     private ProgressDialog prgDialog;
     private AppCompatActivity mActivity = this;
 
-    private FirebaseAuth mAuth;
-    private FirebaseDatabase mDatabase;
-
     private String mIdUser;
     private String mEmail;
     private String mTelephone;
     private String mPassword;
-
-    private FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
-        @Override
-        public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-            FirebaseUser user = firebaseAuth.getCurrentUser();
-            CurrentUser cu = CurrentUser.getInstance();
-            if (user != null) {
-                cu.setConnected(true);
-                Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-            } else {
-                cu.setConnected(false);
-                Log.d(TAG, "onAuthStateChanged:signed_out");
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,10 +66,6 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
         prgDialog = new ProgressDialog(this);
         prgDialog.setMessage(getString(R.string.dialog_msg_patience));
         prgDialog.setCancelable(false);
-
-        // Get instance from FirebaseAuth
-        mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance();
     }
 
     public void setDefaultValues() {
@@ -168,48 +143,40 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
 
     public void register(View view) {
         if (checkRegister(vEmail, vPassword, vPasswordConfirm, vTelephone)) {
-            // On cache le clavier
             Utility.hideKeyboard(mActivity);
 
-            // On affiche la barre de progression
+            prgDialog.setMessage("Création du profil : " + mEmail);
             prgDialog.show();
 
             // Création de l'utilisateur sur Firebase Auth
             mAuth.createUserWithEmailAndPassword(mEmail, mPassword)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            mFirebaseUser = mAuth.getCurrentUser();
+                            prgDialog.setMessage("Enregistrement dans la base de données.");
+                            createFirebaseDatabaseUser();
+                        }
 
                         if (!task.isSuccessful()) {
                             // Display failed message using Toast
-                            Toast.makeText(mActivity, getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
                             prgDialog.hide();
-                        }
-
-                        if (task.isSuccessful()) {
-                            // Récupération du numéro Id de l'utilisateur renvoyé par le WS
-                            FirebaseUser firebaseUser = mAuth.getCurrentUser();
-                            if (firebaseUser != null) {
-                                // Récupération de l'id de l'utilisateur
-                                mIdUser = firebaseUser.getUid();
-
-                                // On remet les zones à blank
-                                setDefaultValues();
-
-                                // Création d'un utilisateur dans notre Firebase Database
-                                createFirebaseDatabaseUser();
-                            }else{
-                                prgDialog.hide();
-                            }
-                        }else{
-                            prgDialog.hide();
+                            vErrorMsg.setText(task.getException().getMessage());
                         }
                     }
                 });
         }
     }
 
-    private void createFirebaseDatabaseUser(){
+    private void createFirebaseDatabaseUser() {
+        // Récupération du numéro Id de l'utilisateur renvoyé par le WS
+        if (mFirebaseUser == null) {
+            return;
+        }
+        // Récupération de l'id de l'utilisateur
+        mIdUser = mFirebaseUser.getUid();
+
         // Récupération de l'utilisateur
         Utilisateur user = new Utilisateur();
         user.setIdUTI(mIdUser);
@@ -219,7 +186,7 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
         // Enregistrement de cet utilisateur dans la RealTimeDatabase de Firebase
         DatabaseReference userRef = mDatabase.getReference("users/" + mIdUser);
 
-        userRef.setValue(user).addOnCompleteListener(mActivity, new OnCompleteListener<Void>() {
+        userRef.setValue(user).addOnCompleteListener(this, new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
 
@@ -246,44 +213,25 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
                     setResult(RESULT_OK, returnIntent);                             // On retourne un résultat RESULT_OK
                     finish();
                 } else {
-                    // On a pas réussi à insérer dans RealTimeDatabase
-                    Toast.makeText(mActivity, getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
+                    // Suppression de l'utilisateur dans FirebaseAuth
+                    mFirebaseUser.delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Log.d(TAG, "User account : " + mEmail + " deleted.");
+                            } else {
+                                Log.d(TAG, "ERROR - User account : " + mEmail + " has not been deleted.");
+                            }
+                        }
+                    });
+
+                    // Echec de l'insertion dans RealTimeDatabase
+                    vErrorMsg.setText(task.getException().getMessage());
 
                     // RAZ du CurrentUser
                     CurrentUser.getInstance().clear();
-
-                    // On retourne un résultat dans un intent
-                    Intent returnIntent = new Intent();
-                    setResult(RESULT_CANCELED, returnIntent);                       // On retourne un résultat RESULT_CANCELED
-                    finish();
                 }
             }
         });
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        prgDialog.dismiss();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        prgDialog.dismiss();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
-        }
     }
 }

@@ -47,7 +47,12 @@
                 android:maxLength="9"
                 android:textAppearance="@style/TextAppearance.AppCompat.Body2" />
         </android.support.design.widget.TextInputLayout>
-
+        <CheckBox
+            android:id="@+id/checkBox_remember_me_login"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="@string/remember_me" />
         <Button
             android:id="@+id/action_save_change"
             style="@style/MyButtonStyle"

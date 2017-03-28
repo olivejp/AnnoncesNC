@@ -1,5 +1,5 @@
 ext {
-    supportLibVersion = '25.3.0'  // variable dont on peut faire référence
+    supportLibVersion = '25.3.1'  // variable dont on peut faire référence
     ButterKnifeVersion = '8.5.1'
 }
 
@@ -54,9 +54,13 @@ android {
         dev {
 //            versionCode gitVersionCodeTime
 //            versionName gitVersionName
-            versionCode 1
-            versionName "1"
+            versionCode 15
+            versionName '15'
             buildConfigField 'String', 'ADMIN_EMAIL', '"orlanth23@hotmail.com"'
+            minSdkVersion 23
+            applicationId 'com.orlanth23.annoncesnc'
+            targetSdkVersion 25
+            testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
         }
         prod {
 //            versionCode gitVersionCode
@@ -82,12 +86,10 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-
     // Espresso support
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
     compile "com.android.support:appcompat-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.android.support:design:${supportLibVersion}"
@@ -95,9 +97,7 @@ dependencies {
     compile "com.android.support:recyclerview-v7:${supportLibVersion}"
     compile "com.android.support:support-v4:${supportLibVersion}"
     compile "com.jakewharton:butterknife:${ButterKnifeVersion}"
-
     annotationProcessor "com.jakewharton:butterknife-compiler:${ButterKnifeVersion}"
-
     androidTestCompile "com.android.support:support-v4:${supportLibVersion}"
     compile 'com.squareup.retrofit2:retrofit:2.2.0'
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'

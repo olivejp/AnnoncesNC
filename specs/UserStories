@@ -1,0 +1,14 @@
+Spécifications
+
+Un utilisateur doit pouvoir créer un nouveau compte avec un login et mot de passe.
+Un utilisateur doit pouvoir s'authentifier avec son login et un mot de passe.
+Un utilisateur doit pouvoir s'authentifier automatiquement même sans connexion réseau.
+    Conditions:
+    -Il doit posséder un compte.
+    -Il doit s'être au moins authentifié une fois.
+    -Il doit avoir choisi l'option Connexion automatique.
+
+Un utilisateur doit pouvoir saisir une annonces même hors connexion.
+    Conditions:
+    -Il doit posséder un compte.
+    -Il doit être connecté.

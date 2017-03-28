@@ -198,7 +198,7 @@
     <string name="content_authority" translatable="false">com.orlanth23.annoncesnc</string>
     <string name="error_mail_already_exist">This email is already used.</string>
 
-    <string-array name="categorie_title_array">
+    <string-array name="categorie_title_array" translatable="false">
         <item>Immobilier</item>
         <item>Automobile</item>
         <item>Moto</item>
@@ -214,7 +214,7 @@
         <item>Bricolage</item>
     </string-array>
 
-    <string-array name="categorie_color_array">
+    <string-array name="categorie_color_array" translatable="false">
         <item>#1BA900</item>
         <item>#88A900</item>
         <item>#A98D00</item>
