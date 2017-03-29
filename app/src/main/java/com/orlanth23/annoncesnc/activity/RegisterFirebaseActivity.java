@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
@@ -39,6 +40,8 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
     EditText vPassword;
     @BindView(R.id.registerPasswordConfirm)
     EditText vPasswordConfirm;
+    @BindView(R.id.registerDisplayName)
+    EditText vDisplayName;
     @BindView(R.id.checkBox_register_remember_me)
     CheckBox vCheckBoxRegisterRememberMe;
     private ProgressDialog prgDialog;
@@ -46,6 +49,7 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
 
     private String mIdUser;
     private String mEmail;
+    private String mDisplayName;
     private String mTelephone;
     private String mPassword;
 
@@ -55,7 +59,7 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
         setContentView(R.layout.activity_register);
         ButterKnife.bind(this);
 
-        // Rajout d'une toolbar et changement du titre
+        // Récupération de l'actionBar et changement du titre
         ActionBar tb = getSupportActionBar();
         if (tb != null) {
             tb.setTitle(R.string.action_sign_up);
@@ -70,14 +74,16 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
 
     public void setDefaultValues() {
         vEmail.setText("");
+        vDisplayName.setText("");
         vPassword.setText("");
         vPasswordConfirm.setText("");
         vTelephone.setText("");
     }
 
-    private boolean checkRegister(EditText emailET, EditText passwordET, EditText passwordConfirmET, EditText telephoneET) {
+    private boolean checkRegister(EditText emailET, EditText displayNameET, EditText passwordET, EditText passwordConfirmET, EditText telephoneET) {
 
         // RAZ des données
+        mDisplayName = "";
         mTelephone = "";
         mEmail = "";
         mPassword = "";
@@ -92,6 +98,7 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
         }
 
         mEmail = emailET.getText().toString().replace("'", "''");
+        mDisplayName = displayNameET.getText().toString().replace("'", "''");
         mPassword = passwordET.getText().toString().replace("'", "''");
         String passwordConfirmString = passwordConfirmET.getText().toString().replace("'", "''");
 
@@ -99,6 +106,12 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
         if (!Utility.isNotNull(mEmail)) {
             emailET.setError(getString(R.string.error_field_required));
             focusView = emailET;
+            cancel = true;
+        }
+
+        if (!Utility.isNotNull(mDisplayName)) {
+            displayNameET.setError(getString(R.string.error_field_required));
+            focusView = displayNameET;
             cancel = true;
         }
 
@@ -142,7 +155,7 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
     }
 
     public void register(View view) {
-        if (checkRegister(vEmail, vPassword, vPasswordConfirm, vTelephone)) {
+        if (checkRegister(vEmail, vDisplayName, vPassword, vPasswordConfirm, vTelephone)) {
             Utility.hideKeyboard(mActivity);
 
             prgDialog.setMessage("Création du profil : " + mEmail);
@@ -154,8 +167,22 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            mFirebaseUser = mAuth.getCurrentUser();
-                            prgDialog.setMessage("Enregistrement dans la base de données.");
+                            // Mise à jour du nom d'affichage
+                            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                .setDisplayName(mDisplayName)
+                                .build();
+
+                            mFirebaseUser.updateProfile(profileUpdates).addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    if (task.isSuccessful()) {
+                                        Log.d(TAG, "User profile updated.");
+                                    }else{
+                                        Log.d(TAG, "Erreur lors de la mise à jour du nom d'affichage.");
+                                    }
+                                }
+                            });
+
                             createFirebaseDatabaseUser();
                         }
 
@@ -170,7 +197,10 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
     }
 
     private void createFirebaseDatabaseUser() {
+        prgDialog.setMessage("Enregistrement dans la base de données.");
+
         // Récupération du numéro Id de l'utilisateur renvoyé par le WS
+        mFirebaseUser = mAuth.getCurrentUser();
         if (mFirebaseUser == null) {
             return;
         }
@@ -181,6 +211,7 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
         Utilisateur user = new Utilisateur();
         user.setIdUTI(mIdUser);
         user.setEmailUTI(mEmail);
+        user.setDisplayNameUTI(mDisplayName);
         user.setTelephoneUTI(mTelephone);
 
         // Enregistrement de cet utilisateur dans la RealTimeDatabase de Firebase
@@ -196,21 +227,22 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
                 if (task.isSuccessful()) {
                     // Si on a coché la case pour se souvenir de l'utilisateur
                     if (vCheckBoxRegisterRememberMe.isChecked()) {
-                        Utility.saveAutoComplete(mActivity, mIdUser, mEmail, mTelephone, mPassword);
+                        Utility.saveAutoComplete(mActivity, mIdUser, mEmail, mDisplayName, mTelephone, mPassword);
                     }
 
                     // Récupération des infos dans notre CurrentUser
                     CurrentUser cu = CurrentUser.getInstance();
                     cu.setConnected(true);
-                    cu.setEmailUTI(mEmail);
-                    cu.setTelephoneUTI(mTelephone);
                     cu.setIdUTI(mIdUser);
+                    cu.setEmailUTI(mEmail);
+                    cu.setDisplayNameUTI(mDisplayName);
+                    cu.setTelephoneUTI(mTelephone);
 
                     Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
 
                     // On retourne un résultat dans un intent
                     Intent returnIntent = new Intent();
-                    setResult(RESULT_OK, returnIntent);                             // On retourne un résultat RESULT_OK
+                    setResult(RESULT_OK, returnIntent);
                     finish();
                 } else {
                     // Suppression de l'utilisateur dans FirebaseAuth

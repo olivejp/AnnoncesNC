@@ -2,15 +2,12 @@ package com.orlanth23.annoncesnc.activity;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,11 +16,9 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
 
@@ -42,32 +37,12 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
     AutoCompleteTextView mEmailView;
     @BindView(R.id.password)
     EditText mPasswordView;
-    @BindView(R.id.checkBox_remember_me_login)
-    CheckBox mCheckBoxRememberMe;
     @BindView(R.id.login_error)
     TextView errorMsg;
     @BindView(R.id.text_login_msg_accueil)
     TextView textLoginMsgAccueil;
-    private Context mContext = this;
     private CustomCompatActivity mActivity = this;
     private String password;
-    private FirebaseAuth mAuth;
-    private FirebaseUser firebaseUser;
-
-    private FirebaseAuth.AuthStateListener mAuthListener = new FirebaseAuth.AuthStateListener() {
-        @Override
-        public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-            FirebaseUser user = firebaseAuth.getCurrentUser();
-            CurrentUser cu = CurrentUser.getInstance();
-            if (user != null) {
-                cu.setConnected(true);
-                Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-            } else {
-                cu.setConnected(false);
-                Log.d(TAG, "onAuthStateChanged:signed_out");
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,20 +66,6 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
 
         // Get instance from FirebaseAuth
         mAuth = FirebaseAuth.getInstance();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
-        }
     }
 
     @Override
@@ -134,13 +95,6 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
         String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
         if (email != null) {
             mEmailView.setText(email);
-        }
-
-        String autoReconnect = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT);
-        if (autoReconnect != null) {
-            mCheckBoxRememberMe.setChecked(autoReconnect.equals("O"));
-        } else {
-            mCheckBoxRememberMe.setChecked(false);
         }
     }
 
@@ -206,20 +160,15 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
-                    firebaseUser = mAuth.getCurrentUser();
-                    if (firebaseUser != null) {
-
-                        // Récupération du token de l'utilisateur
-                        if (mCheckBoxRememberMe.isChecked()) {
-                            Utility.saveAutoComplete(mActivity, firebaseUser.getUid(), firebaseUser.getEmail(), "", password);
-                        }
-                        Toast.makeText(mActivity, "Connecté avec le compte " + firebaseUser.getEmail() + " !", Toast.LENGTH_LONG).show();
+                    mFirebaseUser = mAuth.getCurrentUser();
+                    if (mFirebaseUser != null) {
+                        Toast.makeText(mActivity, "Connecté avec le compte " + mFirebaseUser.getEmail() + " !", Toast.LENGTH_LONG).show();
                         goodFinishActivity();
                     }
                 } else {
                     Exception e = task.getException();
                     if (e != null) {
-                        Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(mActivity, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
                 prgDialog.hide();

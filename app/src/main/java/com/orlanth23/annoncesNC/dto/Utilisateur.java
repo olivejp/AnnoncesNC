@@ -21,17 +21,20 @@ public class Utilisateur implements Parcelable {
     private String idUTI;
     private String emailUTI;
     private String telephoneUTI;
+    private String displayNameUTI;
 
     public Utilisateur() {
         this.idUTI = "";
         this.emailUTI = "";
         this.telephoneUTI = "";
+        this.displayNameUTI = "";
     }
 
     public Utilisateur(Parcel in) {
         idUTI = in.readString();
         emailUTI = in.readString();
         telephoneUTI = in.readString();
+        displayNameUTI = in.readString();
     }
 
     public String getIdUTI() {
@@ -58,6 +61,14 @@ public class Utilisateur implements Parcelable {
         this.telephoneUTI = telephoneUTI;
     }
 
+    public String getDisplayNameUTI() {
+        return displayNameUTI;
+    }
+
+    public void setDisplayNameUTI(String displayNameUTI) {
+        this.displayNameUTI = displayNameUTI;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -68,6 +79,7 @@ public class Utilisateur implements Parcelable {
         dest.writeString(idUTI);
         dest.writeString(emailUTI);
         dest.writeString(telephoneUTI);
+        dest.writeString(displayNameUTI);
     }
 
 }

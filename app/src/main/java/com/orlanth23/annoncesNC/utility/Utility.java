@@ -293,17 +293,18 @@ public class Utility {
         inputManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
-    public static boolean saveAutoComplete(Context context, String idUser, String emailUser, String telephoneUser, String password) {
-        boolean retourLogin;
+    public static boolean saveAutoComplete(Context context, String idUser, String emailUser, String displayNameUser, String telephoneUser, String password) {
+        boolean retourEmail;
+        boolean retourDisplayName;
         boolean retourPassword;
         boolean retourAutoConnect;
         boolean retourIdUser;
         boolean retourTelephoneUser;
 
         if (existDictionary(context, Dictionary.DB_CLEF_LOGIN)) {
-            retourLogin = update(context, Dictionary.DB_CLEF_LOGIN, emailUser);
+            retourEmail = update(context, Dictionary.DB_CLEF_LOGIN, emailUser);
         } else {
-            retourLogin = insertInto(context, Dictionary.DB_CLEF_LOGIN, emailUser);
+            retourEmail = insertInto(context, Dictionary.DB_CLEF_LOGIN, emailUser);
         }
 
         // Encryptage du mot de passe
@@ -332,7 +333,13 @@ public class Utility {
             retourTelephoneUser = insertInto(context, Dictionary.DB_CLEF_TELEPHONE, telephoneUser);
         }
 
-        return retourLogin && retourPassword && retourAutoConnect && retourIdUser;
+        if (existDictionary(context, Dictionary.DB_CLEF_DISPLAY_NAME)) {
+            retourDisplayName = update(context, Dictionary.DB_CLEF_DISPLAY_NAME, displayNameUser);
+        } else {
+            retourDisplayName = insertInto(context, Dictionary.DB_CLEF_DISPLAY_NAME, displayNameUser);
+        }
+
+        return retourEmail && retourPassword && retourAutoConnect && retourIdUser && retourTelephoneUser && retourDisplayName;
     }
 
 }

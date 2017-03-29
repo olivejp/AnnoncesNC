@@ -26,9 +26,24 @@
                     android:id="@+id/registerEmail"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ic_action_mail"
+                    android:drawableStart="@drawable/ic_action_mail"
+                    android:hint="@string/email"
+                    android:inputType="textEmailAddress" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_layout_display_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/registerDisplayName"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
                     android:drawableLeft="@drawable/ic_login"
                     android:drawableStart="@drawable/ic_login"
-                    android:hint="@string/email"
+                    android:hint="Display name"
                     android:inputType="textEmailAddress" />
             </android.support.design.widget.TextInputLayout>
 
@@ -44,7 +59,8 @@
                     android:drawableLeft="@drawable/ic_action_phone"
                     android:drawableStart="@drawable/ic_action_phone"
                     android:hint="@string/telephone"
-                    android:inputType="phone" />
+                    android:inputType="phone"
+                    android:maxLength="6" />
             </android.support.design.widget.TextInputLayout>
 
             <!-- Password TextField -->
@@ -73,6 +89,8 @@
                     android:id="@+id/registerPasswordConfirm"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ic_attention"
+                    android:drawableStart="@drawable/ic_attention"
                     android:hint="@string/text_password_confirm"
                     android:inputType="textPassword" />
             </android.support.design.widget.TextInputLayout>
@@ -81,9 +99,11 @@
 
             <CheckBox
                 android:id="@+id/checkBox_register_remember_me"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="5dp"
+                android:layout_marginTop="5dp"
                 android:text="@string/remember_me" />
 
             <TextView
@@ -95,17 +115,15 @@
                 android:textColor="#e30000"
                 android:textStyle="bold" />
 
-            <Button
-                android:id="@+id/btnRegister"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dip"
-                android:background="@drawable/mybutton"
-                android:onClick="register"
-                android:text="@string/action_sign_up"
-                android:textColor="#fff" />
-
             <!-- Link to Login Screen -->
         </LinearLayout>
     </ScrollView>
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/btnRegister"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:onClick="register"
+        android:src="@drawable/ic_action_accept"/>
 </android.support.design.widget.CoordinatorLayout>

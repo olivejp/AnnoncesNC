@@ -27,8 +27,8 @@
                     android:id="@+id/email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ic_login"
-                    android:drawableStart="@drawable/ic_login"
+                    android:drawableLeft="@drawable/ic_action_mail"
+                    android:drawableStart="@drawable/ic_action_mail"
                     android:hint="@string/prompt_email"
                     android:inputType="textEmailAddress"
                     android:maxLines="1"/>
@@ -50,12 +50,6 @@
                     android:inputType="textPassword"
                     android:maxLines="1"/>
             </android.support.design.widget.TextInputLayout>
-            <CheckBox
-                android:id="@+id/checkBox_remember_me_login"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="@string/remember_me" />
             <TextView
                 android:id="@+id/login_error"
                 android:layout_width="fill_parent"

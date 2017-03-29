@@ -1,5 +1,24 @@
 Spécifications
 
+1-Gestion du compte
+    -S'inscrire
+        -Nécessite une connexion
+    -Se désinscrire
+        -Peut se faire hors ligne mais nécessite une connexion pour être effectif
+    -Modifier les attributs de son compte
+        -Peut se faire hors ligne mais nécessite une connexion pour être effectif
+    -Perte de mot de passe
+        -Nécessite une connexion
+
+2-Gestion des annonces
+    -Poster une annonce
+
+3-Gestion des photos
+
+4-Gestion des messages
+
+
+
 Un utilisateur doit pouvoir créer un nouveau compte avec un login et mot de passe.
 Un utilisateur doit pouvoir s'authentifier avec son login et un mot de passe.
 Un utilisateur doit pouvoir s'authentifier automatiquement même sans connexion réseau.

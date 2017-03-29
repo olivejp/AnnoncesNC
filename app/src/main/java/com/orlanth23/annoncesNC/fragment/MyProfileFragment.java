@@ -8,11 +8,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -21,6 +21,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.R;
@@ -44,29 +45,32 @@ public class MyProfileFragment extends Fragment {
     public final static int CODE_CHANGE_PASSWORD = 600;
 
     @BindView(R.id.emailMyProfile)
-    EditText emailMyProfile;
+    EditText emailET;
     @BindView(R.id.telephoneMyProfile)
-    EditText telephoneMyProfile;
+    EditText telephoneET;
+    @BindView(R.id.displayName)
+    EditText displayNameET;
     @BindView(R.id.action_save_change)
-    Button action_save_change;
+    Button saveBT;
     @BindView(R.id.action_desinscrire)
-    Button action_desinscrire;
+    Button desinscrireBT;
     @BindView(R.id.action_change_password)
-    Button action_change_password;
+    Button changePasswordBT;
     @BindView(R.id.action_deconnexion)
-    Button action_deconnexion;
-    @BindView(R.id.checkBox_remember_me_login)
-    CheckBox checkBoxRememberMe;
+    Button deconnexionBT;
 
     private FirebaseAuth mAuth;
     private FirebaseUser mFirebaseUser;
     private FirebaseDatabase mFirebaseDatabase;
+
     private OnCompleteListener<Void> onUpdateProfileCompleteListener;
     private OnFailureListener onUpdateProfileFailureListener;
     private OnCompleteListener<Void> onFirebaseCompleteListener;
     private OnFailureListener onFirebaseFailureListener;
-    private String mEmail;
+
     private String mIdUser;
+    private String mEmail;
+    private String mDisplayName;
     private String mTelephone;
 
     private CustomCompatActivity mActivity;
@@ -96,6 +100,7 @@ public class MyProfileFragment extends Fragment {
                     mIdUser = mFirebaseUser.getUid();
                     CurrentUser.getInstance().setIdUTI(mIdUser);
                     CurrentUser.getInstance().setEmailUTI(mEmail);
+                    CurrentUser.getInstance().setDisplayNameUTI(mDisplayName);
                     CurrentUser.getInstance().setTelephoneUTI(mTelephone);
 
                     Toast.makeText(getActivity(), getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
@@ -128,6 +133,7 @@ public class MyProfileFragment extends Fragment {
                     Utilisateur utilisateur = new Utilisateur();
                     utilisateur.setIdUTI(mFirebaseUser.getUid());
                     utilisateur.setEmailUTI(mFirebaseUser.getEmail());
+                    utilisateur.setDisplayNameUTI(mDisplayName);
                     utilisateur.setTelephoneUTI(mTelephone);
 
                     // Tentative de mise à jour dans Firebase Database
@@ -144,8 +150,9 @@ public class MyProfileFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_my_profile, container, false);
         ButterKnife.bind(this, rootView);
 
-        emailMyProfile.setText(CurrentUser.getInstance().getEmailUTI());
-        telephoneMyProfile.setText(String.valueOf(CurrentUser.getInstance().getTelephoneUTI()));
+        emailET.setText(CurrentUser.getInstance().getEmailUTI());
+        displayNameET.setText(CurrentUser.getInstance().getDisplayNameUTI());
+        telephoneET.setText(String.valueOf(CurrentUser.getInstance().getTelephoneUTI()));
 
         // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
         getActivity().setTitle(getString(R.string.action_profile));
@@ -167,19 +174,89 @@ public class MyProfileFragment extends Fragment {
         mPrgDialog.setMessage("Mise à jour des informations de l'utilisateur");
         mPrgDialog.show();
 
-        mEmail = emailMyProfile.getText().toString();
-        mTelephone = telephoneMyProfile.getText().toString();
-        if (checkUserHasChanged(mEmail, mTelephone)) {
-            if (checkUpdate(mEmail)) {
-                mFirebaseUser = mAuth.getCurrentUser();
+        mEmail = emailET.getText().toString();
+        mDisplayName = displayNameET.getText().toString();
+        mTelephone = telephoneET.getText().toString();
 
-                // Tentative de mise à jour dans la Firebase Auth
-                mFirebaseUser.updateEmail(mEmail).addOnCompleteListener(onUpdateProfileCompleteListener).addOnFailureListener(onUpdateProfileFailureListener);
-            }
-        } else {
+        mFirebaseUser = mAuth.getCurrentUser();
+        if (checkUserHasChanged(mEmail, mDisplayName, mTelephone)) {
             mPrgDialog.hide();
             Toast.makeText(getActivity(), R.string.dialog_no_update, Toast.LENGTH_LONG).show();
         }
+
+        if (emailIsCorrect(mEmail)) {
+            // Tentative de mise à jour de l'email la Firebase Auth
+            mFirebaseUser.updateEmail(mEmail).addOnCompleteListener(onUpdateProfileCompleteListener).addOnFailureListener(onUpdateProfileFailureListener);
+
+            // Tentative de mise à jour du nom d'affichage
+            updateDisplayName();
+
+            // Mise à jour des infos dans la DB firebase
+            updateFirebaseDatabaseUser();
+        }
+    }
+
+    private void updateFirebaseDatabaseUser() {
+        mPrgDialog.setMessage("Mise à jour dans la base de données.");
+
+        // Récupération du numéro Id de l'utilisateur renvoyé par le WS
+        mFirebaseUser = mAuth.getCurrentUser();
+        if (mFirebaseUser == null) {
+            return;
+        }
+        // Récupération de l'id de l'utilisateur
+        mIdUser = mFirebaseUser.getUid();
+
+        // Récupération de l'utilisateur
+        Utilisateur user = new Utilisateur();
+        user.setIdUTI(mIdUser);
+        user.setEmailUTI(mEmail);
+        user.setDisplayNameUTI(mDisplayName);
+        user.setTelephoneUTI(mTelephone);
+
+        // Enregistrement de cet utilisateur dans la RealTimeDatabase de Firebase
+        DatabaseReference userRef = mFirebaseDatabase.getReference("users/" + mIdUser);
+
+        userRef.setValue(user).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+
+                // On enlève la barre de progression
+                mPrgDialog.hide();
+
+                if (task.isSuccessful()) {
+                    // Récupération des infos dans notre CurrentUser
+                    CurrentUser cu = CurrentUser.getInstance();
+                    cu.setConnected(true);
+                    cu.setEmailUTI(mEmail);
+                    cu.setTelephoneUTI(mTelephone);
+                    cu.setIdUTI(mIdUser);
+
+                    Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
+                } else {
+                    // Echec de l'insertion dans RealTimeDatabase
+                    Toast.makeText(mActivity, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+
+    private void updateDisplayName() {
+        // Mise à jour du nom d'affichage
+        UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+            .setDisplayName(mDisplayName)
+            .build();
+
+        mFirebaseUser.updateProfile(profileUpdates).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Log.d(TAG, "User profile updated.");
+                } else {
+                    Log.d(TAG, "Erreur lors de la mise à jour du nom d'affichage.");
+                }
+            }
+        });
     }
 
     // Création du listener pour se désinscrire
@@ -201,10 +278,7 @@ public class MyProfileFragment extends Fragment {
     // Création d'un listener pour se déconnecter
     @OnClick(R.id.action_deconnexion)
     public void onClick() {
-        CurrentUser.getInstance().setIdUTI(null);
-        CurrentUser.getInstance().setEmailUTI(null);
-        CurrentUser.getInstance().setTelephoneUTI(null);
-        CurrentUser.getInstance().setConnected(false);
+        CurrentUser.getInstance().clear();
 
         // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
         Activity myActivity = getActivity();
@@ -216,38 +290,32 @@ public class MyProfileFragment extends Fragment {
         getFragmentManager().popBackStackImmediate();
     }
 
-    private boolean checkUserHasChanged(String email, String telephone) {
-        Boolean hasChanged = false;
+    private boolean checkUserHasChanged(String email, String displayName, String telephone) {
+        boolean hasChanged = false;
 
         if (!email.equals(CurrentUser.getInstance().getEmailUTI())) {
+            hasChanged = true;
+        }
+
+        if (!displayName.equals(CurrentUser.getInstance().getDisplayNameUTI())) {
             hasChanged = true;
         }
 
         if (!telephone.equals(String.valueOf(CurrentUser.getInstance().getTelephoneUTI()))) {
             hasChanged = true;
         }
-
         return hasChanged;
     }
 
-    private boolean checkUpdate(String email) {
+    // When Email entered is invalid
+    private boolean emailIsCorrect(String email) {
         boolean retourOK = true;
 
-        // Vérification que l'utilisateur est bien connecté
-        mFirebaseUser = mAuth.getCurrentUser();
-        if (mFirebaseUser == null) {
-            emailMyProfile.setError("Vous n'êtes pas connecté.");
-            emailMyProfile.requestFocus();
-            retourOK = false;
-        }
-
-        // When Email entered is invalid
         if (!Utility.validateEmail(email)) {
-            emailMyProfile.setError(getString(R.string.error_invalid_email));
-            emailMyProfile.requestFocus();
+            emailET.setError(getString(R.string.error_invalid_email));
+            emailET.requestFocus();
             retourOK = false;
         }
-
         return retourOK;
     }
 }

@@ -94,5 +94,7 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         INSTANCE.setIdUTI("");
         INSTANCE.setTelephoneUTI("");
         INSTANCE.setEmailUTI("");
+        INSTANCE.setDisplayNameUTI("");
     }
+
 }
