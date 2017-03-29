@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.firebase.auth.FirebaseUser;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 
 public class CurrentUser extends Utilisateur implements Parcelable {
@@ -23,12 +24,10 @@ public class CurrentUser extends Utilisateur implements Parcelable {
 
     private static CurrentUser INSTANCE = null;
     private static boolean connected = false;
-    private static String token = null;
 
     private CurrentUser(Parcel in) {
         INSTANCE = in.readParcelable(CurrentUser.class.getClassLoader());
         connected = (boolean) in.readValue(Boolean.class.getClassLoader());
-        token = in.readString();
     }
 
     private CurrentUser() {
@@ -43,14 +42,6 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         return INSTANCE;
     }
 
-    public static String getToken() {
-        return token;
-    }
-
-    public static void setToken(String token) {
-        CurrentUser.token = token;
-    }
-
     public boolean isConnected() {
         return INSTANCE != null && connected;
     }
@@ -61,9 +52,17 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         }
     }
 
+    public void setFirebaseUser(FirebaseUser user) {
+        INSTANCE.setIdUTI(user.getUid());
+        INSTANCE.setEmailUTI(user.getEmail());
+        INSTANCE.setDisplayNameUTI(user.getDisplayName());
+        setConnected(true);
+    }
+
     public void setUser(Utilisateur user) {
         INSTANCE.setIdUTI(user.getIdUTI());
         INSTANCE.setEmailUTI(user.getEmailUTI());
+        INSTANCE.setDisplayNameUTI(user.getDisplayNameUTI());
         INSTANCE.setTelephoneUTI(user.getTelephoneUTI());
         setConnected(true);
     }
@@ -72,18 +71,19 @@ public class CurrentUser extends Utilisateur implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeParcelable(INSTANCE, 0);
         dest.writeValue(connected);
-        dest.writeString(token);
     }
 
     public CurrentUser getUserFromDictionary(Context context) {
         String idUser = DictionaryDAO.getValueByKey(context, DictionaryDAO.Dictionary.DB_CLEF_ID_USER);
         String email = DictionaryDAO.getValueByKey(context, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
+        String displayName = DictionaryDAO.getValueByKey(context, DictionaryDAO.Dictionary.DB_CLEF_DISPLAY_NAME);
         String telephone = DictionaryDAO.getValueByKey(context, DictionaryDAO.Dictionary.DB_CLEF_TELEPHONE);
 
         // Si les données d'identification ont été saisies
         INSTANCE.setConnected(true);
         INSTANCE.setIdUTI(idUser);
         INSTANCE.setEmailUTI(email);
+        INSTANCE.setDisplayNameUTI(displayName);
         INSTANCE.setTelephoneUTI(telephone);
         return INSTANCE;
 

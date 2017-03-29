@@ -2,21 +2,21 @@ package com.orlanth23.annoncesnc.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.interfaces.CustomChangePasswordCallback;
+import com.orlanth23.annoncesnc.service.UserService;
+import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class ChangePasswordFirebaseActivity extends CustomCompatActivity {
+public class ChangePasswordFirebaseActivity extends CustomCompatActivity implements CustomChangePasswordCallback {
 
     public static final String TAG = ChangePasswordFirebaseActivity.class.getName();
 
@@ -24,6 +24,8 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity {
     EditText newPassword;
     @BindView(R.id.newPasswordConfirm)
     EditText newPasswordConfirm;
+
+    private String mPassword;
 
     private CustomCompatActivity mActivity = this;
 
@@ -38,41 +40,23 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity {
     @OnClick(R.id.btnChangePassword)
     public void changePassword() {
         if (checkChangePassword()) {
-
-            prgDialog.show();
-
-            String password = newPassword.getText().toString().replace("'", "''");
-
-            mFirebaseUser.updatePassword(password)
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        prgDialog.hide();
-                        if (task.isSuccessful()) {
-                            Toast.makeText(mActivity, getString(R.string.dialog_register_ok), Toast.LENGTH_LONG).show();
-                            Utility.hideKeyboard(mActivity);
-                            setResult(RESULT_OK, new Intent());
-                            finish();
-                        }else{
-                            Toast.makeText(mActivity, "Echec de la mise à jour du mot de passe.", Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
+            mPassword = newPassword.getText().toString().replace("'", "''");
+            UserService.updatePassword(mAuth, this, mPassword, this);
         }
     }
 
     private boolean checkChangePassword() {
-        String newPass = newPassword.getText().toString().replace("'", "''");
+        mPassword = newPassword.getText().toString().replace("'", "''");
         String newPassConfirm = newPasswordConfirm.getText().toString().replace("'", "''");
 
         CurrentUser cu = CurrentUser.getInstance();
 
-        if (!cu.isConnected()) {
+        if (!cu.isConnected() || (mAuth.getCurrentUser() == null)) {
             newPassword.setError(getString(R.string.error_need_user_connection));
             return false;
         }
 
-        if (!Utility.isNotNull(newPass)) {
+        if (!Utility.isNotNull(mPassword)) {
             newPassword.setError(getString(R.string.error_field_required));
             newPassword.requestFocus();
             return false;
@@ -84,7 +68,7 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity {
             return false;
         }
 
-        if (!newPass.equals(newPassConfirm)) {
+        if (!mPassword.equals(newPassConfirm)) {
             newPasswordConfirm.setError(getString(R.string.error_confirmationPassword_incorrect));
             newPasswordConfirm.requestFocus();
             return false;
@@ -97,5 +81,24 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         getFragmentManager().popBackStackImmediate();
+    }
+
+    @Override
+    public void methodOnComplete() {
+
+        // Si l'utilisateur dont on a modifié le mot de passe est celui qui est enregistré dans notre BD,
+        // On met à jour le mot de passe dans la BD également.
+        if (mAuth.getCurrentUser().getUid() == DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_ID_USER)) {
+            DictionaryDAO.update(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE, PasswordEncryptionService.desEncryptIt(mPassword));
+        }
+
+        Utility.hideKeyboard(this);
+        setResult(RESULT_OK, new Intent());
+        finish();
+    }
+
+    @Override
+    public void methodOnFailure() {
+
     }
 }

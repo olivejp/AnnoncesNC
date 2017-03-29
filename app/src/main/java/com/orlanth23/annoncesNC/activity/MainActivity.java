@@ -30,7 +30,6 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.orlanth23.annoncesnc.BuildConfig;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.adapter.ListCategorieAdapter;
@@ -43,9 +42,11 @@ import com.orlanth23.annoncesnc.fragment.HomeFragment;
 import com.orlanth23.annoncesnc.fragment.MyProfileFragment;
 import com.orlanth23.annoncesnc.fragment.SearchFragment;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesnc.interfaces.CustomSignFirebaseUserCallback;
 import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.list.ListeStats;
 import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
+import com.orlanth23.annoncesnc.service.UserService;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.sync.SyncUtils;
 import com.orlanth23.annoncesnc.utility.Constants;
@@ -57,7 +58,7 @@ import butterknife.ButterKnife;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
-public class MainActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface {
+public class MainActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface, CustomSignFirebaseUserCallback {
 
     public final static int CODE_POST_ANNONCE = 100;
     public final static int CODE_CONNECT_USER = 200;
@@ -107,8 +108,8 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
         mTitle = getString(R.string.app_name);  // Récupération du titre
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-            new Toolbar(this),
-            R.string.app_name, R.string.app_name) {
+                new Toolbar(this),
+                R.string.app_name, R.string.app_name) {
             public void onDrawerClosed(View view) {
                 setTitle(mTitle);
                 invalidateOptionsMenu();
@@ -214,23 +215,23 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
                 break;
             case Utility.DIALOG_TAG_UNREGISTER:
                 mFirebaseUser.delete()
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                CurrentUser cu = CurrentUser.getInstance();
-                                cu.setTelephoneUTI("");
-                                cu.setEmailUTI(null);
-                                cu.setIdUTI("");
-                                CurrentUser.getInstance().setConnected(false);
-                                Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
-                                refreshMenu();
-                                getFragmentManager().popBackStackImmediate();
-                            } else {
-                                Toast.makeText(getApplicationContext(), "Impossible de supprimer cet utilisateur.", Toast.LENGTH_LONG).show();
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                if (task.isSuccessful()) {
+                                    CurrentUser cu = CurrentUser.getInstance();
+                                    cu.setTelephoneUTI("");
+                                    cu.setEmailUTI(null);
+                                    cu.setIdUTI("");
+                                    CurrentUser.getInstance().setConnected(false);
+                                    Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
+                                    refreshMenu();
+                                    getFragmentManager().popBackStackImmediate();
+                                } else {
+                                    Toast.makeText(getApplicationContext(), "Impossible de supprimer cet utilisateur.", Toast.LENGTH_LONG).show();
+                                }
                             }
-                        }
-                    });
+                        });
                 break;
         }
     }
@@ -246,14 +247,8 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
     }
 
     public void tryRemoteConnection() {
-        // On affiche la barre de progression
-        prgDialog.setMessage("Authentification en cours");
-        prgDialog.show();
+        refreshMenu();
 
-        // Récupération de l'utilisateur par défaut
-        // Création d'un RestAdapter pour le futur appel de mon RestService
-
-        // Si on a déjà une connexion, on ne continue pas.
         if (CurrentUser.getInstance().isConnected()) {
             return;
         }
@@ -267,44 +262,15 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
         // Si on a une connexion
         if (Utility.checkWifiAndMobileData(this)) {
             // Récupération des données dans le dictionnaire
-            final String idUser = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_ID_USER);
             final String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
             final String passwordEncrypted = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
-            final String telephone = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_TELEPHONE);
             String password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
 
             // Si les données d'identification ont été saisies
             if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
-
-                // On tente de se connecter au serveur Firebase.
-                mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        prgDialog.hide();
-                        if (task.isSuccessful()) {
-                            CurrentUser cu = CurrentUser.getInstance();
-                            cu.setConnected(true);
-                            cu.setIdUTI(idUser);
-                            cu.setEmailUTI(email);
-                            cu.setTelephoneUTI(telephone);
-
-                            refreshMenu();
-
-                            // Display successfully registered message using Toast
-                            sendOkLoginToast();
-                        } else {
-                            try {
-                                throw task.getException();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            Toast.makeText(mActivity, getString(R.string.dialog_failed_webservice), Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
+                UserService.sign(mAuth, mDatabase, mActivity, email, password, this);
             }
         } else {
-            prgDialog.hide();
             // Si pas de connexion, on récupère l'utilisateur enregistré
             CurrentUser.getInstance().getUserFromDictionary(this);
             sendOkLoginToast();
@@ -394,7 +360,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
                 setTitle(getString(R.string.searchTitle));
                 mContent = searchFragment;
                 getFragmentManager().beginTransaction()
-                    .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
+                        .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
                 mDrawerLayout.closeDrawer(mDrawerListCategorie);
                 return true;
             } else {
@@ -519,18 +485,24 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
         Utility.hideKeyboard(this);
 
         // On a tenté de poster, mais nous n'étions pas connecté...
-        if (requestCode == CODE_POST_NOT_LOGGED) {
-            if (resultCode == RESULT_OK) {
-                // Maintenant nous sommes connecté et on va poster
-                // Ouverture de l'activity pour créer une nouvelle annonce
-                // Passage d'un paramètre Création
-                Bundle bd = new Bundle();
-                bd.putString(PostAnnonceActivity.BUNDLE_KEY_MODE, Constants.PARAM_CRE);
+        switch (requestCode) {
+            case CODE_POST_NOT_LOGGED:
+                if (resultCode == RESULT_OK) {
+                    // Maintenant nous sommes connecté et on va poster
+                    // Ouverture de l'activity pour créer une nouvelle annonce
+                    // Passage d'un paramètre Création
+                    Bundle bd = new Bundle();
+                    bd.putString(PostAnnonceActivity.BUNDLE_KEY_MODE, Constants.PARAM_CRE);
 
-                Intent intent = new Intent();
-                intent.setClass(this, PostAnnonceActivity.class).putExtras(bd);
-                startActivityForResult(intent, CODE_POST_ANNONCE);
-            }
+                    Intent intent = new Intent();
+                    intent.setClass(this, PostAnnonceActivity.class).putExtras(bd);
+                    startActivityForResult(intent, CODE_POST_ANNONCE);
+                }
+                break;
+            case CODE_CONNECT_USER:
+                if (resultCode == RESULT_OK)
+                    refreshMenu();
+                break;
         }
     }
 
@@ -565,6 +537,16 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
                 Log.e(TAG, e.getMessage(), e);
             }
         }
+    }
+
+    @Override
+    public void methodOnComplete() {
+        refreshMenu();
+    }
+
+    @Override
+    public void methodOnFailure() {
+
     }
 
     private class DrawerItemClickListener implements ListView.OnItemClickListener {

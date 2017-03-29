@@ -4,21 +4,17 @@ import android.app.Activity;
 import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.interfaces.CustomSignFirebaseUserCallback;
+import com.orlanth23.annoncesnc.service.UserService;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
 
@@ -29,7 +25,7 @@ import butterknife.OnClick;
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 
-public class LoginFirebaseActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
+public class LoginFirebaseActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomSignFirebaseUserCallback {
 
     private static final String TAG = LoginFirebaseActivity.class.getName();
 
@@ -41,15 +37,16 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
     TextView errorMsg;
     @BindView(R.id.text_login_msg_accueil)
     TextView textLoginMsgAccueil;
+
     private CustomCompatActivity mActivity = this;
-    private String password;
+    private String mPassword;
+    private String mEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
-        prgDialog.setMessage(getString(R.string.dialog_wait_login));
         changeActionBarTitle(R.string.action_log_in, true);
         populateAutoComplete();
 
@@ -63,9 +60,6 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
         } else {
             textLoginMsgAccueil.setVisibility(View.GONE);
         }
-
-        // Get instance from FirebaseAuth
-        mAuth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -137,9 +131,6 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
 
     @OnClick(R.id.login_btnLogin)
     public void attemptLogin() {
-        String email = mEmailView.getText().toString().replace("'", "''");
-        password = mPasswordView.getText().toString().replace("'", "''");
-
         // On envoie un message d'erreur s'il n'y a pas de connexion
         if (!Utility.checkWifiAndMobileData(this)) {
             // On envoie un message pour dire qu'on a pas de connexion réseau
@@ -151,33 +142,15 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
             return;
         }
 
-        if (!checkLogin(email, password)) {
+        mEmail = mEmailView.getText().toString().replace("'", "''");
+        mPassword = mPasswordView.getText().toString().replace("'", "''");
+
+        if (!checkLogin(mEmail, mPassword)) {
             return;
         }
 
-        // Création d'un nouveau listener pour la méthode SignIn
-        OnCompleteListener<AuthResult> signInCompleteListener = new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (task.isSuccessful()) {
-                    mFirebaseUser = mAuth.getCurrentUser();
-                    if (mFirebaseUser != null) {
-                        Toast.makeText(mActivity, "Connecté avec le compte " + mFirebaseUser.getEmail() + " !", Toast.LENGTH_LONG).show();
-                        goodFinishActivity();
-                    }
-                } else {
-                    Exception e = task.getException();
-                    if (e != null) {
-                        Toast.makeText(mActivity, e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                }
-                prgDialog.hide();
-            }
-        };
-
         // Si on a une connexion on tente de se connecter au serveur
-        prgDialog.show();
-        mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, signInCompleteListener);
+        UserService.sign(mAuth, mDatabase, mActivity, mEmail, mPassword, this);
     }
 
 
@@ -206,15 +179,13 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        prgDialog.dismiss();
+    public void methodOnComplete() {
+        goodFinishActivity();
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        prgDialog.dismiss();
+    public void methodOnFailure() {
+
     }
 }
 

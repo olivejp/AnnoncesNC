@@ -1,7 +1,6 @@
 package com.orlanth23.annoncesnc.activity;
 
 import android.app.Activity;
-import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -22,6 +21,7 @@ import com.orlanth23.annoncesnc.webservice.ServiceUtilisateur;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -31,7 +31,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 
-public class LostFirebasePasswordActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener {
+public class LostFirebasePasswordActivity extends CustomCompatActivity {
 
     private static final String tag = LostFirebasePasswordActivity.class.getName();
 
@@ -85,6 +85,7 @@ public class LostFirebasePasswordActivity extends CustomCompatActivity implement
         mEmailView.setText(DictionaryDAO.getValueByKey(getApplicationContext(), DictionaryDAO.Dictionary.DB_CLEF_LOGIN));
     }
 
+    @OnClick(R.id.lostPassword)
     public void lostPassword(View view) {
 
         // Reset errors.
@@ -130,28 +131,6 @@ public class LostFirebasePasswordActivity extends CustomCompatActivity implement
                 }
             });
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        prgDialog.dismiss();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        prgDialog.dismiss();
-    }
-
-    @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
-
-    }
-
-    @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-
     }
 }
 
