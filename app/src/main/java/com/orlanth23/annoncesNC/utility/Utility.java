@@ -301,10 +301,10 @@ public class Utility {
         boolean retourIdUser;
         boolean retourTelephoneUser;
 
-        if (existDictionary(context, Dictionary.DB_CLEF_LOGIN)) {
-            retourEmail = update(context, Dictionary.DB_CLEF_LOGIN, emailUser);
+        if (existDictionary(context, Dictionary.DB_CLEF_EMAIL)) {
+            retourEmail = update(context, Dictionary.DB_CLEF_EMAIL, emailUser);
         } else {
-            retourEmail = insertInto(context, Dictionary.DB_CLEF_LOGIN, emailUser);
+            retourEmail = insertInto(context, Dictionary.DB_CLEF_EMAIL, emailUser);
         }
 
         // Encryptage du mot de passe
@@ -341,5 +341,4 @@ public class Utility {
 
         return retourEmail && retourPassword && retourAutoConnect && retourIdUser && retourTelephoneUser && retourDisplayName;
     }
-
 }

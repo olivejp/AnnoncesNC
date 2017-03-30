@@ -13,7 +13,9 @@ import android.widget.TextView;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesnc.interfaces.CustomSignFirebaseUserCallback;
+import com.orlanth23.annoncesnc.dto.Utilisateur;
+import com.orlanth23.annoncesnc.interfaces.CustomLostPasswordCallback;
+import com.orlanth23.annoncesnc.interfaces.CustomUserSignCallback;
 import com.orlanth23.annoncesnc.service.UserService;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
@@ -24,8 +26,8 @@ import butterknife.OnClick;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
-
-public class LoginFirebaseActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomSignFirebaseUserCallback {
+public class LoginFirebaseActivity extends CustomCompatActivity
+    implements NoticeDialogFragment.NoticeDialogListener, CustomUserSignCallback, CustomLostPasswordCallback {
 
     private static final String TAG = LoginFirebaseActivity.class.getName();
 
@@ -86,7 +88,7 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
             mPasswordView.setText(decryptedPassword);
         }
 
-        String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
+        String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_EMAIL);
         if (email != null) {
             mEmailView.setText(email);
         }
@@ -97,6 +99,11 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
         Intent resultIntent = new Intent();
         setResult(Activity.RESULT_OK, resultIntent);
         finish();
+    }
+
+    private void getDataFromView(){
+        mEmail = mEmailView.getText().toString().replace("'", "''");
+        mPassword = mPasswordView.getText().toString().replace("'", "''");
     }
 
     /**
@@ -131,6 +138,10 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
 
     @OnClick(R.id.login_btnLogin)
     public void attemptLogin() {
+        Utility.hideKeyboard(this);
+
+        getDataFromView();
+
         // On envoie un message d'erreur s'il n'y a pas de connexion
         if (!Utility.checkWifiAndMobileData(this)) {
             // On envoie un message pour dire qu'on a pas de connexion réseau
@@ -142,9 +153,6 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
             return;
         }
 
-        mEmail = mEmailView.getText().toString().replace("'", "''");
-        mPassword = mPasswordView.getText().toString().replace("'", "''");
-
         if (!checkLogin(mEmail, mPassword)) {
             return;
         }
@@ -153,38 +161,70 @@ public class LoginFirebaseActivity extends CustomCompatActivity implements Notic
         UserService.sign(mAuth, mDatabase, mActivity, mEmail, mPassword, this);
     }
 
-
     @OnClick(R.id.lostPassword)
-    public void callLostPasswordActivity() {
-        Intent lostPasswordIntent = new Intent(getApplicationContext(), LostFirebasePasswordActivity.class);
-        lostPasswordIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivityForResult(lostPasswordIntent, 0);
+    public void callLostPassword() {
+        Utility.hideKeyboard(this);
+
+        getDataFromView();
+
+        if (Utility.checkWifiAndMobileData(this)){
+            UserService.lostPassword(mAuth, mActivity, mEmail, this);
+        } else {
+            SendDialogByFragmentManager(getFragmentManager(),
+                "Aucune connexion réseau disponible pour vous authentifier.",
+                NoticeDialogFragment.TYPE_BOUTON_OK,
+                NoticeDialogFragment.TYPE_IMAGE_ERROR,
+                null);
+        }
     }
 
     @OnClick(R.id.login_btnRegister)
     public void callRegisterFirebaseActivity() {
-        Intent registerIntent = new Intent(getApplicationContext(), RegisterFirebaseActivity.class);
-        registerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivityForResult(registerIntent, RegisterFirebaseActivity.CODE_REGISTER_ACTIVITY);
+        if (Utility.checkWifiAndMobileData(this)) {
+            getDataFromView();
+
+            Bundle bundle = new Bundle();
+            bundle.putString(RegisterFirebaseActivity.EMAIL, mEmail);
+
+            Intent registerIntent = new Intent(getApplicationContext(), RegisterFirebaseActivity.class);
+            registerIntent.putExtras(bundle);
+            registerIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivityForResult(registerIntent, RegisterFirebaseActivity.CODE_REGISTER_ACTIVITY);
+        } else {
+            // On envoie un message pour dire qu'on a pas de connexion réseau
+            SendDialogByFragmentManager(getFragmentManager(),
+                "Aucune connexion réseau disponible pour vous authentifier.",
+                NoticeDialogFragment.TYPE_BOUTON_OK,
+                NoticeDialogFragment.TYPE_IMAGE_ERROR,
+                null);
+        }
     }
 
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) { }
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog) {
-        finish();
-    }
+    public void onDialogNegativeClick(DialogFragment dialog) { }
 
     @Override
-    public void onDialogNegativeClick(DialogFragment dialog) {
-    }
-
-    @Override
-    public void methodOnComplete() {
+    public void onCompleteUserSign(Utilisateur user) {
         goodFinishActivity();
     }
 
     @Override
-    public void methodOnFailure() {
+    public void onCancelledUserSign() { }
+
+    @Override
+    public void onFailureUserSign() {
+    }
+
+    @Override
+    public void onCompleteLostPassword() {
+        goodFinishActivity();
+    }
+
+    @Override
+    public void onFailureLostPassword() {
 
     }
 }

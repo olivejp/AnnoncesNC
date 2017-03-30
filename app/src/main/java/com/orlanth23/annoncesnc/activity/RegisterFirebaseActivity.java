@@ -1,6 +1,5 @@
 package com.orlanth23.annoncesnc.activity;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -29,7 +28,10 @@ import butterknife.ButterKnife;
 public class RegisterFirebaseActivity extends CustomCompatActivity {
 
     public static final int CODE_REGISTER_ACTIVITY = 100;
+    public static final String EMAIL = "EMAIL";
+
     private static final String TAG = RegisterFirebaseActivity.class.getName();
+
     @BindView(R.id.register_error)
     TextView vErrorMsg;
     @BindView(R.id.registerTelephone)
@@ -44,7 +46,6 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
     EditText vDisplayName;
     @BindView(R.id.checkBox_register_remember_me)
     CheckBox vCheckBoxRegisterRememberMe;
-    private ProgressDialog prgDialog;
     private AppCompatActivity mActivity = this;
 
     private String mIdUser;
@@ -59,17 +60,16 @@ public class RegisterFirebaseActivity extends CustomCompatActivity {
         setContentView(R.layout.activity_register);
         ButterKnife.bind(this);
 
+        Bundle bundle = getIntent().getExtras();
+        mEmail = bundle.getString(EMAIL);
+        vEmail.setText(mEmail);
+
         // Récupération de l'actionBar et changement du titre
         ActionBar tb = getSupportActionBar();
         if (tb != null) {
             tb.setTitle(R.string.action_sign_up);
             tb.setDisplayHomeAsUpEnabled(true);
         }
-
-        // Création d'une progress bar
-        prgDialog = new ProgressDialog(this);
-        prgDialog.setMessage(getString(R.string.dialog_msg_patience));
-        prgDialog.setCancelable(false);
     }
 
     public void setDefaultValues() {

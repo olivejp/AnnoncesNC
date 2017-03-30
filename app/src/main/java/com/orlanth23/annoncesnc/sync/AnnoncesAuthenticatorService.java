@@ -8,8 +8,8 @@ import android.os.IBinder;
 // Vu sur la vidéo : https://www.youtube.com/watch?v=DaSgkc_bDkE
 public class AnnoncesAuthenticatorService extends Service {
 
+    public static final String ACCOUNT_TYPE = "com.orlanth23.annoncesnc";
     private static final String ACCOUNT_NAME = "sync";
-    private static final String ACCOUNT_TYPE = "com.orlanth23.annoncesnc";
     private AnnoncesAuthenticator mAuthenticator;
 
     public static Account getAccount() {

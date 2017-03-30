@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.google.firebase.auth.FirebaseUser;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 
 public class CurrentUser extends Utilisateur implements Parcelable {
@@ -52,13 +51,6 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         }
     }
 
-    public void setFirebaseUser(FirebaseUser user) {
-        INSTANCE.setIdUTI(user.getUid());
-        INSTANCE.setEmailUTI(user.getEmail());
-        INSTANCE.setDisplayNameUTI(user.getDisplayName());
-        setConnected(true);
-    }
-
     public void setUser(Utilisateur user) {
         INSTANCE.setIdUTI(user.getIdUTI());
         INSTANCE.setEmailUTI(user.getEmailUTI());
@@ -75,7 +67,7 @@ public class CurrentUser extends Utilisateur implements Parcelable {
 
     public CurrentUser getUserFromDictionary(Context context) {
         String idUser = DictionaryDAO.getValueByKey(context, DictionaryDAO.Dictionary.DB_CLEF_ID_USER);
-        String email = DictionaryDAO.getValueByKey(context, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
+        String email = DictionaryDAO.getValueByKey(context, DictionaryDAO.Dictionary.DB_CLEF_EMAIL);
         String displayName = DictionaryDAO.getValueByKey(context, DictionaryDAO.Dictionary.DB_CLEF_DISPLAY_NAME);
         String telephone = DictionaryDAO.getValueByKey(context, DictionaryDAO.Dictionary.DB_CLEF_TELEPHONE);
 
@@ -86,7 +78,6 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         INSTANCE.setDisplayNameUTI(displayName);
         INSTANCE.setTelephoneUTI(telephone);
         return INSTANCE;
-
     }
 
     public void clear() {
@@ -96,5 +87,4 @@ public class CurrentUser extends Utilisateur implements Parcelable {
         INSTANCE.setEmailUTI("");
         INSTANCE.setDisplayNameUTI("");
     }
-
 }

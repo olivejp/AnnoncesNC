@@ -107,7 +107,7 @@ public class TestFirebaseStorage {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         // Handle unsuccessful uploads
-                        assertTrue("FAIL : onFailure", false);
+                        assertTrue("FAIL : onFailureUpdateFirebase", false);
                     }
                 });
         } else {

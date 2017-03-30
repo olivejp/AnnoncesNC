@@ -9,6 +9,14 @@ Spécifications
         -Peut se faire hors ligne mais nécessite une connexion pour être effectif
     -Perte de mot de passe
         -Nécessite une connexion
+    -Connexion automatique au démarrage
+        -Lors de l'ouverture de l'application :
+            -Si pas de connexion réseau => on prend le compte enregistré par défaut.
+            -Sinon on va tenter de se connecter avec le compte enregistré.
+
+        -Si pas de connexion, on récupère les données enregistrées.
+
+    Prérequi technique : Se servir autant que possible de l'AccountManager
 
 2-Gestion des annonces
     -Poster une annonce

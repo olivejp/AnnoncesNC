@@ -37,12 +37,13 @@ import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.fragment.CardViewFragment;
 import com.orlanth23.annoncesnc.fragment.HomeFragment;
 import com.orlanth23.annoncesnc.fragment.MyProfileFragment;
 import com.orlanth23.annoncesnc.fragment.SearchFragment;
 import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
-import com.orlanth23.annoncesnc.interfaces.CustomSignFirebaseUserCallback;
+import com.orlanth23.annoncesnc.interfaces.CustomUserSignCallback;
 import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.list.ListeStats;
 import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
@@ -58,7 +59,7 @@ import butterknife.ButterKnife;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
-public class MainActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface, CustomSignFirebaseUserCallback {
+public class MainActivity extends CustomCompatActivity implements NoticeDialogFragment.NoticeDialogListener, CustomActivityInterface, CustomUserSignCallback {
 
     public final static int CODE_POST_ANNONCE = 100;
     public final static int CODE_CONNECT_USER = 200;
@@ -183,7 +184,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
         getFragmentManager().putFragment(outState, PARAM_FRAGMENT, mContent);
     }
 
-    public void refreshMenu() {
+    public void refreshProfileMenu() {
         if (menu != null) {
             menu.findItem(R.id.action_connect).setVisible(!CurrentUser.getInstance().isConnected());
 
@@ -200,7 +201,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
         // On récupère le menu qui a été créé, pour pouvoir le modifier ultérieurement
         this.menu = menu;
 
-        refreshMenu();
+        refreshProfileMenu();
 
         return true;
     }
@@ -225,7 +226,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
                                     cu.setIdUTI("");
                                     CurrentUser.getInstance().setConnected(false);
                                     Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
-                                    refreshMenu();
+                                    refreshProfileMenu();
                                     getFragmentManager().popBackStackImmediate();
                                 } else {
                                     Toast.makeText(getApplicationContext(), "Impossible de supprimer cet utilisateur.", Toast.LENGTH_LONG).show();
@@ -247,7 +248,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
     }
 
     public void tryRemoteConnection() {
-        refreshMenu();
+        refreshProfileMenu();
 
         if (CurrentUser.getInstance().isConnected()) {
             return;
@@ -262,8 +263,8 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
         // Si on a une connexion
         if (Utility.checkWifiAndMobileData(this)) {
             // Récupération des données dans le dictionnaire
-            final String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_LOGIN);
-            final String passwordEncrypted = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
+            String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_EMAIL);
+            String passwordEncrypted = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
             String password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
 
             // Si les données d'identification ont été saisies
@@ -464,7 +465,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
                         mAuth.signOut();
                     }
                     CurrentUser.getInstance().setConnected(false);
-                    refreshMenu();
+                    refreshProfileMenu();
                     return false;
                 }
             case R.id.action_settings:
@@ -501,7 +502,7 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
                 break;
             case CODE_CONNECT_USER:
                 if (resultCode == RESULT_OK)
-                    refreshMenu();
+                    refreshProfileMenu();
                 break;
         }
     }
@@ -540,14 +541,18 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
     }
 
     @Override
-    public void methodOnComplete() {
-        refreshMenu();
+    public void onCompleteUserSign(Utilisateur user) {
+        refreshProfileMenu();
+        CurrentUser.getInstance().setUser(user);
     }
 
     @Override
-    public void methodOnFailure() {
+    public void onFailureUserSign() {
 
     }
+
+    @Override
+    public void onCancelledUserSign() {    }
 
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override

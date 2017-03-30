@@ -84,7 +84,7 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity impleme
     }
 
     @Override
-    public void methodOnComplete() {
+    public void onCompleteChangePassword() {
 
         // Si l'utilisateur dont on a modifié le mot de passe est celui qui est enregistré dans notre BD,
         // On met à jour le mot de passe dans la BD également.
@@ -98,7 +98,7 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity impleme
     }
 
     @Override
-    public void methodOnFailure() {
+    public void onFailureChangePassword() {
 
     }
 }

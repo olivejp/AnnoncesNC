@@ -106,7 +106,7 @@ public class DictionaryDAO {
     /* Inner class that defines the table contents */
     public static abstract class Dictionary implements BaseColumns {
         public static final String TABLE_NAME = "dictionary";
-        public static final String DB_CLEF_LOGIN = "LOGIN";
+        public static final String DB_CLEF_EMAIL = "EMAIL";
         public static final String DB_CLEF_MOT_PASSE = "MOT_DE_PASSE";
         public static final String DB_CLEF_ID_USER = "ID_USER";
         public static final String DB_CLEF_AUTO_CONNECT = "CONNECTION_AUTO";
