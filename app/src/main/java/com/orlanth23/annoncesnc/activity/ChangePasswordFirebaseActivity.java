@@ -40,6 +40,8 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity impleme
     @OnClick(R.id.btnChangePassword)
     public void changePassword() {
         if (checkChangePassword()) {
+            prgDialog.setMessage("Mise à jour du mot de passe.");
+            prgDialog.show();
             mPassword = newPassword.getText().toString().replace("'", "''");
             UserService.updatePassword(mAuth, this, mPassword, this);
         }
@@ -85,6 +87,7 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity impleme
 
     @Override
     public void onCompleteChangePassword() {
+        prgDialog.dismiss();
 
         // Si l'utilisateur dont on a modifié le mot de passe est celui qui est enregistré dans notre BD,
         // On met à jour le mot de passe dans la BD également.
@@ -99,6 +102,6 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity impleme
 
     @Override
     public void onFailureChangePassword() {
-
+        prgDialog.dismiss();
     }
 }

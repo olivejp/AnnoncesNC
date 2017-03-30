@@ -2,6 +2,7 @@ package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -59,6 +60,8 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
     private FirebaseUser mFirebaseUser;
     private FirebaseDatabase mFirebaseDatabase;
 
+    private ProgressDialog prgDialog;
+
     private String mIdUser;
     private String mEmail;
     private String mDisplayName;
@@ -81,6 +84,8 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
         super.onCreate(savedInstanceState);
         mAuth = FirebaseAuth.getInstance();
         mFirebaseDatabase = FirebaseDatabase.getInstance();
+        if (prgDialog == null)
+            prgDialog = new ProgressDialog(getActivity());
     }
 
     @Override
@@ -122,6 +127,8 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
                 if (mFirebaseUser == null) {
                     Toast.makeText(mActivity, "Vous n'êtes pas authentifié.", Toast.LENGTH_LONG).show();
                 } else {
+                    prgDialog.setMessage("Mise à jour des informations de l'utilisateur");
+                    prgDialog.show();
                     UserService.updateEmailUser(mAuth, getActivity(), mEmail, this);
                 }
             }
@@ -190,6 +197,7 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
 
     @Override
     public void onCompleteUpdateEmail() {
+        prgDialog.setMessage("Mise à jour des infos complémentaires du profil.");
         UserService.updateDisplayName(mAuth, getActivity(), mDisplayName, this);
     }
 
@@ -201,11 +209,13 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
         user.setDisplayNameUTI(mDisplayName);
         user.setTelephoneUTI(mTelephone);
 
-        UserService.updateFirebaseUser(mAuth, mFirebaseDatabase, getActivity(), user, this);
+        prgDialog.setMessage("Mise à jour du profil dans la base de données.");
+        UserService.updateFirebaseUser(mFirebaseDatabase, getActivity(), user, this);
     }
 
     @Override
     public void onCompleteUpdateFirebase() {
+        prgDialog.dismiss();
         mIdUser = mAuth.getCurrentUser().getUid();
         CurrentUser.getInstance().setIdUTI(mIdUser);
         CurrentUser.getInstance().setEmailUTI(mEmail);
@@ -215,9 +225,15 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
     }
 
     @Override
-    public void onFailureUpdateEmail() {    }
+    public void onFailureUpdateEmail() {
+        prgDialog.dismiss();
+    }
     @Override
-    public void onFailureUpdateDisplayName() {    }
+    public void onFailureUpdateDisplayName() {
+        prgDialog.dismiss();
+    }
     @Override
-    public void onFailureUpdateFirebase() {    }
+    public void onFailureUpdateFirebase() {
+        prgDialog.dismiss();
+    }
 }

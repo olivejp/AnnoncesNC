@@ -1,7 +1,6 @@
 package com.orlanth23.annoncesnc.service;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.support.annotation.NonNull;
 import android.widget.Toast;
 
@@ -29,17 +28,10 @@ import com.orlanth23.annoncesnc.interfaces.CustomUserSignCallback;
 public class UserService {
     private static String ROOT_USERS_REF = "users/";
 
-    private static ProgressDialog prgDialog;
-
-    public static void updateFirebaseUser(FirebaseAuth mAuth, FirebaseDatabase mDatabase, final Activity activity, Utilisateur user, final CallbackUpdateFirebaseUser callbackUpdateFirebaseUser) {
-        prgDialog = new ProgressDialog(activity);
-        prgDialog.setMessage("Mise à jour du profil dans la base de données.");
-        prgDialog.show();
-
+    public static void updateFirebaseUser(FirebaseDatabase mDatabase, final Activity activity, Utilisateur user, final CallbackUpdateFirebaseUser callbackUpdateFirebaseUser) {
         OnCompleteListener<Void> onFirebaseCompleteListener = new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                prgDialog.dismiss();
                 Toast.makeText(activity, activity.getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
                 callbackUpdateFirebaseUser.onCompleteUpdateFirebase();
             }
@@ -48,7 +40,6 @@ public class UserService {
         OnFailureListener onFirebaseFailureListener = new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                prgDialog.dismiss();
                 Toast.makeText(activity, "Appel à la base Firebase échoué.", Toast.LENGTH_LONG).show();
                 callbackUpdateFirebaseUser.onFailureUpdateFirebase();
             }
@@ -64,14 +55,11 @@ public class UserService {
 
     public static void updateDisplayName(FirebaseAuth mAuth, final Activity activity, String displayName, final CallbackUpdateDisplayName callbackUpdateDisplayName) {
         // Mise à jour du nom d'affichage
-        prgDialog = new ProgressDialog(activity);
-        prgDialog.setMessage("Mise à jour des infos complémentaires du profil.");
-        prgDialog.show();
+
 
         OnCompleteListener<Void> onUpdateProfileListener = new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                prgDialog.dismiss();
                 callbackUpdateDisplayName.onCompleteUpdateDisplayName();
             }
         };
@@ -79,7 +67,6 @@ public class UserService {
         OnFailureListener onUpdateProfileFListener = new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                prgDialog.dismiss();
                 Toast.makeText(activity, "Mise à jour des données du profil échouée.", Toast.LENGTH_LONG).show();
                 callbackUpdateDisplayName.onFailureUpdateDisplayName();
             }
@@ -96,14 +83,9 @@ public class UserService {
 
     public static void updateEmailUser(FirebaseAuth mAuth, final Activity activity, String email, final CustomUpdateEmailCallback customUpdateEmailCallback) {
         // Affichage d'un message de mise à jour
-        prgDialog = new ProgressDialog(activity);
-        prgDialog.setMessage("Mise à jour des informations de l'utilisateur");
-        prgDialog.show();
-
         OnCompleteListener<Void> onUpdateProfileCompleteListener = new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                prgDialog.dismiss();
                 customUpdateEmailCallback.onCompleteUpdateEmail();
             }
         };
@@ -111,7 +93,6 @@ public class UserService {
         OnFailureListener onUpdateProfileFailureListener = new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                prgDialog.dismiss();
                 Toast.makeText(activity, "Mise à jour du profil échouée.", Toast.LENGTH_LONG).show();
                 customUpdateEmailCallback.onFailureUpdateEmail();
             }
@@ -125,14 +106,10 @@ public class UserService {
     }
 
     public static void lostPassword(FirebaseAuth mAuth, final Activity activity, String email, final CustomLostPasswordCallback customLostPasswordCallback) {
-        prgDialog = new ProgressDialog(activity);
-        prgDialog.setMessage("Envoi d'un message sur votre adresse mail.");
-        prgDialog.show();
 
         OnCompleteListener<Void> onCompleteListener = new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                prgDialog.dismiss();
                 if (task.isSuccessful()) {
                     Toast.makeText(activity, activity.getString(R.string.dialog_password_send), Toast.LENGTH_LONG).show();
                     customLostPasswordCallback.onCompleteLostPassword();
@@ -143,7 +120,6 @@ public class UserService {
         OnFailureListener onFailureListener = new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                prgDialog.dismiss();
                 Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
                 customLostPasswordCallback.onFailureLostPassword();
             }
@@ -161,14 +137,9 @@ public class UserService {
         if (user == null)
             return;
 
-        prgDialog = new ProgressDialog(activity);
-        prgDialog.setMessage("Mise à jour du mot de passe.");
-        prgDialog.show();
-
         OnCompleteListener<Void> onCompleteListener = new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                prgDialog.dismiss();
                 Toast.makeText(activity, "Le mot de passe a été correctement changé.", Toast.LENGTH_LONG).show();
                 customChangePasswordCallback.onCompleteChangePassword();
 
@@ -178,7 +149,6 @@ public class UserService {
         OnFailureListener onFailureListener = new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                prgDialog.dismiss();
                 Toast.makeText(activity, "Echec de la mise à jour du mot de passe.", Toast.LENGTH_LONG).show();
                 customChangePasswordCallback.onFailureChangePassword();
             }
@@ -190,38 +160,36 @@ public class UserService {
     }
 
     public static void sign(final FirebaseAuth auth, final FirebaseDatabase database, final Activity activity, String email, String password, final CustomUserSignCallback customUserSignCallback) {
-        prgDialog = new ProgressDialog(activity);
-        prgDialog.setMessage("Authentification en cours.");
-        prgDialog.show();
-
         OnCompleteListener<AuthResult> onCompleteListener = new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                final FirebaseUser mFirebaseUser = auth.getCurrentUser();
-                DatabaseReference userRef = database.getReference(ROOT_USERS_REF + mFirebaseUser.getUid());
-                userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        prgDialog.dismiss();
-                        Utilisateur user = dataSnapshot.getValue(Utilisateur.class);
-                        Toast.makeText(activity, "Connecté avec le compte " + mFirebaseUser.getDisplayName() + ".", Toast.LENGTH_LONG).show();
-                        customUserSignCallback.onCompleteUserSign(user);
-                    }
+                if (task.isSuccessful()) {
+                    final FirebaseUser mFirebaseUser = auth.getCurrentUser();
+                    DatabaseReference userRef = database.getReference(ROOT_USERS_REF + mFirebaseUser.getUid());
+                    userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            Utilisateur user = dataSnapshot.getValue(Utilisateur.class);
+                            Toast.makeText(activity, "Connecté avec le compte " + mFirebaseUser.getDisplayName() + ".", Toast.LENGTH_LONG).show();
+                            customUserSignCallback.onCompleteUserSign(user);
+                        }
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        prgDialog.dismiss();
-                        Toast.makeText(activity, "Un problème est survenue pendant votre authentification.", Toast.LENGTH_LONG).show();
-                        customUserSignCallback.onCancelledUserSign();
-                    }
-                });
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Toast.makeText(activity, "Un problème est survenue pendant votre authentification.", Toast.LENGTH_LONG).show();
+                            customUserSignCallback.onCancelledUserSign();
+                        }
+                    });
+                }else{
+                    Toast.makeText(activity, "Un problème est survenue pendant votre authentification.", Toast.LENGTH_LONG).show();
+                    customUserSignCallback.onFailureUserSign();
+                }
             }
         };
 
         OnFailureListener onFailureListener = new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                prgDialog.dismiss();
                 try {
                     throw e;
                 } catch (Exception e1) {

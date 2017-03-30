@@ -269,6 +269,8 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
 
             // Si les données d'identification ont été saisies
             if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
+                prgDialog.setMessage("Authentification en cours.");
+                prgDialog.show();
                 UserService.sign(mAuth, mDatabase, mActivity, email, password, this);
             }
         } else {
@@ -542,17 +544,22 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
 
     @Override
     public void onCompleteUserSign(Utilisateur user) {
+        prgDialog.dismiss();
         refreshProfileMenu();
         CurrentUser.getInstance().setUser(user);
     }
 
     @Override
     public void onFailureUserSign() {
-
+        prgDialog.dismiss();
+        refreshProfileMenu();
     }
 
     @Override
-    public void onCancelledUserSign() {    }
+    public void onCancelledUserSign() {
+        prgDialog.dismiss();
+        refreshProfileMenu();
+    }
 
     private class DrawerItemClickListener implements ListView.OnItemClickListener {
         @Override

@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.interfaces.CustomLostPasswordCallback;
 import com.orlanth23.annoncesnc.interfaces.CustomUserSignCallback;
@@ -158,6 +159,8 @@ public class LoginFirebaseActivity extends CustomCompatActivity
         }
 
         // Si on a une connexion on tente de se connecter au serveur
+        prgDialog.setMessage("Authentification en cours.");
+        prgDialog.show();
         UserService.sign(mAuth, mDatabase, mActivity, mEmail, mPassword, this);
     }
 
@@ -168,6 +171,8 @@ public class LoginFirebaseActivity extends CustomCompatActivity
         getDataFromView();
 
         if (Utility.checkWifiAndMobileData(this)){
+            prgDialog.setMessage("Envoi d'un message sur votre adresse mail.");
+            prgDialog.show();
             UserService.lostPassword(mAuth, mActivity, mEmail, this);
         } else {
             SendDialogByFragmentManager(getFragmentManager(),
@@ -208,24 +213,30 @@ public class LoginFirebaseActivity extends CustomCompatActivity
 
     @Override
     public void onCompleteUserSign(Utilisateur user) {
+        prgDialog.dismiss();
+        CurrentUser.getInstance().setUser(user);
         goodFinishActivity();
     }
 
     @Override
-    public void onCancelledUserSign() { }
+    public void onCancelledUserSign() {
+        prgDialog.dismiss();
+    }
 
     @Override
     public void onFailureUserSign() {
+        prgDialog.dismiss();
     }
 
     @Override
     public void onCompleteLostPassword() {
+        prgDialog.dismiss();
         goodFinishActivity();
     }
 
     @Override
     public void onFailureLostPassword() {
-
+        prgDialog.dismiss();
     }
 }
 
