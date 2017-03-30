@@ -32,8 +32,13 @@ public class UserService {
         OnCompleteListener<Void> onFirebaseCompleteListener = new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                Toast.makeText(activity, activity.getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
-                callbackUpdateFirebaseUser.onCompleteUpdateFirebase();
+                if (task.isSuccessful()) {
+                    Toast.makeText(activity, activity.getString(R.string.dialog_update_user_succeed), Toast.LENGTH_LONG).show();
+                    callbackUpdateFirebaseUser.onCompleteUpdateFirebase();
+                } else {
+                    Toast.makeText(activity, "Appel à la base Firebase échoué.", Toast.LENGTH_LONG).show();
+                    callbackUpdateFirebaseUser.onFailureUpdateFirebase();
+                }
             }
         };
 
@@ -60,7 +65,12 @@ public class UserService {
         OnCompleteListener<Void> onUpdateProfileListener = new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                callbackUpdateDisplayName.onCompleteUpdateDisplayName();
+                if (task.isSuccessful()) {
+                    callbackUpdateDisplayName.onCompleteUpdateDisplayName();
+                } else {
+                    Toast.makeText(activity, "Mise à jour des données du profil échouée.", Toast.LENGTH_LONG).show();
+                    callbackUpdateDisplayName.onFailureUpdateDisplayName();
+                }
             }
         };
 
@@ -86,7 +96,12 @@ public class UserService {
         OnCompleteListener<Void> onUpdateProfileCompleteListener = new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                customUpdateEmailCallback.onCompleteUpdateEmail();
+                if (task.isSuccessful()) {
+                    customUpdateEmailCallback.onCompleteUpdateEmail();
+                } else {
+                    Toast.makeText(activity, "Mise à jour du profil échouée.", Toast.LENGTH_LONG).show();
+                    customUpdateEmailCallback.onFailureUpdateEmail();
+                }
             }
         };
 
@@ -113,6 +128,9 @@ public class UserService {
                 if (task.isSuccessful()) {
                     Toast.makeText(activity, activity.getString(R.string.dialog_password_send), Toast.LENGTH_LONG).show();
                     customLostPasswordCallback.onCompleteLostPassword();
+                } else {
+                    Toast.makeText(activity, task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    customLostPasswordCallback.onFailureLostPassword();
                 }
             }
         };
@@ -140,9 +158,13 @@ public class UserService {
         OnCompleteListener<Void> onCompleteListener = new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                Toast.makeText(activity, "Le mot de passe a été correctement changé.", Toast.LENGTH_LONG).show();
-                customChangePasswordCallback.onCompleteChangePassword();
-
+                if (task.isSuccessful()) {
+                    Toast.makeText(activity, "Le mot de passe a été correctement changé.", Toast.LENGTH_LONG).show();
+                    customChangePasswordCallback.onCompleteChangePassword();
+                } else {
+                    Toast.makeText(activity, "Echec de la mise à jour du mot de passe.", Toast.LENGTH_LONG).show();
+                    customChangePasswordCallback.onFailureChangePassword();
+                }
             }
         };
 
@@ -180,8 +202,16 @@ public class UserService {
                             customUserSignCallback.onCancelledUserSign();
                         }
                     });
-                }else{
-                    Toast.makeText(activity, "Un problème est survenue pendant votre authentification.", Toast.LENGTH_LONG).show();
+                } else {
+                    Exception e = task.getException();
+                    if (e != null) {
+                        Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
+                        try {
+                            throw e;
+                        } catch (Exception exception) {
+                            exception.printStackTrace();
+                        }
+                    }
                     customUserSignCallback.onFailureUserSign();
                 }
             }
