@@ -248,6 +248,9 @@ public class MainActivity extends CustomCompatActivity implements NoticeDialogFr
     }
 
     public void tryRemoteConnection() {
+
+        CurrentUser.getInstance().clear();
+
         refreshProfileMenu();
 
         if (CurrentUser.getInstance().isConnected()) {

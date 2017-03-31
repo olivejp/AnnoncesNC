@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.orlanth23.annoncesnc.R;
@@ -40,6 +41,8 @@ public class LoginFirebaseActivity extends CustomCompatActivity
     TextView errorMsg;
     @BindView(R.id.text_login_msg_accueil)
     TextView textLoginMsgAccueil;
+    @BindView(R.id.img_profile)
+    ImageView imageProfile;
 
     private CustomCompatActivity mActivity = this;
     private String mPassword;
@@ -48,7 +51,7 @@ public class LoginFirebaseActivity extends CustomCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_login_2);
         ButterKnife.bind(this);
         changeActionBarTitle(R.string.action_log_in, true);
         populateAutoComplete();

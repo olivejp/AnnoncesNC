@@ -9,6 +9,9 @@
 
     <color name="ColorTextNormal">#272727</color>
 
+    <color name="ColorDegradeLight">#536dfe</color>
+    <color name="ColorDegradeDark">#304ffe</color>
+
     <!--  Couleurs pour Upload -->
     <color name="view_background">#e8ecfa</color>
     <color name="white">#ffffff</color>
