@@ -5,11 +5,11 @@ import android.app.DialogFragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
@@ -29,7 +29,7 @@ import butterknife.OnClick;
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByFragmentManager;
 
 public class LoginFirebaseActivity extends CustomCompatActivity
-    implements NoticeDialogFragment.NoticeDialogListener, CustomUserSignCallback, CustomLostPasswordCallback {
+        implements NoticeDialogFragment.NoticeDialogListener, CustomUserSignCallback, CustomLostPasswordCallback {
 
     private static final String TAG = LoginFirebaseActivity.class.getName();
 
@@ -39,8 +39,6 @@ public class LoginFirebaseActivity extends CustomCompatActivity
     EditText mPasswordView;
     @BindView(R.id.login_error)
     TextView errorMsg;
-    @BindView(R.id.text_login_msg_accueil)
-    TextView textLoginMsgAccueil;
     @BindView(R.id.img_profile)
     ImageView imageProfile;
 
@@ -53,19 +51,8 @@ public class LoginFirebaseActivity extends CustomCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_2);
         ButterKnife.bind(this);
-        changeActionBarTitle(R.string.action_log_in, true);
+        updateActionBar(R.string.action_log_in, false);
         populateAutoComplete();
-
-        Bundle bundle = getIntent().getExtras();
-        if (bundle != null) {
-            switch (bundle.getInt(MainActivity.PARAM_REQUEST_CODE)) {
-                case MainActivity.CODE_POST_NOT_LOGGED:
-                    textLoginMsgAccueil.setVisibility(View.VISIBLE);
-                    break;
-            }
-        } else {
-            textLoginMsgAccueil.setVisibility(View.GONE);
-        }
     }
 
     @Override
@@ -105,7 +92,7 @@ public class LoginFirebaseActivity extends CustomCompatActivity
         finish();
     }
 
-    private void getDataFromView(){
+    private void getDataFromView() {
         mEmail = mEmailView.getText().toString().replace("'", "''");
         mPassword = mPasswordView.getText().toString().replace("'", "''");
     }
@@ -150,10 +137,10 @@ public class LoginFirebaseActivity extends CustomCompatActivity
         if (!Utility.checkWifiAndMobileData(this)) {
             // On envoie un message pour dire qu'on a pas de connexion réseau
             SendDialogByFragmentManager(getFragmentManager(),
-                "Aucune connexion réseau disponible pour vous authentifier.",
-                NoticeDialogFragment.TYPE_BOUTON_OK,
-                NoticeDialogFragment.TYPE_IMAGE_ERROR,
-                null);
+                    "Aucune connexion réseau disponible pour vous authentifier.",
+                    NoticeDialogFragment.TYPE_BOUTON_OK,
+                    NoticeDialogFragment.TYPE_IMAGE_ERROR,
+                    null);
             return;
         }
 
@@ -164,7 +151,8 @@ public class LoginFirebaseActivity extends CustomCompatActivity
         // Si on a une connexion on tente de se connecter au serveur
         prgDialog.setMessage("Authentification en cours.");
         prgDialog.show();
-        UserService.sign(mAuth, mDatabase, mActivity, mEmail, mPassword, this);
+        UserService.sign(mAuth, mDatabase, mEmail, mPassword, this);
+        return;
     }
 
     @OnClick(R.id.lostPassword)
@@ -173,16 +161,16 @@ public class LoginFirebaseActivity extends CustomCompatActivity
 
         getDataFromView();
 
-        if (Utility.checkWifiAndMobileData(this)){
+        if (Utility.checkWifiAndMobileData(this)) {
             prgDialog.setMessage("Envoi d'un message sur votre adresse mail.");
             prgDialog.show();
             UserService.lostPassword(mAuth, mActivity, mEmail, this);
         } else {
             SendDialogByFragmentManager(getFragmentManager(),
-                "Aucune connexion réseau disponible pour vous authentifier.",
-                NoticeDialogFragment.TYPE_BOUTON_OK,
-                NoticeDialogFragment.TYPE_IMAGE_ERROR,
-                null);
+                    "Aucune connexion réseau disponible pour vous authentifier.",
+                    NoticeDialogFragment.TYPE_BOUTON_OK,
+                    NoticeDialogFragment.TYPE_IMAGE_ERROR,
+                    null);
         }
     }
 
@@ -201,24 +189,38 @@ public class LoginFirebaseActivity extends CustomCompatActivity
         } else {
             // On envoie un message pour dire qu'on a pas de connexion réseau
             SendDialogByFragmentManager(getFragmentManager(),
-                "Aucune connexion réseau disponible pour vous authentifier.",
-                NoticeDialogFragment.TYPE_BOUTON_OK,
-                NoticeDialogFragment.TYPE_IMAGE_ERROR,
-                null);
+                    "Aucune connexion réseau disponible pour vous authentifier.",
+                    NoticeDialogFragment.TYPE_BOUTON_OK,
+                    NoticeDialogFragment.TYPE_IMAGE_ERROR,
+                    null);
         }
     }
 
     @Override
-    public void onDialogPositiveClick(DialogFragment dialog) { }
+    public void onDialogPositiveClick(DialogFragment dialog) {
+    }
 
     @Override
-    public void onDialogNegativeClick(DialogFragment dialog) { }
+    public void onDialogNegativeClick(DialogFragment dialog) {
+    }
 
     @Override
     public void onCompleteUserSign(Utilisateur user) {
         prgDialog.dismiss();
+
+        // Si l'email est celui du compte par defaut et que le mot de passe est différent de celui enregistré en base
+        // On met a jour le mot de passe de la base.
+        String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_EMAIL);
+        String passwordEncrypted = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
+        String password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
+        String connexionAuto = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT);
+        if (mEmail.equals(email) && !mPassword.equals(password) && connexionAuto.equals("O")) {
+            DictionaryDAO.update(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE, PasswordEncryptionService.desEncryptIt(mPassword));
+        }
+
         CurrentUser.getInstance().setUser(user);
         goodFinishActivity();
+        return;
     }
 
     @Override
@@ -227,14 +229,15 @@ public class LoginFirebaseActivity extends CustomCompatActivity
     }
 
     @Override
-    public void onFailureUserSign() {
+    public void onFailureUserSign(Exception e) {
         prgDialog.dismiss();
+        errorMsg.setText("Un problème est survenue pendant votre authentification. " + e.getMessage());
     }
 
     @Override
     public void onCompleteLostPassword() {
         prgDialog.dismiss();
-        goodFinishActivity();
+        Toast.makeText(this, getString(R.string.dialog_password_send), Toast.LENGTH_LONG).show();
     }
 
     @Override

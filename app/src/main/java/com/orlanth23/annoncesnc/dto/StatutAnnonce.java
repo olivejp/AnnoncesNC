@@ -6,8 +6,11 @@ public enum StatutAnnonce {
     Valid("V"),
     Sold("S"),
     ToPost("T"),
+    InPosting("P"),
     ToUpdate("U"),
-    ToDelete("D");
+    InUpdating("A"),
+    ToDelete("D"),
+    InDeleting("E");
 
     private String valeur;
 

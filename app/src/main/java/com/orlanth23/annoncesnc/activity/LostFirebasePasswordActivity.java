@@ -27,7 +27,7 @@ public class LostFirebasePasswordActivity extends CustomCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lost_password);
         ButterKnife.bind(this);
-        changeActionBarTitle(R.string.action_lost_password, true);
+        updateActionBar(R.string.action_lost_password, true);
     }
 
     @OnClick(R.id.lostPassword)

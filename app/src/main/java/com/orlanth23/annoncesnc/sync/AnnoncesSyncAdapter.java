@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -23,6 +24,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ServerValue;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageMetadata;
@@ -56,7 +58,8 @@ import static com.orlanth23.annoncesnc.provider.ProviderContract.PhotoEntry;
 public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private static final String TAG = AnnoncesSyncAdapter.class.getName();
-
+    private static final String ROOT_ANNONCES = "annonces/";
+    private static final String ROOT_PHOTOS = "photos/";
     private static List<String> exceptionMessage = new ArrayList<>();
     private ContentResolver mContentResolver;
     private Context mContext;
@@ -67,7 +70,6 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     private int nbPhotosDeleted;
     private StorageReference mStorageRef;
     private FirebaseDatabase mDatabase;
-
     private String photoLocalPath;
     private InfoServer infoServer = new InfoServer();
 
@@ -137,17 +139,17 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         }
 
         NotificationCompat.Builder mBuilder =
-            new NotificationCompat.Builder(mContext)
-                .setSmallIcon(R.mipmap.ic_annonces)
-                .setContentTitle(mContext.getString(R.string.app_name))
-                .setContentText(textToSend);
+                new NotificationCompat.Builder(mContext)
+                        .setSmallIcon(R.mipmap.ic_annonces)
+                        .setContentTitle(mContext.getString(R.string.app_name))
+                        .setContentText(textToSend);
 
         // Sets an ID for the notification
         int mNotificationId = 001;
 
         // Gets an instance of the NotificationManager service
         NotificationManager mNotifyMgr =
-            (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
+                (NotificationManager) mContext.getSystemService(NOTIFICATION_SERVICE);
 
         // Builds the notification and issues it.
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
@@ -207,7 +209,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
             while (cursorPhotosToDelete.moveToNext()) {
                 PhotoFirebase photoFirebase = getPhotoFromCursor(cursorPhotosToDelete);
                 FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance();
-                DatabaseReference dRef = firebaseDatabase.getReference("photos/" + photoFirebase.getIdPhoto());
+                DatabaseReference dRef = firebaseDatabase.getReference(ROOT_PHOTOS + photoFirebase.getIdPhoto());
                 dRef.removeValue().addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
@@ -222,7 +224,9 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         }
     }
 
+    // ToDo - Finir le deleteAnnonceEnAttente du SyncAdapter
     private void deleteAnnonceEnAttente() {
+        AnnonceFirebase annonceWs = new AnnonceFirebase();
         nbAnnoncesDeleted = 0;
 
         // Lecture des annonces supprimées Hors Connexion qui sont maintenant à supprimer sur le serveur
@@ -232,7 +236,8 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
         if (cursorAnnoncesToDelete != null) {
             while (cursorAnnoncesToDelete.moveToNext()) {
-                AnnonceFirebase annonceWs = getAnnonceFromCursor(cursorAnnoncesToDelete);
+                annonceWs.clear();
+                annonceWs = getAnnonceFromCursor(annonceWs, cursorAnnoncesToDelete);
             }
             cursorAnnoncesToDelete.close();
         }
@@ -241,7 +246,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     private void sendPhotoToFirebaseDatabase(UUID idPhoto, PhotoFirebase photo) {
         // Insertion de notre photo dans notre FirebaseDatabase
         FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-        DatabaseReference photoDatabaseRef = mDatabase.getReference("photos/" + idPhoto);
+        DatabaseReference photoDatabaseRef = mDatabase.getReference(ROOT_PHOTOS + idPhoto);
         photoDatabaseRef.setValue(photo).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
@@ -254,16 +259,16 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
     private void sendPhotoToFirebaseStorage(UUID UUIDPhoto, Uri fileImage, @Nullable Integer idAnnonce) {
         // Récupération de la référence
-        StorageReference photoRef = mStorageRef.child("photos/" + UUIDPhoto + ".png");
+        StorageReference photoRef = mStorageRef.child(ROOT_PHOTOS + UUIDPhoto + ".png");
 
         // On initialise la metadata, s'il y a quelque chose à mettre dedans
         StorageMetadata metadata = null;
         if (idAnnonce != null) {
             // On attache des metadata au fichier
             metadata = new StorageMetadata.Builder()
-                .setContentType("image/png")
-                .setCustomMetadata("Id annonce", String.valueOf(idAnnonce))
-                .build();
+                    .setContentType("image/png")
+                    .setCustomMetadata("Id annonce", String.valueOf(idAnnonce))
+                    .build();
 
             // On met à jour les métadata
             photoRef.updateMetadata(metadata);
@@ -271,18 +276,18 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 
         // On envoie le fichier
         photoRef.putFile(fileImage)
-            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    nbPhotosSend++;
-                }
-            })
-            .addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    exceptionMessage.add("postPhotoEnAttente:Impossible d'envoyer la photo " + photoLocalPath);
-                }
-            });
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        nbPhotosSend++;
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        exceptionMessage.add("postPhotoEnAttente:Impossible d'envoyer la photo " + photoLocalPath);
+                    }
+                });
     }
 
     /**
@@ -324,6 +329,8 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
     }
 
     private void postAnnonceEnAttente() {
+        ContentValues contentValues = new ContentValues();
+        AnnonceFirebase annonceFirebase = new AnnonceFirebase();
         nbAnnoncesSend = 0;
 
         // Lecture des annonces postées Hors Connexion qui sont maintenant à envoyer
@@ -335,38 +342,71 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
             while (cursorAnnoncesToSend.moveToNext()) {
                 // On récupère les données du curseur pour les insérer dans un POJO afin de pouvoir l'envoyer sur
                 // La base de données Firebase.
-                final AnnonceFirebase annonceFirebase = getAnnonceFromCursor(cursorAnnoncesToSend);
+                annonceFirebase = getAnnonceFromCursor(annonceFirebase, cursorAnnoncesToSend);
 
-                // Création d'une nouvelle id pour l'annonce
-                String idAnnonce = String.valueOf(UUID.randomUUID());
-                annonceFirebase.setIdAnnonce(idAnnonce);
+                // On va mettre à jour l'annonce qu'on va envoyer pour lui donner le statut InPosting
+                // Pour éviter de l'envoyer deux fois si le SyncAdapter était relancer trop rapidement.
+                contentValues.clear();
+                contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, StatutAnnonce.InPosting.valeur());
 
-                // Insertion de notre annonce dans notre FirebaseDatabase
-                FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-                DatabaseReference annonceRef = mDatabase.getReference("annonces/" + annonceFirebase.getIdAnnonce());
-                annonceRef.setValue(annonceFirebase).addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (!task.isSuccessful()) {
-                            exceptionMessage.add("postAnnonceEnAttente:Insertion dans Firebase échouée.");
-                        } else {
-                            // Mise à jour de l'annonce dans le content Provider
-                            ContentValues contentValues = new ContentValues();
-                            contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, StatutAnnonce.Valid.valeur());
-
-                            String where = AnnonceContract._ID + "=?";
-                            String[] args = new String[]{String.valueOf(annonceFirebase.getIdLocal())};
-
-                            int rowUpdated = mContentResolver.update(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues, where, args);
-                            if (rowUpdated != 1) {
-                                exceptionMessage.add("getInfoServer:Mise à jour du Provider échouée");
-                            }
-                        }
-                    }
-                });
+                String where = AnnonceContract._ID + "=" + String.valueOf(annonceFirebase.getIdLocal());
+                int rowUpdated = mContentResolver.update(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues, where, null);
+                if (rowUpdated != 1) {
+                    exceptionMessage.add("sendFirebaseAnnonce:Mise à jour InPosting de l'annonce échouée.");
+                } else {
+                    sendFirebaseAnnonce(annonceFirebase);
+                }
             }
             cursorAnnoncesToSend.close();
         }
+    }
+
+
+    private void sendFirebaseAnnonce(final AnnonceFirebase annonceFirebase) {
+
+        OnCompleteListener<Void> onCompleteListener = new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (!task.isSuccessful()) {
+                    Log.d(TAG, "sendFirebaseAnnonce:Insertion dans Firebase échouée. " + task.getException().getMessage());
+                    exceptionMessage.add("sendFirebaseAnnonce:Insertion dans Firebase échouée.");
+                } else {
+                    // Mise à jour de l'annonce dans le content Provider
+                    ContentValues contentValues = new ContentValues();
+                    contentValues.put(AnnonceContract.COL_STATUT_ANNONCE, StatutAnnonce.Valid.valeur());
+
+                    String where = AnnonceContract._ID + "=?";
+                    String[] args = new String[]{String.valueOf(annonceFirebase.getIdLocal())};
+
+                    int rowUpdated = mContentResolver.update(ProviderContract.AnnonceEntry.CONTENT_URI, contentValues, where, args);
+                    if (rowUpdated != 1) {
+                        Log.d(TAG, "sendFirebaseAnnonce:Mise à jour du Provider échouée");
+                        exceptionMessage.add("sendFirebaseAnnonce:Mise à jour du Provider échouée");
+                    }
+                }
+            }
+        };
+
+        OnFailureListener onFailureListener = new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.d(TAG, "sendFirebaseAnnonce:Insertion dans Firebase échouée.");
+                exceptionMessage.add("sendFirebaseAnnonce:Insertion dans Firebase échouée.");
+            }
+        };
+
+        // Création d'une nouvelle id pour l'annonce
+        String idAnnonce = String.valueOf(UUID.randomUUID());
+        annonceFirebase.setUUIDFirebaseAnnonce(idAnnonce);
+        annonceFirebase.setCreationDate(ServerValue.TIMESTAMP);
+        annonceFirebase.setLastModificationDate(ServerValue.TIMESTAMP);
+
+        // Insertion de notre annonce dans notre FirebaseDatabase
+        FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
+        DatabaseReference annonceRef = mDatabase.getReference(ROOT_ANNONCES + annonceFirebase.getUUIDFirebaseAnnonce());
+        annonceRef.setValue(annonceFirebase)
+                .addOnCompleteListener(onCompleteListener)
+                .addOnFailureListener(onFailureListener);
     }
 
     private PhotoFirebase getPhotoFromCursor(Cursor cursor) {
@@ -384,8 +424,8 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         return photoForWs;
     }
 
-    private AnnonceFirebase getAnnonceFromCursor(Cursor cursor) {
-        AnnonceFirebase annonceFirebase = new AnnonceFirebase();
+    private AnnonceFirebase getAnnonceFromCursor(AnnonceFirebase annonceFirebase, Cursor cursor) {
+        annonceFirebase.clear();
         int indexColIdLocal = cursor.getColumnIndex(AnnonceContract._ID);
         int indexColIdAnnonce = cursor.getColumnIndex(AnnonceContract.COL_UUID_ANNONCE);
         int indexColIdCategory = cursor.getColumnIndex(AnnonceContract.COL_ID_CATEGORY);
@@ -394,7 +434,7 @@ public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
         int indexColDescriptionAnnonce = cursor.getColumnIndex(AnnonceContract.COL_DESCRIPTION_ANNONCE);
         int indexColPrixAnnonce = cursor.getColumnIndex(AnnonceContract.COL_PRIX_ANNONCE);
 
-        annonceFirebase.setIdAnnonce(String.valueOf(cursor.getInt(indexColIdAnnonce)));
+        annonceFirebase.setUUIDFirebaseAnnonce(String.valueOf(cursor.getInt(indexColIdAnnonce)));
         annonceFirebase.setIdCategory(cursor.getInt(indexColIdCategory));
         annonceFirebase.setIdUtilisateur(cursor.getString(indexColIdUtilisateur));
         annonceFirebase.setTitreAnnonce(cursor.getString(indexColTitreAnnonce));

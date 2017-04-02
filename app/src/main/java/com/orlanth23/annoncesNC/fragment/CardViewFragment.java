@@ -24,12 +24,12 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.activity.CustomCompatActivity;
 import com.orlanth23.annoncesnc.adapter.CardViewDataAdapter;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.Annonce;
 import com.orlanth23.annoncesnc.dto.AnnonceFirebase;
 import com.orlanth23.annoncesnc.dto.Categorie;
-import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.listener.EndlessRecyclerOnScrollListener;
 import com.orlanth23.annoncesnc.provider.ProviderContract;
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
@@ -275,11 +275,14 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                 break;
         }
 
-        Activity myActivity = getActivity();
-        myActivity.setTitle(title);
-        if (myActivity instanceof CustomActivityInterface) {
-            CustomActivityInterface customActivityInterface = (CustomActivityInterface) myActivity;
-            customActivityInterface.changeColorToolBar(color);
+        getActivity().setTitle(title);
+
+        try {
+            CustomCompatActivity customCompatActivity = (CustomCompatActivity) getActivity();
+            customCompatActivity.changeColorToolBar(color);
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString()
+                    + " doit implementer l'interface CustomCompatActivity");
         }
 
         // On cache le clavier
@@ -308,7 +311,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                                     AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
-                                    annonceFirebase.getIdAnnonce();
+                                    annonceFirebase.getUUIDFirebaseAnnonce();
                                 }
                             }
 
@@ -333,7 +336,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                                 AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
-                                annonceFirebase.getIdAnnonce();
+                                annonceFirebase.getUUIDFirebaseAnnonce();
                             }
                         }
 
@@ -350,7 +353,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                     if (cursor != null) {
                         while (cursor.moveToNext()) {
                             AnnonceFirebase annonceFirebase = new AnnonceFirebase();
-                            annonceFirebase.setIdAnnonce(cursor.getString(cursor.getColumnIndex(AnnonceContract.COL_UUID_ANNONCE)));
+                            annonceFirebase.setUUIDFirebaseAnnonce(cursor.getString(cursor.getColumnIndex(AnnonceContract.COL_UUID_ANNONCE)));
 
                         }
                         cursor.close();

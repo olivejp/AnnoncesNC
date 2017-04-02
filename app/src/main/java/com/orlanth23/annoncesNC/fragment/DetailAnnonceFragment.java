@@ -32,13 +32,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.activity.CustomCompatActivity;
 import com.orlanth23.annoncesnc.activity.ImageViewerActivity;
 import com.orlanth23.annoncesnc.activity.PostAnnonceActivity;
 import com.orlanth23.annoncesnc.dto.Annonce;
 import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.dto.Photo;
 import com.orlanth23.annoncesnc.dto.StatutPhoto;
-import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.provider.ProviderContract;
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
@@ -419,11 +419,14 @@ public class DetailAnnonceFragment extends Fragment {
         }
 
         // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
-        Categorie categorie = ListeCategories.getInstance(mActivity).getCategorieById(mAnnonce.getIdCategorieANO());
-        mActivity.setTitle(categorie.getNameCAT());
-        if (mActivity instanceof CustomActivityInterface) {
-            CustomActivityInterface myCustomActivity = (CustomActivityInterface) mActivity;
-            myCustomActivity.changeColorToolBar(Color.parseColor(color));
+        try {
+            CustomCompatActivity customCompatActivity = (CustomCompatActivity) getActivity();
+            Categorie categorie = ListeCategories.getInstance(customCompatActivity).getCategorieById(mAnnonce.getIdCategorieANO());
+            customCompatActivity.setTitle(categorie.getNameCAT());
+            customCompatActivity.changeColorToolBar(Color.parseColor(color));
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString()
+                    + " doit implementer l'interface CustomCompatActivity");
         }
     }
 

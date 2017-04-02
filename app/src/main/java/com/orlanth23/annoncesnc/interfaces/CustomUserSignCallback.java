@@ -7,5 +7,5 @@ public interface CustomUserSignCallback {
 
     void onCancelledUserSign();
 
-    void onFailureUserSign();
+    void onFailureUserSign(Exception e);
 }

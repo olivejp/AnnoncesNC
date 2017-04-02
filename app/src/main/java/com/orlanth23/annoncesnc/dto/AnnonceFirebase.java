@@ -1,20 +1,36 @@
 package com.orlanth23.annoncesnc.dto;
 
+import java.util.Map;
+
 public class AnnonceFirebase {
-    private String idAnnonce;
+    private String UUIDFirebaseAnnonce;
     private Integer idCategory;
     private String idUtilisateur;
     private String titreAnnonce;
     private String descriptionAnnonce;
     private Integer prixAnnonce;
     private Integer idLocal;
+    private Map<String, String> creationDate;
+    private Map<String, String> lastModificationDate;
 
-    public String getIdAnnonce() {
-        return idAnnonce;
+    public void clear() {
+        UUIDFirebaseAnnonce = "";
+        idCategory = 0;
+        idUtilisateur = "";
+        titreAnnonce = "";
+        descriptionAnnonce = "";
+        prixAnnonce = 0;
+        idLocal = 0;
+        creationDate = null;
+        lastModificationDate = null;
     }
 
-    public void setIdAnnonce(String idAnnonce) {
-        this.idAnnonce = idAnnonce;
+    public String getUUIDFirebaseAnnonce() {
+        return UUIDFirebaseAnnonce;
+    }
+
+    public void setUUIDFirebaseAnnonce(String UUIDAnnonce) {
+        this.UUIDFirebaseAnnonce = UUIDAnnonce;
     }
 
     public Integer getIdCategory() {
@@ -63,5 +79,21 @@ public class AnnonceFirebase {
 
     public void setIdLocal(Integer idLocal) {
         this.idLocal = idLocal;
+    }
+
+    public Map<String, String> getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Map<String, String> creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Map<String, String> getLastModificationDate() {
+        return lastModificationDate;
+    }
+
+    public void setLastModificationDate(Map<String, String> lastModificationDate) {
+        this.lastModificationDate = lastModificationDate;
     }
 }

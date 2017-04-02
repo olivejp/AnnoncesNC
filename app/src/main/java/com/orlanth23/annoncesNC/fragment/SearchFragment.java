@@ -1,7 +1,6 @@
 package com.orlanth23.annoncesnc.fragment;
 
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
@@ -20,9 +19,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.activity.CustomCompatActivity;
 import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
 import com.orlanth23.annoncesnc.dto.Categorie;
-import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.list.ListeCategories;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
@@ -92,11 +91,15 @@ public class SearchFragment extends Fragment implements OnClickListener {
 
         setHasOptionsMenu(true);
         getActivity().setTitle(getString(R.string.action_search));
-        Activity myActivity = getActivity();
-        if (myActivity instanceof CustomActivityInterface) {
-            CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
-            myCustomActivity.changeColorToolBar(ContextCompat.getColor(getActivity(), R.color.ColorPrimary));
+
+        try {
+            CustomCompatActivity customCompatActivity = (CustomCompatActivity) getActivity();
+            customCompatActivity.changeColorToolBar(ContextCompat.getColor(getActivity(), R.color.ColorPrimary));
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString()
+                    + " doit implementer l'interface CustomCompatActivity");
         }
+
         return rootView;
     }
 

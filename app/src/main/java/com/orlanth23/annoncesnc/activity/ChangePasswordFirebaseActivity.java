@@ -34,7 +34,7 @@ public class ChangePasswordFirebaseActivity extends CustomCompatActivity impleme
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_password);
         ButterKnife.bind(this);
-        changeActionBarTitle(R.string.change_password, true);
+        updateActionBar(R.string.change_password, true);
     }
 
     @OnClick(R.id.btnChangePassword)

@@ -20,7 +20,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
+import com.orlanth23.annoncesnc.activity.CustomCompatActivity;
 import com.orlanth23.annoncesnc.list.ListeStats;
 import com.orlanth23.annoncesnc.provider.AnnoncesProvider;
 import com.orlanth23.annoncesnc.provider.ProviderContract;
@@ -74,10 +74,14 @@ public class HomeFragment extends Fragment {
 
         Activity myActivity = getActivity();
         myActivity.setTitle(getString(R.string.app_name));
-        if (myActivity instanceof CustomActivityInterface) {
-            CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
+
+        try {
+            CustomCompatActivity customCompatActivity = (CustomCompatActivity) getActivity();
             int color = ContextCompat.getColor(myActivity,R.color.ColorPrimary);
-            myCustomActivity.changeColorToolBar(color);
+            customCompatActivity.changeColorToolBar(color);
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString()
+                    + " doit implementer l'interface CustomCompatActivity");
         }
 
         // On ajoute l'observer à notre liste de stats. Quand elle bougera, on mettra à jour les views

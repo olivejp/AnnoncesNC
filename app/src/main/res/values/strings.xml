@@ -232,5 +232,6 @@
     <string name="refresh">Refresh</string>
     <string name="non">No</string>
     <string name="oui">Yes</string>
+    <string name="title_activity_swipe">SwipeActivity</string>
 </resources>
 

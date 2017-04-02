@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.orlanth23.annoncesnc">
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.CALL_PHONE"/>
-    <uses-permission android:name="android.permission.INTERNET" android:required="true" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" android:required="true" />
-    <uses-permission android:name="android.permission.SEND_SMS"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
+
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission
+        android:name="android.permission.INTERNET"
+        android:required="true" />
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        android:required="true" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_SYNC_STATS"/>
-    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
-    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
@@ -19,16 +24,18 @@
         android:fullBackupContent="true"
         android:icon="@drawable/ic_action_icon"
         android:label="@string/app_name"
-        android:theme="@style/MyMaterialTheme">
+        android:theme="@style/FullScreenTheme">
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.MainActivity"
+            android:name=".activity.FullScreenActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
-            android:theme="@style/MyMaterialTheme"
+            android:noHistory="true"
+            android:theme="@style/ImageViewerTheme"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -40,96 +47,105 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity"
+            android:name=".activity.SwipeActivity"
+            android:label="Demo"
+            android:theme="@style/FullScreenTheme" />
+        <activity
+            android:name=".activity.MainActivity"
+        android:label="@string/app_name"
+            android:theme="@style/MyMaterialTheme"
+            android:windowSoftInputMode="adjustResize|stateHidden" />
+        <activity
+            android:name=".activity.LoginFirebaseActivity"
             android:label="@string/title_activity_login"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity"
-            android:windowSoftInputMode="adjustResize|stateHidden">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
-        </activity>
+            android:parentActivityName=".activity.MainActivity"
+            android:theme="@style/FullScreenTheme"
+            android:windowSoftInputMode="adjustResize|stateHidden"></activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.PostAnnonceActivity"
+            android:name=".activity.PostAnnonceActivity"
             android:label="@string/action_post"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity"
+            android:parentActivityName=".activity.MainActivity"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.RegisterFirebaseActivity"
+            android:name=".activity.RegisterFirebaseActivity"
             android:label="@string/title_register"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity"
+            android:parentActivityName=".activity.LoginFirebaseActivity"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity" />
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.SettingsActivity"
+            android:name=".activity.SettingsActivity"
             android:label="@string/title_activity_settings"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.LostFirebasePasswordActivity"
+            android:name=".activity.LostFirebasePasswordActivity"
             android:label="@string/action_lost_password"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity">
+            android:parentActivityName=".activity.LoginFirebaseActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity" />
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.ChangePasswordFirebaseActivity"
+            android:name=".activity.ChangePasswordFirebaseActivity"
             android:label="@string/change_password"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.MainActivity">
+            android:parentActivityName=".activity.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.WorkImageActivity"
+            android:name=".activity.WorkImageActivity"
             android:label="@string/title_activity_work_image"
-            android:parentActivityName="com.orlanth23.annoncesnc.activity.PostAnnonceActivity">
+            android:parentActivityName=".activity.PostAnnonceActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.orlanth23.annoncesnc.activity.PostAnnonceActivity" />
         </activity>
         <activity
-            android:name="com.orlanth23.annoncesnc.activity.ImageViewerActivity"
+            android:name=".activity.ImageViewerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_image_viewer"
-            android:theme="@style/FullscreenTheme" />
+            android:theme="@style/ImageViewerTheme" />
 
         <provider
-            android:name="com.orlanth23.annoncesnc.provider.AnnoncesProvider"
+            android:name=".provider.AnnoncesProvider"
             android:authorities="@string/content_authority"
             android:exported="false"
-            android:syncable="true"/>
+            android:syncable="true" />
 
         <service android:name=".sync.AnnoncesAuthenticatorService">
             <intent-filter>
-                <action android:name="android.accounts.AccountAuthenticator"/>
+                <action android:name="android.accounts.AccountAuthenticator" />
             </intent-filter>
-            <meta-data android:name="android.accounts.AccountAuthenticator"
-                android:resource="@xml/authenticator"/>
+
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
         </service>
-        <service android:name=".sync.AnnoncesSyncService"
+        <service
+            android:name=".sync.AnnoncesSyncService"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.content.SyncAdapter"/>
+                <action android:name="android.content.SyncAdapter" />
             </intent-filter>
-            <meta-data android:name="android.content.SyncAdapter"
-                android:resource="@xml/syncadapter"/>
-        </service>
 
-        <service
-            android:name=".notification.AnnonceMessaging">
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
+        </service>
+        <service android:name=".notification.AnnonceMessaging">
             <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
 

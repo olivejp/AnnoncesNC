@@ -1,6 +1,5 @@
 package com.orlanth23.annoncesnc.fragment;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -25,8 +24,8 @@ import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.interfaces.CallbackUpdateDisplayName;
 import com.orlanth23.annoncesnc.interfaces.CallbackUpdateFirebaseUser;
-import com.orlanth23.annoncesnc.interfaces.CustomActivityInterface;
 import com.orlanth23.annoncesnc.interfaces.CustomUpdateEmailCallback;
+import com.orlanth23.annoncesnc.interfaces.InterfaceProfileActivity;
 import com.orlanth23.annoncesnc.service.UserService;
 import com.orlanth23.annoncesnc.utility.Utility;
 
@@ -67,30 +66,30 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
     private String mDisplayName;
     private String mTelephone;
 
-    private CustomCompatActivity mActivity;
+    private CustomCompatActivity myCustomActivity;
 
     public static MyProfileFragment newInstance() {
         return new MyProfileFragment();
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        mActivity = (CustomCompatActivity) getActivity();
-    }
-
-    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        try {
+            myCustomActivity = (CustomCompatActivity) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString()
+                    + " doit implementer l'interface CustomCompatActivity");
+        }
+
         mAuth = FirebaseAuth.getInstance();
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        if (prgDialog == null)
-            prgDialog = new ProgressDialog(getActivity());
+        prgDialog = myCustomActivity.getPrgDialog();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_my_profile, container, false);
         ButterKnife.bind(this, rootView);
 
@@ -100,12 +99,15 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
 
         // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
         getActivity().setTitle(getString(R.string.action_profile));
-        if (getActivity() instanceof CustomActivityInterface) {
-            CustomActivityInterface myCustomActivity = (CustomActivityInterface) getActivity();
-            int color = ContextCompat.getColor(getActivity(), R.color.ColorPrimary);
-            myCustomActivity.changeColorToolBar(color);
-        }
+        int color = ContextCompat.getColor(getActivity(), R.color.ColorPrimary);
+        myCustomActivity.changeColorToolBar(color);
         return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        myCustomActivity = (CustomCompatActivity) getActivity();
     }
 
     // Création d'un listener pour la mise à jour
@@ -125,7 +127,7 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
                 mFirebaseUser = mAuth.getCurrentUser();
 
                 if (mFirebaseUser == null) {
-                    Toast.makeText(mActivity, "Vous n'êtes pas authentifié.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(myCustomActivity, "Vous n'êtes pas authentifié.", Toast.LENGTH_LONG).show();
                 } else {
                     prgDialog.setMessage("Mise à jour des informations de l'utilisateur");
                     prgDialog.show();
@@ -156,11 +158,12 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
     public void onClick() {
         CurrentUser.getInstance().clear();
 
-        // Changement de couleur de l'action bar et du titre pour prendre celle de la catégorie
-        Activity myActivity = getActivity();
-        if (myActivity instanceof CustomActivityInterface) {
-            CustomActivityInterface myCustomActivity = (CustomActivityInterface) myActivity;
-            myCustomActivity.refreshProfileMenu();
+        try {
+            InterfaceProfileActivity profileActivity = (InterfaceProfileActivity) getActivity();
+            profileActivity.refreshProfileMenu();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString()
+                    + " doit implementer l'interface InterfaceProfileActivity");
         }
 
         getFragmentManager().popBackStackImmediate();
@@ -228,10 +231,12 @@ public class MyProfileFragment extends Fragment implements CallbackUpdateFirebas
     public void onFailureUpdateEmail() {
         prgDialog.dismiss();
     }
+
     @Override
     public void onFailureUpdateDisplayName() {
         prgDialog.dismiss();
     }
+
     @Override
     public void onFailureUpdateFirebase() {
         prgDialog.dismiss();

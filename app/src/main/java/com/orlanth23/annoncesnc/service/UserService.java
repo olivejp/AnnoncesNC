@@ -126,7 +126,6 @@ public class UserService {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    Toast.makeText(activity, activity.getString(R.string.dialog_password_send), Toast.LENGTH_LONG).show();
                     customLostPasswordCallback.onCompleteLostPassword();
                 } else {
                     Toast.makeText(activity, task.getException().getMessage(), Toast.LENGTH_LONG).show();
@@ -181,7 +180,7 @@ public class UserService {
             .addOnFailureListener(onFailureListener);
     }
 
-    public static void sign(final FirebaseAuth auth, final FirebaseDatabase database, final Activity activity, String email, String password, final CustomUserSignCallback customUserSignCallback) {
+    public static void sign(final FirebaseAuth auth, final FirebaseDatabase database, String email, String password, final CustomUserSignCallback customUserSignCallback) {
         OnCompleteListener<AuthResult> onCompleteListener = new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -191,48 +190,30 @@ public class UserService {
                     userRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
-                            Utilisateur user = dataSnapshot.getValue(Utilisateur.class);
-                            Toast.makeText(activity, "Connecté avec le compte " + mFirebaseUser.getDisplayName() + ".", Toast.LENGTH_LONG).show();
-                            customUserSignCallback.onCompleteUserSign(user);
+                            customUserSignCallback.onCompleteUserSign((Utilisateur) dataSnapshot.getValue(Utilisateur.class));
                         }
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-                            Toast.makeText(activity, "Un problème est survenue pendant votre authentification.", Toast.LENGTH_LONG).show();
                             customUserSignCallback.onCancelledUserSign();
                         }
                     });
                 } else {
                     Exception e = task.getException();
                     if (e != null) {
-                        Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
                         try {
                             throw e;
                         } catch (Exception exception) {
                             exception.printStackTrace();
                         }
                     }
-                    customUserSignCallback.onFailureUserSign();
+                    customUserSignCallback.onFailureUserSign(e);
                 }
-            }
-        };
-
-        OnFailureListener onFailureListener = new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                try {
-                    throw e;
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-                Toast.makeText(activity, e.getMessage(), Toast.LENGTH_LONG).show();
-                customUserSignCallback.onFailureUserSign();
             }
         };
 
         // On tente de se connecter au serveur Firebase.
         auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(onCompleteListener)
-            .addOnFailureListener(onFailureListener);
+                .addOnCompleteListener(onCompleteListener);
     }
 }

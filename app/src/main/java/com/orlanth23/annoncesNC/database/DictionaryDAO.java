@@ -112,6 +112,7 @@ public class DictionaryDAO {
         public static final String DB_CLEF_AUTO_CONNECT = "CONNECTION_AUTO";
         public static final String DB_CLEF_TELEPHONE = "TELEPHONE";
         public static final String DB_CLEF_DISPLAY_NAME = "DISPLAY_NAME";
+        public static final String DB_CLEF_FIRST_TIME = "FIRST_TIME";
         static final String COLUMN_CLEF = "CLEF";
         static final String COLUMN_CHAMP = "CHAMP";
     }
