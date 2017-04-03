@@ -22,6 +22,7 @@ import com.orlanth23.annoncesnc.interfaces.CallbackUpdateDisplayName;
 import com.orlanth23.annoncesnc.interfaces.CallbackUpdateFirebaseUser;
 import com.orlanth23.annoncesnc.interfaces.CustomChangePasswordCallback;
 import com.orlanth23.annoncesnc.interfaces.CustomLostPasswordCallback;
+import com.orlanth23.annoncesnc.interfaces.CustomUnregisterCallback;
 import com.orlanth23.annoncesnc.interfaces.CustomUpdateEmailCallback;
 import com.orlanth23.annoncesnc.interfaces.CustomUserSignCallback;
 
@@ -54,8 +55,8 @@ public class UserService {
         DatabaseReference userRef = mDatabase.getReference(ROOT_USERS_REF + user.getIdUTI());
 
         userRef.setValue(user)
-            .addOnCompleteListener(onFirebaseCompleteListener)
-            .addOnFailureListener(onFirebaseFailureListener);
+                .addOnCompleteListener(onFirebaseCompleteListener)
+                .addOnFailureListener(onFirebaseFailureListener);
     }
 
     public static void updateDisplayName(FirebaseAuth mAuth, final Activity activity, String displayName, final CallbackUpdateDisplayName callbackUpdateDisplayName) {
@@ -83,12 +84,12 @@ public class UserService {
         };
 
         UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-            .setDisplayName(displayName)
-            .build();
+                .setDisplayName(displayName)
+                .build();
 
         mAuth.getCurrentUser().updateProfile(profileUpdates)
-            .addOnCompleteListener(onUpdateProfileListener)
-            .addOnFailureListener(onUpdateProfileFListener);
+                .addOnCompleteListener(onUpdateProfileListener)
+                .addOnFailureListener(onUpdateProfileFListener);
     }
 
     public static void updateEmailUser(FirebaseAuth mAuth, final Activity activity, String email, final CustomUpdateEmailCallback customUpdateEmailCallback) {
@@ -115,8 +116,8 @@ public class UserService {
 
         // Tentative de mise à jour de l'email la Firebase Auth
         mAuth.getCurrentUser().updateEmail(email)
-            .addOnCompleteListener(onUpdateProfileCompleteListener)
-            .addOnFailureListener(onUpdateProfileFailureListener);
+                .addOnCompleteListener(onUpdateProfileCompleteListener)
+                .addOnFailureListener(onUpdateProfileFailureListener);
 
     }
 
@@ -143,8 +144,8 @@ public class UserService {
         };
 
         mAuth.sendPasswordResetEmail(email)
-            .addOnCompleteListener(onCompleteListener)
-            .addOnFailureListener(onFailureListener);
+                .addOnCompleteListener(onCompleteListener)
+                .addOnFailureListener(onFailureListener);
     }
 
     public static void updatePassword(FirebaseAuth mAuth, final Activity activity, String password, final CustomChangePasswordCallback customChangePasswordCallback) {
@@ -176,8 +177,8 @@ public class UserService {
         };
 
         mAuth.getCurrentUser().updatePassword(password)
-            .addOnCompleteListener(onCompleteListener)
-            .addOnFailureListener(onFailureListener);
+                .addOnCompleteListener(onCompleteListener)
+                .addOnFailureListener(onFailureListener);
     }
 
     public static void sign(final FirebaseAuth auth, final FirebaseDatabase database, String email, String password, final CustomUserSignCallback customUserSignCallback) {
@@ -215,5 +216,21 @@ public class UserService {
         // On tente de se connecter au serveur Firebase.
         auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(onCompleteListener);
+    }
+
+    public static void unregister(final FirebaseAuth auth, final CustomUnregisterCallback customUnregisterCallback) {
+
+        OnCompleteListener<Void> onCompleteUnregister = new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    customUnregisterCallback.onCompleteUnregister();
+                } else {
+                    customUnregisterCallback.onFailureUnregister();
+                }
+            }
+        };
+
+        auth.getCurrentUser().delete().addOnCompleteListener(onCompleteUnregister);
     }
 }

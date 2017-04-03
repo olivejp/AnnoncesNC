@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
+import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
 
 public class FullScreenActivity extends AppCompatActivity {
@@ -20,6 +21,8 @@ public class FullScreenActivity extends AppCompatActivity {
         annoncesReceiver = new AnnoncesReceiver();
         IntentFilter ifilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
         registerReceiver(annoncesReceiver, ifilter);
+
+        CurrentUser.getInstance().clear();
 
         Intent intent = new Intent();
 

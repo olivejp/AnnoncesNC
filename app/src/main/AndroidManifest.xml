@@ -34,25 +34,26 @@
             android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.MAIN" />
-                <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://oliweb.servehttp.com/annoncesMobile” -->
                 <data
                     android:host="http://oliweb.servehttp.com"
                     android:pathPrefix="/annoncesMobile"
                     android:scheme="http" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".activity.SwipeActivity"
             android:label="Demo"
             android:theme="@style/FullScreenTheme" />
         <activity
             android:name=".activity.MainActivity"
-        android:label="@string/app_name"
+            android:label="@string/app_name"
             android:theme="@style/MyMaterialTheme"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
@@ -60,7 +61,7 @@
             android:label="@string/title_activity_login"
             android:parentActivityName=".activity.MainActivity"
             android:theme="@style/FullScreenTheme"
-            android:windowSoftInputMode="adjustResize|stateHidden"></activity>
+            android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".activity.PostAnnonceActivity"
             android:label="@string/action_post"

@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.fragment.DemoFragmentAnnonces;
 import com.orlanth23.annoncesnc.fragment.DemoFragmentFavorites;
 import com.orlanth23.annoncesnc.fragment.DemoFragmentProfile;
@@ -28,6 +29,7 @@ public class SwipeActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        DictionaryDAO.insertInto(this, DictionaryDAO.Dictionary.DB_CLEF_FIRST_TIME, "N");
     }
 
     @Override

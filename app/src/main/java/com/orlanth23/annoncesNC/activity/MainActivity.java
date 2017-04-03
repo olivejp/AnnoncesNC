@@ -1,18 +1,15 @@
 package com.orlanth23.annoncesnc.activity;
 
 
-import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -23,31 +20,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
-import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.BuildConfig;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.adapter.ListCategorieAdapter;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.fragment.CardViewFragment;
 import com.orlanth23.annoncesnc.fragment.HomeFragment;
 import com.orlanth23.annoncesnc.fragment.MyProfileFragment;
 import com.orlanth23.annoncesnc.fragment.SearchFragment;
+import com.orlanth23.annoncesnc.interfaces.CustomUnregisterCallback;
 import com.orlanth23.annoncesnc.interfaces.CustomUserSignCallback;
 import com.orlanth23.annoncesnc.interfaces.InterfaceProfileActivity;
-import com.orlanth23.annoncesnc.list.ListeCategories;
-import com.orlanth23.annoncesnc.list.ListeStats;
-import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
 import com.orlanth23.annoncesnc.service.UserService;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.sync.SyncUtils;
@@ -60,7 +49,7 @@ import butterknife.ButterKnife;
 
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
-public class MainActivity extends CustomCompatActivity implements InterfaceProfileActivity, NoticeDialogFragment.NoticeDialogListener, CustomUserSignCallback {
+public class MainActivity extends CustomCompatActivity implements InterfaceProfileActivity, NoticeDialogFragment.NoticeDialogListener, CustomUserSignCallback, CustomUnregisterCallback {
 
     public final static int CODE_POST_ANNONCE = 100;
     public final static int CODE_CONNECT_USER = 200;
@@ -74,32 +63,20 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
 
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
-    @BindView(R.id.drawer_list_categorie)
-    ListView mDrawerListCategorie;
+    @BindView(R.id.nav_view)
+    NavigationView navigationView;
+
 
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mTitle;
     private HomeFragment homeFragment = new HomeFragment();
     private Fragment searchFragment = new SearchFragment();
     private Fragment mContent;
-    private Activity mActivity = this;
-    private AnnoncesReceiver annoncesReceiver;
     private Menu mMenu;
-
-    private void sendOkLoginToast() {
-        Toast.makeText(mActivity, mActivity.getString(R.string.connected_with) + CurrentUser.getInstance().getEmailUTI() + " !", Toast.LENGTH_LONG).show();
-    }
 
     @Override
     protected void onStart() {
         super.onStart();
-
-        // Création d'un broadcast pour écouter si la connectivité à changer et appeler le syncAdapter
-        annoncesReceiver = new AnnoncesReceiver();
-        IntentFilter ifilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
-        registerReceiver(annoncesReceiver, ifilter);
-
-        CurrentUser.getInstance().clear();
 
         // Tentative de connexion avec l'utilisateur par défaut
         tryAuthenticateUser();
@@ -110,9 +87,6 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-        // Instanciation des singletons
-        ListeStats.getInstance(this);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add);
         if (fab != null) {
@@ -137,7 +111,6 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
         };
 
         mDrawerLayout.addDrawerListener(mDrawerToggle);
-        mDrawerListCategorie.setOnItemClickListener(new DrawerItemClickListener());
 
         try {
             ActionBar actionBar = getSupportActionBar();
@@ -148,12 +121,6 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
         } catch (NullPointerException e) {
             Log.e(TAG, e.getMessage(), e);
         }
-
-        // Récupération de la liste des catégories
-        mDrawerListCategorie.setAdapter(new ListCategorieAdapter(this, ListeCategories.getInstance(this).getListCategorie()));
-
-        // Fermeture du Drawer
-        mDrawerLayout.closeDrawer(mDrawerListCategorie);
 
         // Par défaut c'est le HomeFragment qu'on mettra
         mContent = homeFragment;
@@ -200,20 +167,7 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
                 finish();
                 break;
             case Utility.DIALOG_TAG_UNREGISTER:
-                mFirebaseUser.delete()
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if (task.isSuccessful()) {
-                                    CurrentUser.getInstance().clear();
-                                    Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
-                                    refreshProfileMenu();
-                                    getFragmentManager().popBackStackImmediate();
-                                } else {
-                                    Toast.makeText(getApplicationContext(), "Impossible de supprimer cet utilisateur.", Toast.LENGTH_LONG).show();
-                                }
-                            }
-                        });
+                UserService.unregister(mAuth, this);
                 break;
         }
     }
@@ -226,25 +180,6 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
             case DIALOG_TAG_EXIT:
                 break;
         }
-    }
-
-    /**
-     * On a sélectionné un élément dans la liste des catégories
-     */
-    private void onSelectCategorie(int position) {
-        // Récupération de la catégorie
-        mDrawerListCategorie.setItemChecked(position, true);
-        Categorie cat = ListeCategories.getInstance(this).getListCategorie().get(position);
-
-        // Changement du nom dans l'ActionBar
-        setTitle(cat.getNameCAT());
-        changeColorToolBar(Color.parseColor(cat.getCouleurCAT()));
-
-        // On ferme le drawer latéral
-        mDrawerLayout.closeDrawer(mDrawerListCategorie);
-
-        CardViewFragment cardViewFragment = CardViewFragment.newInstance(CardViewFragment.ACTION_ANNONCE_BY_CATEGORY, null, cat, null, null, null, false);
-        getFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.ACTION_ANNONCE_BY_CATEGORY).addToBackStack(null).commit();
     }
 
     @Override
@@ -265,7 +200,7 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // if nav drawer is opened, hide the action items
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerListCategorie);
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(navigationView);
         menu.findItem(R.id.action_refresh).setVisible(!drawerOpen);
         menu.findItem(R.id.action_settings).setVisible(!drawerOpen);
         menu.findItem(R.id.action_post).setVisible(!drawerOpen);
@@ -312,7 +247,7 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
                 mContent = searchFragment;
                 getFragmentManager().beginTransaction()
                         .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
-                mDrawerLayout.closeDrawer(mDrawerListCategorie);
+                mDrawerLayout.closeDrawer(navigationView);
                 return true;
             } else {
                 // error in creating fragment
@@ -330,7 +265,8 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
 
     public void onClickManageMesAnnonces(View view) {
         // On va rechercher le fragment qui est en cours d'utilisation
-        if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof CardViewFragment) || (!getFragmentManager().findFragmentById(R.id.frame_container).getTag().equals(CardViewFragment.ACTION_ANNONCE_BY_USER))) {
+        if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof CardViewFragment)
+                || (!getFragmentManager().findFragmentById(R.id.frame_container).getTag().equals(CardViewFragment.ACTION_ANNONCE_BY_USER))) {
             if (CurrentUser.getInstance().isConnected()) {
                 // Gestion de mes annonces
                 CardViewFragment cardViewFragment = CardViewFragment.newInstance(CardViewFragment.ACTION_ANNONCE_BY_USER, null, null, CurrentUser.getInstance().getIdUTI(), null, null, false);
@@ -530,10 +466,17 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
     public void onCancelledUserSign() {
     }
 
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView parent, View view, int position, long id) {
-            onSelectCategorie(position);
-        }
+    @Override
+    public void onCompleteUnregister() {
+        CurrentUser.getInstance().clear();
+        Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
+        refreshProfileMenu();
+        getFragmentManager().popBackStackImmediate();
     }
+
+    @Override
+    public void onFailureUnregister() {
+        Toast.makeText(getApplicationContext(), "Impossible de supprimer cet utilisateur.", Toast.LENGTH_LONG).show();
+    }
+
 }
