@@ -2,14 +2,14 @@ package com.orlanth23.annoncesnc.activity;
 
 
 import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -20,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -31,9 +32,7 @@ import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.CurrentUser;
 import com.orlanth23.annoncesnc.dto.Utilisateur;
 import com.orlanth23.annoncesnc.fragment.CardViewFragment;
-import com.orlanth23.annoncesnc.fragment.HomeFragment;
 import com.orlanth23.annoncesnc.fragment.MyProfileFragment;
-import com.orlanth23.annoncesnc.fragment.SearchFragment;
 import com.orlanth23.annoncesnc.interfaces.CustomUnregisterCallback;
 import com.orlanth23.annoncesnc.interfaces.CustomUserSignCallback;
 import com.orlanth23.annoncesnc.interfaces.InterfaceProfileActivity;
@@ -47,6 +46,7 @@ import com.orlanth23.annoncesnc.utility.Utility;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
 import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
 public class MainActivity extends CustomCompatActivity implements InterfaceProfileActivity, NoticeDialogFragment.NoticeDialogListener, CustomUserSignCallback, CustomUnregisterCallback {
@@ -60,19 +60,26 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
     private static final String DIALOG_TAG_EXIT = "EXIT";
     private static final String DIALOG_TAG_NO_ACCOUNT = "DIALOG_TAG_NO_ACCOUNT";
     private static final String PARAM_FRAGMENT = "FRAGMENT";
+    private static final String PARAM_TAG = "PARAM_TAG";
+
+    private static final String TAG_MES_ANNONCES = "mes_annonces";
+    private static final String TAG_RECENT_ANNONCES = "annonces_recentes";
+    private static final String TAG_PROFILE = "profile";
+    private static String CURRENT_TAG = TAG_MES_ANNONCES;
 
     @BindView(R.id.drawer_layout)
     DrawerLayout mDrawerLayout;
     @BindView(R.id.nav_view)
     NavigationView navigationView;
 
+    private View navHeader;
+    private TextView displayNameTv;
+    private TextView emailTv;
 
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mTitle;
-    private HomeFragment homeFragment = new HomeFragment();
-    private Fragment searchFragment = new SearchFragment();
     private Fragment mContent;
-    private Menu mMenu;
+    private Toolbar toolbar;
 
     @Override
     protected void onStart() {
@@ -80,6 +87,11 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
 
         // Tentative de connexion avec l'utilisateur par défaut
         tryAuthenticateUser();
+
+        // Lancement du service SyncAdapter
+        SyncUtils.CreateSyncAccount(this);
+        getContentResolver();
+        ContentResolver.addPeriodicSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY, SyncUtils.SYNC_FREQUENCY);
     }
 
     @Override
@@ -88,15 +100,20 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add);
-        if (fab != null) {
-            fab.setVisibility(View.VISIBLE);
-        }
+        navHeader = navigationView.getHeaderView(0);
+        displayNameTv = (TextView) navHeader.findViewById(R.id.nav_header_display_name);
+        emailTv = (TextView) navHeader.findViewById(R.id.nav_header_email);
 
         mTitle = getString(R.string.app_name);  // Récupération du titre
 
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitleTextColor(getColor(R.color.white));
+        setSupportActionBar(toolbar);
+
+        setUpNavigationView();
+
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                new Toolbar(this),
+                toolbar,
                 R.string.app_name, R.string.app_name) {
             public void onDrawerClosed(View view) {
                 setTitle(mTitle);
@@ -112,46 +129,92 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
 
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
-        try {
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(true);
-                actionBar.setHomeAsUpIndicator(R.drawable.ic_menu);
-            }
-        } catch (NullPointerException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
-
-        // Par défaut c'est le HomeFragment qu'on mettra
-        mContent = homeFragment;
-
         // Si il y avait déjà un fragment dans la sauvegarde c'est celui là qu'on va récupérer
         if (savedInstanceState != null) {
-            mContent = getFragmentManager().getFragment(savedInstanceState, PARAM_FRAGMENT);
+            CURRENT_TAG = savedInstanceState.getString(PARAM_TAG);
+            mContent = getSupportFragmentManager().getFragment(savedInstanceState, PARAM_FRAGMENT);
+        } else {
+            CURRENT_TAG = TAG_RECENT_ANNONCES;
+            mContent = getHomeFragment();
         }
 
-        // Lancement du service SyncAdapter
-        SyncUtils.CreateSyncAccount(this);
-        getContentResolver();
-        ContentResolver.addPeriodicSync(AnnoncesAuthenticatorService.getAccount(), SyncUtils.CONTENT_AUTHORITY, Bundle.EMPTY, SyncUtils.SYNC_FREQUENCY);
+        loadHomeFragment();
+    }
 
-        getFragmentManager().beginTransaction().replace(R.id.frame_container, mContent, null).commit();
+    private void loadHomeFragment() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.frame_container, mContent, CURRENT_TAG).commit();
+
+        // refresh toolbar menu
+        invalidateOptionsMenu();
+    }
+
+    private Fragment getHomeFragment() {
+        switch (CURRENT_TAG) {
+            case TAG_MES_ANNONCES:
+                // Mes annonces
+                CardViewFragment myAnnoncesFragment = CardViewFragment.newInstance(CardViewFragment.ACTION_ANNONCE_BY_USER, null, null, CurrentUser.getInstance().getIdUTI(), null, null, false);
+                return myAnnoncesFragment;
+            case TAG_PROFILE:
+                // My Profile Fragment
+                MyProfileFragment myProfileFragment = MyProfileFragment.newInstance();
+                return myProfileFragment;
+            default:
+                // The most recent annonces first
+                CardViewFragment recentAnnonces = CardViewFragment.newInstance(CardViewFragment.ACTION_RECENT_ANNONCES, null, null, null, null, null, false);
+                return recentAnnonces;
+        }
+    }
+
+    private void setUpNavigationView() {
+        OnNavigationItemSelectedListener onNavigationItemSelectedListener = new OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem selectedItemMenu) {
+
+                // Passage de tous les menuItem a checked false
+                for (int i = 0; i == navigationView.getMenu().size(); i++) {
+                    MenuItem menuItem = navigationView.getMenu().getItem(i);
+                    menuItem.setChecked(false);
+                }
+
+                switch (selectedItemMenu.getItemId()) {
+                    //Replacing the main content with ContentFragment Which is our Inbox View;
+                    case R.id.nav_my_annonces:
+                        CURRENT_TAG = TAG_MES_ANNONCES;
+                        break;
+                    case R.id.nav_profile:
+                        CURRENT_TAG = TAG_PROFILE;
+                        break;
+                    default:
+                        CURRENT_TAG = TAG_RECENT_ANNONCES;
+                }
+
+                selectedItemMenu.setChecked(true);
+
+                mContent = getHomeFragment();
+
+                loadHomeFragment();
+
+                mDrawerLayout.closeDrawers();
+
+                return true;
+            }
+        };
+
+        navigationView.setNavigationItemSelectedListener(onNavigationItemSelectedListener);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mContent = getFragmentManager().findFragmentById(R.id.frame_container);
-        getFragmentManager().putFragment(outState, PARAM_FRAGMENT, mContent);
+        mContent = getSupportFragmentManager().findFragmentById(R.id.frame_container);
+        getSupportFragmentManager().putFragment(outState, PARAM_FRAGMENT, mContent);
+        outState.putString(PARAM_TAG, CURRENT_TAG);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // On inflate le mMenu
         getMenuInflater().inflate(R.menu.menu_main, menu);
-
-        // On récupère le mMenu qui a été créé, pour pouvoir le modifier ultérieurement
-        mMenu = menu;
 
         refreshProfileMenu();
 
@@ -207,7 +270,6 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
         menu.findItem(R.id.action_suggestion).setVisible(!drawerOpen);
         menu.findItem(R.id.action_connect).setVisible(!drawerOpen && !CurrentUser.getInstance().isConnected());
         menu.findItem(R.id.action_search).setVisible(!drawerOpen);
-        menu.findItem(R.id.action_my_profile).setVisible(!drawerOpen && CurrentUser.getInstance().isConnected());
         menu.findItem(R.id.action_leave).setVisible(!drawerOpen);
 
         return super.onPrepareOptionsMenu(menu);
@@ -234,46 +296,6 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
 
             intent.setClass(this, PostAnnonceActivity.class).putExtras(bd);
             startActivityForResult(intent, CODE_POST_ANNONCE);
-        }
-    }
-
-    private boolean changeToSearchFragment() {
-        // On va rechercher le fragment qui est en cours d'utilisation
-        if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof SearchFragment)) {
-
-            // On met le Fragment par défaut (SearchFragment) sauf si c'est déjà lui qui est en cours
-            if (searchFragment != null) {
-                setTitle(getString(R.string.searchTitle));
-                mContent = searchFragment;
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
-                mDrawerLayout.closeDrawer(navigationView);
-                return true;
-            } else {
-                // error in creating fragment
-                Log.e(TAG, getString(R.string.error_creating_fragment));
-                return false;
-            }
-        } else {
-            return true;
-        }
-    }
-
-    public void onClickChangeToSearchFragment(View view) {
-        changeToSearchFragment();
-    }
-
-    public void onClickManageMesAnnonces(View view) {
-        // On va rechercher le fragment qui est en cours d'utilisation
-        if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof CardViewFragment)
-                || (!getFragmentManager().findFragmentById(R.id.frame_container).getTag().equals(CardViewFragment.ACTION_ANNONCE_BY_USER))) {
-            if (CurrentUser.getInstance().isConnected()) {
-                // Gestion de mes annonces
-                CardViewFragment cardViewFragment = CardViewFragment.newInstance(CardViewFragment.ACTION_ANNONCE_BY_USER, null, null, CurrentUser.getInstance().getIdUTI(), null, null, false);
-
-                // On va remplacer le fragment par celui de la liste d'annonce
-                getFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.ACTION_ANNONCE_BY_USER).addToBackStack(null).commit();
-            }
         }
     }
 
@@ -317,25 +339,6 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
                     Log.e("NotFoundException", ex.getMessage(), ex);
                 }
                 return true;
-
-            case R.id.action_my_profile:
-                if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof MyProfileFragment)) {
-                    if (CurrentUser.getInstance().isConnected()) {
-                        // Gestion de mes annonces
-                        MyProfileFragment myProfileFragment = MyProfileFragment.newInstance();
-
-                        // On va remplacer le fragment par celui de la liste d'annonce
-                        getFragmentManager().beginTransaction().replace(R.id.frame_container, myProfileFragment, MyProfileFragment.TAG).addToBackStack(null).commit();
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else {
-                    return false;
-                }
-
-            case R.id.action_search:
-                return changeToSearchFragment();
 
             case R.id.action_connect:
                 if (!CurrentUser.getInstance().isConnected()) {
@@ -417,28 +420,33 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
 
     @Override
     public void refreshProfileMenu() {
-        if (mMenu != null) {
-            mMenu.findItem(R.id.action_connect).setVisible(!CurrentUser.getInstance().isConnected());
+        if (CurrentUser.getInstance().isConnected()) {
 
-            // Gestion du profil accessible uniquement si l'user est connecté
-            mMenu.findItem(R.id.action_my_profile).setVisible(CurrentUser.getInstance().isConnected());
+            displayNameTv.setText(CurrentUser.getInstance().getDisplayNameUTI());
+            emailTv.setText(CurrentUser.getInstance().getEmailUTI());
+
+            try {
+                ActionBar actionBar = getSupportActionBar();
+                if (actionBar != null) {
+                    actionBar.setDisplayHomeAsUpEnabled(true);
+                    actionBar.setHomeAsUpIndicator(R.drawable.ic_login_inverse);
+                }
+            } catch (NullPointerException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
         }
     }
 
-
     public void tryAuthenticateUser() {
-
         // Si on a une connexion
         if (Utility.checkWifiAndMobileData(this)) {
-
-            // Vérification que l'utilisateur a demandé la connexion automatique, sinon on sort tout de suite.
-
-
+            String password = null;
             // Récupération des données dans le dictionnaire
             String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_EMAIL);
             String passwordEncrypted = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
-            String password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
-
+            if (passwordEncrypted != null) {
+                password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
+            }
             // Si les données d'identification ont été saisies
             if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
                 UserService.sign(FirebaseAuth.getInstance(), FirebaseDatabase.getInstance(), email, password, this);
@@ -452,7 +460,7 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
     @Override
     public void onCompleteUserSign(Utilisateur user) {
         CurrentUser.getInstance().setUser(user);
-        Toast.makeText(this, "Bienvenue " + CurrentUser.getInstance().getDisplayNameUTI(), Toast.LENGTH_LONG).show();
+        refreshProfileMenu();
     }
 
     @Override

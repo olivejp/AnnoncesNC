@@ -26,11 +26,6 @@
         android:title="@string/action_settings"
         appcompat:showAsAction="never" />
     <item
-        android:id="@+id/action_my_profile"
-        android:icon="@drawable/ic_login_inverse"
-        android:title="@string/action_profile"
-        appcompat:showAsAction="always" />
-    <item
         android:id="@+id/action_suggestion"
         android:title="Suggestion"
         appcompat:showAsAction="never" />

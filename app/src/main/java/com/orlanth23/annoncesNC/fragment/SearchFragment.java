@@ -1,8 +1,8 @@
 package com.orlanth23.annoncesnc.fragment;
 
 
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -209,7 +209,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
             }
 
             // On va remplacer le fragment par celui de la liste d'annonce
-            getFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.tag).addToBackStack(null).commit();
+            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.tag).addToBackStack(null).commit();
         }
     }
 }

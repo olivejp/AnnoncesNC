@@ -5,6 +5,8 @@ import android.util.Log;
 
 import com.orlanth23.annoncesnc.webservice.Proprietes;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -39,7 +41,7 @@ public class PasswordEncryptionService {
         return value;
     }
 
-    public static String desDecryptIt(String value) {
+    public static String desDecryptIt(@NotNull String value) {
         try {
             byte[] encrypedPwdBytes = Base64.decode(value, Base64.DEFAULT);
             Cipher cipher = Cipher.getInstance("DES");
