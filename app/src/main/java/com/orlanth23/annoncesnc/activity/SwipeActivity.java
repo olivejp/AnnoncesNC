@@ -1,5 +1,6 @@
 package com.orlanth23.annoncesnc.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,23 +14,26 @@ import com.orlanth23.annoncesnc.database.DictionaryDAO;
 import com.orlanth23.annoncesnc.fragment.DemoFragmentAnnonces;
 import com.orlanth23.annoncesnc.fragment.DemoFragmentFavorites;
 import com.orlanth23.annoncesnc.fragment.DemoFragmentProfile;
+import com.orlanth23.annoncesnc.utility.ZoomOutPageTransformer;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class SwipeActivity extends AppCompatActivity {
-    private SectionsPagerAdapter mSectionsPagerAdapter;
-    private ViewPager mViewPager;
+    SectionsPagerAdapter mSectionsPagerAdapter;
+    @BindView(R.id.swipe_viewpager)
+    ViewPager mViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_swipe);
-
+        ButterKnife.bind(this);
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-        mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        DictionaryDAO.insertInto(this, DictionaryDAO.Dictionary.DB_CLEF_FIRST_TIME, "N");
+        mViewPager.setPageTransformer(true, new ZoomOutPageTransformer());
     }
 
     @Override
@@ -40,6 +44,19 @@ public class SwipeActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @OnClick(R.id.fab_annonces)
+    public void onNextButton() {
+        if (mViewPager.getCurrentItem() < 2) {
+            mViewPager.setCurrentItem(mViewPager.getCurrentItem() + 1);
+        } else {
+            DictionaryDAO.insertInto(this, DictionaryDAO.Dictionary.DB_CLEF_FIRST_TIME, "N");
+
+            Intent intent = new Intent();
+            intent.setClass(this, LoginFirebaseActivity.class);
+            startActivity(intent);
+        }
     }
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
