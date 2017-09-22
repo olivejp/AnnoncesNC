@@ -3,7 +3,7 @@ Android Application that allows users to share ads. Only available for the New C
 
 # Contributing
 Please feel free to contact me before.
-(orlanth23@hotmail.com)[orlanth23@hotmail.com]
+orlanth23@hotmail.com
 
 # Licence
 MIT License
