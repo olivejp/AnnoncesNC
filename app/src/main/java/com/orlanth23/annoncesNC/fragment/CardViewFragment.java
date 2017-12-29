@@ -89,7 +89,6 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
     private boolean pPhoto;
     private Gson gson;
     private Context mContext;
-    private LinearLayoutManager mLinearLayoutManager;
 
     public CardViewFragment() {
         // Required empty public constructor
@@ -233,7 +232,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
         if (mRecyclerView != null) {
             mRecyclerView.setHasFixedSize(true);
 
-            mLinearLayoutManager = new LinearLayoutManager(getActivity());
+            LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(getActivity());
             mRecyclerView.setLayoutManager(mLinearLayoutManager);
 
             // Ajout d'un divider entre les éléments
@@ -365,6 +364,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                 call = serviceAnnonce.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage);
                 break;
         }
+
         if (call != null) {
             call.enqueue(this);
         }
@@ -389,6 +389,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
             for (Annonce annonce : listAnnonces) {
                 mListAnnonces.add(annonce);
                 if (!mRecyclerView.isComputingLayout()) {
+                    mAdapter.notifyDataSetChanged();
                     mAdapter.notifyItemInserted(mListAnnonces.indexOf(annonce));
                 }
             }

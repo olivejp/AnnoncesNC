@@ -51,12 +51,11 @@ import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
 public class MainActivity extends CustomCompatActivity implements InterfaceProfileActivity, NoticeDialogFragment.NoticeDialogListener, CustomUserSignCallback, CustomUnregisterCallback {
 
-    public final static int CODE_POST_ANNONCE = 100;
-    public final static int CODE_CONNECT_USER = 200;
-    public final static int CODE_SETTINGS = 300;
-    public final static int CODE_POST_NOT_LOGGED = 500;
-    public final static String PARAM_REQUEST_CODE = "REQUEST_CODE";
-    private static final String TAG = MainActivity.class.getName();
+    public static final int CODE_POST_ANNONCE = 100;
+    public static final int CODE_CONNECT_USER = 200;
+    public static final int CODE_SETTINGS = 300;
+    public static final int CODE_POST_NOT_LOGGED = 500;
+    public static final String PARAM_REQUEST_CODE = "REQUEST_CODE";
     private static final String DIALOG_TAG_EXIT = "EXIT";
     private static final String DIALOG_TAG_NO_ACCOUNT = "DIALOG_TAG_NO_ACCOUNT";
     private static final String PARAM_FRAGMENT = "FRAGMENT";
@@ -66,13 +65,119 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
     @BindView(R.id.nav_view)
     NavigationView navigationView;
 
-
     private ActionBarDrawerToggle mDrawerToggle;
     private CharSequence mTitle;
     private HomeFragment homeFragment = new HomeFragment();
     private Fragment searchFragment = new SearchFragment();
     private Fragment mContent;
     private Menu mMenu;
+
+    public void mainPost(View view) {
+        Intent intent = new Intent();
+        Bundle b = new Bundle();
+
+        // Vérification que l'utilisateur est connecté
+        if (!CurrentUser.getInstance().isConnected()) {
+            // Ouverture de l'activity pour connecter l'utilisateur
+            intent.setClass(this, LoginFirebaseActivity.class);
+            b.putInt(PARAM_REQUEST_CODE, CODE_POST_NOT_LOGGED); //Your id
+            intent.putExtras(b);
+            startActivityForResult(intent, CODE_POST_NOT_LOGGED);
+        } else {
+            // On est déjà connecté
+            // Ouverture de l'activity pour créer une nouvelle annonce
+
+            // Passage d'un paramètre Création
+            Bundle bd = new Bundle();
+            bd.putString(PostAnnonceActivity.BUNDLE_KEY_MODE, Constants.PARAM_CRE);
+
+            intent.setClass(this, PostAnnonceActivity.class).putExtras(bd);
+            startActivityForResult(intent, CODE_POST_ANNONCE);
+        }
+    }
+
+    private boolean changeToSearchFragment() {
+        // On va rechercher le fragment qui est en cours d'utilisation
+        if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof SearchFragment)) {
+
+            // On met le Fragment par défaut (SearchFragment) sauf si c'est déjà lui qui est en cours
+            if (searchFragment != null) {
+                setTitle(getString(R.string.searchTitle));
+                mContent = searchFragment;
+                getFragmentManager().beginTransaction()
+                        .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
+                mDrawerLayout.closeDrawer(navigationView);
+                return true;
+            } else {
+                // error in creating fragment
+                Log.e(TAG, getString(R.string.error_creating_fragment));
+                return false;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    public void onClickChangeToSearchFragment(View view) {
+        changeToSearchFragment();
+    }
+
+    public void onClickManageMesAnnonces(View view) {
+        // On va rechercher le fragment qui est en cours d'utilisation
+        if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof CardViewFragment)
+                || (!getFragmentManager().findFragmentById(R.id.frame_container).getTag().equals(CardViewFragment.ACTION_ANNONCE_BY_USER))) {
+            if (CurrentUser.getInstance().isConnected()) {
+                // Gestion de mes annonces
+                CardViewFragment cardViewFragment = CardViewFragment.newInstance(CardViewFragment.ACTION_ANNONCE_BY_USER, null, null, CurrentUser.getInstance().getIdUTI(), null, null, false);
+
+                // On va remplacer le fragment par celui de la liste d'annonce
+                getFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.ACTION_ANNONCE_BY_USER).addToBackStack(null).commit();
+            }
+        }
+    }
+
+    private void sendEmailImprovement() {
+        String[] TO = {BuildConfig.ADMIN_EMAIL};
+        String[] CC = {""};
+        Intent emailIntent = new Intent(Intent.ACTION_SEND);
+
+        emailIntent.setData(Uri.parse("mailto:"));
+        emailIntent.setType("text/plain");
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
+        emailIntent.putExtra(Intent.EXTRA_CC, CC);
+        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Suggestion d'amélioration");
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "");
+
+        try {
+            startActivityForResult(Intent.createChooser(emailIntent, "Envoyer un email d'amélioration"), 0);
+        } catch (android.content.ActivityNotFoundException ex) {
+            Toast.makeText(this, "There is no email client installed.", Toast.LENGTH_LONG).show();
+            Log.e("NotFoundException", ex.getMessage(), ex);
+        }
+    }
+
+    public void tryAuthenticateUser() {
+
+        // Si on a une connexion
+        if (Utility.checkWifiAndMobileData(this)) {
+
+            // Vérification que l'utilisateur a demandé la connexion automatique, sinon on sort tout de suite.
+
+
+            // Récupération des données dans le dictionnaire
+            String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_EMAIL);
+            String passwordEncrypted = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
+            String password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
+
+            // Si les données d'identification ont été saisies
+            if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
+                UserService.sign(FirebaseAuth.getInstance(), FirebaseDatabase.getInstance(), email, password, this);
+            }
+        } else {
+            // Si pas de connexion, on récupère l'utilisateur enregistré
+            CurrentUser.getInstance().getUserFromDictionary(this);
+        }
+    }
 
     @Override
     protected void onStart() {
@@ -88,7 +193,9 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add);
+        TAG = MainActivity.class.getName();
+
+        FloatingActionButton fab = findViewById(R.id.fab_add);
         if (fab != null) {
             fab.setVisibility(View.VISIBLE);
         }
@@ -213,70 +320,6 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
         return super.onPrepareOptionsMenu(menu);
     }
 
-    public void mainPost(View view) {
-        Intent intent = new Intent();
-        Bundle b = new Bundle();
-
-        // Vérification que l'utilisateur est connecté
-        if (!CurrentUser.getInstance().isConnected()) {
-            // Ouverture de l'activity pour connecter l'utilisateur
-            intent.setClass(this, LoginFirebaseActivity.class);
-            b.putInt(PARAM_REQUEST_CODE, CODE_POST_NOT_LOGGED); //Your id
-            intent.putExtras(b);
-            startActivityForResult(intent, CODE_POST_NOT_LOGGED);
-        } else {
-            // On est déjà connecté
-            // Ouverture de l'activity pour créer une nouvelle annonce
-
-            // Passage d'un paramètre Création
-            Bundle bd = new Bundle();
-            bd.putString(PostAnnonceActivity.BUNDLE_KEY_MODE, Constants.PARAM_CRE);
-
-            intent.setClass(this, PostAnnonceActivity.class).putExtras(bd);
-            startActivityForResult(intent, CODE_POST_ANNONCE);
-        }
-    }
-
-    private boolean changeToSearchFragment() {
-        // On va rechercher le fragment qui est en cours d'utilisation
-        if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof SearchFragment)) {
-
-            // On met le Fragment par défaut (SearchFragment) sauf si c'est déjà lui qui est en cours
-            if (searchFragment != null) {
-                setTitle(getString(R.string.searchTitle));
-                mContent = searchFragment;
-                getFragmentManager().beginTransaction()
-                        .replace(R.id.frame_container, searchFragment, SearchFragment.TAG).addToBackStack(null).commit();
-                mDrawerLayout.closeDrawer(navigationView);
-                return true;
-            } else {
-                // error in creating fragment
-                Log.e(TAG, getString(R.string.error_creating_fragment));
-                return false;
-            }
-        } else {
-            return true;
-        }
-    }
-
-    public void onClickChangeToSearchFragment(View view) {
-        changeToSearchFragment();
-    }
-
-    public void onClickManageMesAnnonces(View view) {
-        // On va rechercher le fragment qui est en cours d'utilisation
-        if (!(getFragmentManager().findFragmentById(R.id.frame_container) instanceof CardViewFragment)
-                || (!getFragmentManager().findFragmentById(R.id.frame_container).getTag().equals(CardViewFragment.ACTION_ANNONCE_BY_USER))) {
-            if (CurrentUser.getInstance().isConnected()) {
-                // Gestion de mes annonces
-                CardViewFragment cardViewFragment = CardViewFragment.newInstance(CardViewFragment.ACTION_ANNONCE_BY_USER, null, null, CurrentUser.getInstance().getIdUTI(), null, null, false);
-
-                // On va remplacer le fragment par celui de la liste d'annonce
-                getFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.ACTION_ANNONCE_BY_USER).addToBackStack(null).commit();
-            }
-        }
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
@@ -299,23 +342,7 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
                 return true;
 
             case R.id.action_suggestion:
-                String[] TO = {BuildConfig.ADMIN_EMAIL};
-                String[] CC = {""};
-                Intent emailIntent = new Intent(Intent.ACTION_SEND);
-
-                emailIntent.setData(Uri.parse("mailto:"));
-                emailIntent.setType("text/plain");
-                emailIntent.putExtra(Intent.EXTRA_EMAIL, TO);
-                emailIntent.putExtra(Intent.EXTRA_CC, CC);
-                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Suggestion d'amélioration");
-                emailIntent.putExtra(Intent.EXTRA_TEXT, "");
-
-                try {
-                    startActivityForResult(Intent.createChooser(emailIntent, "Envoyer un email d'amélioration"), 0);
-                } catch (android.content.ActivityNotFoundException ex) {
-                    Toast.makeText(this, "There is no email client installed.", Toast.LENGTH_LONG).show();
-                    Log.e("NotFoundException", ex.getMessage(), ex);
-                }
+                sendEmailImprovement();
                 return true;
 
             case R.id.action_my_profile:
@@ -346,7 +373,6 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
                     return true;
                 } else {
                     // On a cliqué sur le l'option Déconnexion
-                    // On se déconnecte
                     if (mAuth != null) {
                         mAuth.signOut();
                     }
@@ -367,6 +393,66 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        // Fermeture du drawer latéral s'il est ouvert
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer != null) {
+            if (drawer.isDrawerOpen(GravityCompat.START)) {
+                drawer.closeDrawer(GravityCompat.START);
+            } else {
+                if (getFragmentManager().getBackStackEntryCount() > 0) {
+                    getFragmentManager().popBackStack();
+                } else {
+                    // on demande avant de quitter l'application
+                    Utility.SendDialogByActivity(this, getString(R.string.dialog_want_to_quit), NoticeDialogFragment.TYPE_BOUTON_YESNO, NoticeDialogFragment.TYPE_IMAGE_INFORMATION, DIALOG_TAG_EXIT);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void refreshProfileMenu() {
+        if (mMenu != null) {
+            mMenu.findItem(R.id.action_connect).setVisible(!CurrentUser.getInstance().isConnected());
+
+            // Gestion du profil accessible uniquement si l'user est connecté
+            mMenu.findItem(R.id.action_my_profile).setVisible(CurrentUser.getInstance().isConnected());
+        }
+    }
+
+    @Override
+    public void onCompleteUserSign(Utilisateur user) {
+        CurrentUser.getInstance().setUser(user);
+        Toast.makeText(this, "Bienvenue " + CurrentUser.getInstance().getDisplayNameUTI(), Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onFailureUserSign(Exception e) {
+        Intent intent = new Intent();
+        intent.setClass(this, LoginFirebaseActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onCancelledUserSign() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void onCompleteUnregister() {
+        CurrentUser.getInstance().clear();
+        Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
+        refreshProfileMenu();
+        getFragmentManager().popBackStackImmediate();
+    }
+
+    @Override
+    public void onFailureUnregister() {
+        Toast.makeText(getApplicationContext(), "Impossible de supprimer cet utilisateur.", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         Utility.hideKeyboard(this);
@@ -396,87 +482,4 @@ public class MainActivity extends CustomCompatActivity implements InterfaceProfi
                 break;
         }
     }
-
-    @Override
-    public void onBackPressed() {
-        // Fermeture du drawer latéral s'il est ouvert
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer != null) {
-            if (drawer.isDrawerOpen(GravityCompat.START)) {
-                drawer.closeDrawer(GravityCompat.START);
-            } else {
-                if (getFragmentManager().getBackStackEntryCount() > 0) {
-                    getFragmentManager().popBackStack();
-                } else {
-                    // on demande avant de quitter l'application
-                    Utility.SendDialogByActivity(this, getString(R.string.dialog_want_to_quit), NoticeDialogFragment.TYPE_BOUTON_YESNO, NoticeDialogFragment.TYPE_IMAGE_INFORMATION, DIALOG_TAG_EXIT);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void refreshProfileMenu() {
-        if (mMenu != null) {
-            mMenu.findItem(R.id.action_connect).setVisible(!CurrentUser.getInstance().isConnected());
-
-            // Gestion du profil accessible uniquement si l'user est connecté
-            mMenu.findItem(R.id.action_my_profile).setVisible(CurrentUser.getInstance().isConnected());
-        }
-    }
-
-
-    public void tryAuthenticateUser() {
-
-        // Si on a une connexion
-        if (Utility.checkWifiAndMobileData(this)) {
-
-            // Vérification que l'utilisateur a demandé la connexion automatique, sinon on sort tout de suite.
-
-
-            // Récupération des données dans le dictionnaire
-            String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_EMAIL);
-            String passwordEncrypted = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
-            String password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
-
-            // Si les données d'identification ont été saisies
-            if (email != null && password != null && !email.isEmpty() && !password.isEmpty()) {
-                UserService.sign(FirebaseAuth.getInstance(), FirebaseDatabase.getInstance(), email, password, this);
-            }
-        } else {
-            // Si pas de connexion, on récupère l'utilisateur enregistré
-            CurrentUser.getInstance().getUserFromDictionary(this);
-        }
-    }
-
-    @Override
-    public void onCompleteUserSign(Utilisateur user) {
-        CurrentUser.getInstance().setUser(user);
-        Toast.makeText(this, "Bienvenue " + CurrentUser.getInstance().getDisplayNameUTI(), Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onFailureUserSign(Exception e) {
-        Intent intent = new Intent();
-        intent.setClass(this, LoginFirebaseActivity.class);
-        startActivity(intent);
-    }
-
-    @Override
-    public void onCancelledUserSign() {
-    }
-
-    @Override
-    public void onCompleteUnregister() {
-        CurrentUser.getInstance().clear();
-        Toast.makeText(getApplicationContext(), "Votre profil a été dévalidé", Toast.LENGTH_LONG).show();
-        refreshProfileMenu();
-        getFragmentManager().popBackStackImmediate();
-    }
-
-    @Override
-    public void onFailureUnregister() {
-        Toast.makeText(getApplicationContext(), "Impossible de supprimer cet utilisateur.", Toast.LENGTH_LONG).show();
-    }
-
 }

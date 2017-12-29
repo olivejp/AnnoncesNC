@@ -13,6 +13,8 @@ public abstract class EndlessRecyclerOnScrollListener extends
     protected EndlessRecyclerOnScrollListener(
             LinearLayoutManager linearLayoutManager) {
         this.mLinearLayoutManager = linearLayoutManager;
+
+
     }
 
     @Override

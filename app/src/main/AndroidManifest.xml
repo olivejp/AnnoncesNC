@@ -55,7 +55,7 @@
             android:name=".activity.MainActivity"
             android:label="@string/app_name"
             android:theme="@style/MyMaterialTheme"
-            android:windowSoftInputMode="adjustResize|stateHidden" />
+            android:windowSoftInputMode="adjustResize|stateHidden|adjustPan" />
         <activity
             android:name=".activity.LoginFirebaseActivity"
             android:label="@string/title_activity_login"

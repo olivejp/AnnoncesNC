@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 public abstract class AppCompatPreferenceActivity extends PreferenceActivity {
 
     private AppCompatDelegate mDelegate;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getDelegate().installViewFactory();

@@ -3,6 +3,7 @@ package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -11,7 +12,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -45,7 +45,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
         }
     };
     @BindView(R.id.buttonSearch)
-    Button btnSearch;
+    FloatingActionButton btnSearch;
     @BindView(R.id.editTextSearch)
     EditText editKeyword;
     @BindView(R.id.checkBoxPhoto)
