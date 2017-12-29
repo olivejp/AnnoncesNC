@@ -208,11 +208,15 @@ public class LoginFirebaseActivity extends CustomCompatActivity
     public void onCompleteUserSign(Utilisateur user) {
         prgDialog.dismiss();
 
+        String password = null;
+
         // Si l'email est celui du compte par defaut et que le mot de passe est différent de celui enregistré en base
         // On met a jour le mot de passe de la base.
         String email = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_EMAIL);
         String passwordEncrypted = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE);
-        String password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
+        if (passwordEncrypted != null) {
+            password = PasswordEncryptionService.desDecryptIt(passwordEncrypted);
+        }
         String connexionAuto = DictionaryDAO.getValueByKey(this, DictionaryDAO.Dictionary.DB_CLEF_AUTO_CONNECT);
         if (mEmail.equals(email) && !mPassword.equals(password) && connexionAuto.equals("O")) {
             DictionaryDAO.update(this, DictionaryDAO.Dictionary.DB_CLEF_MOT_PASSE, PasswordEncryptionService.desEncryptIt(mPassword));

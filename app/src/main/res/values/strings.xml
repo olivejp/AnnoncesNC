@@ -233,5 +233,9 @@
     <string name="non">No</string>
     <string name="oui">Yes</string>
     <string name="title_activity_swipe">SwipeActivity</string>
+    <string name="welcome_msg">Bonjour\n\nBienvenue dans votre nouvelle application Annonces NC.\n\nGrace à elle vous pourrez poster une petite annonce depuis n\'importe où, même si vous n\'avez pas de connexion. L\'application postera votre annonce ainsi que toutes les photos jointes dès que vous disposerez d\'une connexion.</string>
+    <string name="next">Suivant</string>
+    <string name="favorites_msg">Favorites Text</string>
+    <string name="profile_msg">Mon texte profile</string>
 </resources>
 

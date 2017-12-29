@@ -24,7 +24,7 @@
         android:fullBackupContent="true"
         android:icon="@drawable/ic_action_icon"
         android:label="@string/app_name"
-        android:theme="@style/FullScreenTheme">
+        android:theme="@style/MyMaterialTheme">
         <activity
             android:name=".activity.FullScreenActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
@@ -50,7 +50,7 @@
         <activity
             android:name=".activity.SwipeActivity"
             android:label="Demo"
-            android:theme="@style/FullScreenTheme" />
+            android:theme="@style/MyMaterialTheme" />
         <activity
             android:name=".activity.MainActivity"
             android:label="@string/app_name"
@@ -60,7 +60,7 @@
             android:name=".activity.LoginFirebaseActivity"
             android:label="@string/title_activity_login"
             android:parentActivityName=".activity.MainActivity"
-            android:theme="@style/FullScreenTheme"
+            android:theme="@style/MyMaterialTheme"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
             android:name=".activity.PostAnnonceActivity"

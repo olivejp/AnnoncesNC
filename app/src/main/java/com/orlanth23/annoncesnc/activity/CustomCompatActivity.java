@@ -109,32 +109,4 @@ public abstract class CustomCompatActivity extends AppCompatActivity {
         return prgDialog;
     }
 
-    public void setPrgDialog(ProgressDialog prgDialog) {
-        this.prgDialog = prgDialog;
-    }
-
-    public FirebaseAuth getmAuth() {
-        return mAuth;
-    }
-
-    public void setmAuth(FirebaseAuth mAuth) {
-        this.mAuth = mAuth;
-    }
-
-    public FirebaseAuth.AuthStateListener getmAuthStateListener() {
-        return mAuthStateListener;
-    }
-
-    public void setmAuthStateListener(FirebaseAuth.AuthStateListener mAuthStateListener) {
-        this.mAuthStateListener = mAuthStateListener;
-    }
-
-    public FirebaseUser getmFirebaseUser() {
-        return mFirebaseUser;
-    }
-
-    public void setmFirebaseUser(FirebaseUser mFirebaseUser) {
-        this.mFirebaseUser = mFirebaseUser;
-    }
-
 }

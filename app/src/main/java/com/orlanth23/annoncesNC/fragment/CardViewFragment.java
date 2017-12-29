@@ -1,11 +1,11 @@
 package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -68,6 +68,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
     public static final String ACTION_ANNONCE_BY_CATEGORY = "ACTION_ANNONCE_BY_CATEGORY";
     public static final String ACTION_ANNONCE_BY_USER = "ACTION_ANNONCE_BY_USER";
     public static final String ACTION_MULTI_PARAM = "ACTION_MULTI_PARAM";
+    public static final String ACTION_RECENT_ANNONCES = "ACTION_RECENT_ANNONCES";
     @BindView(R.id.textEmpty)
     TextView textEmpty;
     @BindView(R.id.linearContent)
