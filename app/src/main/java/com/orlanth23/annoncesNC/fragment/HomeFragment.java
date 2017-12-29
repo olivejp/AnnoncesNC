@@ -64,7 +64,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // Gestion d'une animation
-                ImageView image = (ImageView) rootView.findViewById(R.id.imageHomeLogo);
+                ImageView image = rootView.findViewById(R.id.imageHomeLogo);
                 Animation animation = AnimationUtils.loadAnimation(getActivity().getApplicationContext(), R.anim.myanimation);
                 image.startAnimation(animation);
             }
