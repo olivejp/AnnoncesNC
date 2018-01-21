@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/degrade"
     android:orientation="vertical"
-    tools:context="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity">
+    tools:context="com.orlanth23.annoncesnc.ui.activity.LoginFirebaseActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

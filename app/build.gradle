@@ -1,39 +1,30 @@
 ext {
-    supportLibVersion = '25.3.1'  // variable dont on peut faire référence
-    ButterKnifeVersion = '8.5.1'
+    supportLibVersion = '27.0.2'  // variable dont on peut faire référence
+    ButterKnifeVersion = '8.8.1'
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'org.sonarqube'
-//apply from: "$project.rootDir/script-git-version.gradle"
-
-def keystorePropertiesFile = rootProject.file("keystore.properties")
-def keystoreProperties = new Properties()
-keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
-
-sonarqube {
-    androidVariant 'serverNCDebug'
-}
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
     signingConfigs {
         config {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
+            keyAlias "${keyAlias}"
+            keyPassword "${keyPassword}"
+            storeFile file("${storeFile}")
+            storePassword "${storePassword}"
         }
     }
     defaultConfig {
         applicationId "com.orlanth23.annoncesnc"
         minSdkVersion 16
-        targetSdkVersion 25
+        targetSdkVersion 27
         versionCode 15
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+        versionName '15'
     }
     buildTypes {
         ShrinkRelease {
@@ -46,28 +37,10 @@ android {
         debug {
             shrinkResources false
             minifyEnabled false
-            signingConfig signingConfigs.config
             debuggable true
         }
-    }
-    productFlavors {
-        dev {
-//            versionCode gitVersionCodeTime
-//            versionName gitVersionName
-            versionCode 15
-            versionName '15'
-            buildConfigField 'String', 'ADMIN_EMAIL', '"orlanth23@hotmail.com"'
-            minSdkVersion 23
-            applicationId 'com.orlanth23.annoncesnc'
-            targetSdkVersion 25
-            testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
-        }
-        prod {
-//            versionCode gitVersionCode
-//            versionName gitVersionName
-            versionCode 1
-            versionName "1"
-            buildConfigField 'String', 'ADMIN_EMAIL', '"admin@oliweb.nc"'
+        release {
+            signingConfig signingConfigs.config
         }
     }
     useLibrary 'org.apache.http.legacy'
@@ -85,39 +58,45 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
     // Espresso support
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile "com.android.support:appcompat-v7:${supportLibVersion}"
-    compile "com.android.support:support-v4:${supportLibVersion}"
-    compile "com.android.support:design:${supportLibVersion}"
-    compile "com.android.support:cardview-v7:${supportLibVersion}"
-    compile "com.android.support:recyclerview-v7:${supportLibVersion}"
-    compile "com.android.support:support-v4:${supportLibVersion}"
-    compile "com.jakewharton:butterknife:${ButterKnifeVersion}"
+    implementation "com.android.support:customtabs:${supportLibVersion}"
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:support-v4:${supportLibVersion}"
+    implementation "com.android.support:design:${supportLibVersion}"
+    implementation "com.android.support:cardview-v7:${supportLibVersion}"
+    implementation "com.android.support:recyclerview-v7:${supportLibVersion}"
+    implementation "com.android.support:support-v4:${supportLibVersion}"
+    implementation "com.jakewharton:butterknife:${ButterKnifeVersion}"
     annotationProcessor "com.jakewharton:butterknife-compiler:${ButterKnifeVersion}"
-    androidTestCompile "com.android.support:support-v4:${supportLibVersion}"
-    compile 'com.squareup.retrofit2:retrofit:2.2.0'
-    compile 'com.squareup.retrofit2:converter-gson:2.1.0'
-    compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.google.code.gson:gson:2.7'
-    compile 'com.google.android.gms:play-services-ads:10.2.1'
-    compile 'org.jetbrains:annotations-java5:15.0'
-    compile 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
-    compile 'com.google.firebase:firebase-storage:10.2.1'
-    compile 'com.google.firebase:firebase-auth:10.2.1'
-    compile 'com.google.firebase:firebase-database:10.2.1'
-    compile 'io.reactivex:rxjava:1.1.6'
-    compile 'com.android.support.constraint:constraint-layout:1.0.1'
-    compile 'io.jsonwebtoken:jjwt:0.7.0'
-    compile 'com.google.firebase:firebase-messaging:10.0.1'
-    testCompile 'junit:junit:4.12'
-    androidTestCompile 'com.android.support.test:runner:0.5'
-    androidTestCompile 'com.android.support.test:rules:0.5'
-    androidTestCompile 'com.android.support.test.espresso:espresso-intents:2.2.2'
-    androidTestCompile 'com.android.support.test.espresso:espresso-web:2.2.2'
+    androidTestImplementation "com.android.support:support-v4:${supportLibVersion}"
+    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
+    implementation 'com.caverock:androidsvg:1.2.1'
+    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    implementation 'com.github.bumptech.glide:glide:4.4.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.4.0'
+    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.google.android.gms:play-services-ads:11.8.0'
+    implementation 'com.google.android.gms:play-services-auth:11.8.0'
+    implementation 'org.jetbrains:annotations-java5:15.0'
+    implementation 'it.sephiroth.android.library.imagezoom:imagezoom:2.2.5'
+    implementation 'com.google.firebase:firebase-storage:11.8.0'
+    implementation 'com.google.firebase:firebase-auth:11.8.0'
+    implementation 'com.google.firebase:firebase-database:11.8.0'
+    implementation 'com.google.firebase:firebase-messaging:11.8.0'
+    implementation 'com.facebook.android:facebook-android-sdk:4.27.0'
+    implementation 'com.firebaseui:firebase-ui-auth:3.1.0'
+    implementation 'io.reactivex:rxjava:1.1.6'
+    implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+    implementation 'io.jsonwebtoken:jjwt:0.7.0'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test:rules:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-intents:3.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-web:3.0.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

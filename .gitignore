@@ -1,5 +1,4 @@
 .gradle
-/keystore.properties
 /local.properties
 /.idea/workspace.xml
 /.idea/libraries

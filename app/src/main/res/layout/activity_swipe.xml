@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="com.orlanth23.annoncesnc.activity.SwipeActivity">
+    tools:context="com.orlanth23.annoncesnc.ui.activity.SwipeActivity">
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_annonces"
@@ -14,7 +14,7 @@
         android:layout_height="40dp"
         android:layout_gravity="bottom|right"
         android:layout_margin="15dp"
-        android:src="@drawable/ic_action_accept" />
+        android:src="@drawable/ic_chevron_rigth" />
 
     <android.support.v4.view.ViewPager
         android:id="@+id/swipe_viewpager"

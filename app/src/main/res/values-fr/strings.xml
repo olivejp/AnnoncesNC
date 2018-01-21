@@ -4,7 +4,7 @@
     <string name="action_post">Poster une annonce</string>
     <string name="action_log_in">Se connecter</string>
     <string name="action_log_out">Se déconnecter</string>
-    <string name="action_search">Rechercher</string>
+    <string name="action_search">Recherche avancée</string>
     <string name="action_profile">Mon profil</string>
 
     <!-- Strings related to login -->

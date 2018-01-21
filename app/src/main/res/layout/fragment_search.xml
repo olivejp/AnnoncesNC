@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".activity.MainActivity">
+    tools:context=".ui.activity.MainActivity">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -106,8 +106,8 @@
                             android:ems="10"
                             android:hint="@string/min"
                             android:inputType="number"
-                            android:textColorHint="@color/colorHighlight"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
+                            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                            android:textColorHint="@color/colorHighlight" />
                     </android.support.design.widget.TextInputLayout>
 
                     <TextView
@@ -131,8 +131,8 @@
                             android:ems="10"
                             android:hint="@string/max"
                             android:inputType="number"
-                            android:textColorHint="@color/colorHighlight"
-                            android:textAppearance="@style/TextAppearance.AppCompat.Body2"/>
+                            android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                            android:textColorHint="@color/colorHighlight" />
                     </android.support.design.widget.TextInputLayout>
                 </LinearLayout>
             </LinearLayout>
@@ -153,12 +153,12 @@
 
                 <Button
                     android:id="@+id/buttonSearch"
+                    style="@style/MyButtonStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:onClick="lostPassword"
-                    android:text="@string/action_search"
-                    style="@style/MyButtonStyle"/>
+                    android:text="@string/action_search" />
             </RelativeLayout>
         </LinearLayout>
     </ScrollView>

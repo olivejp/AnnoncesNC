@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/ColorPrimary"
-    tools:context="com.orlanth23.annoncesnc.fragment.DemoFragmentAnnonces">
+    tools:context="com.orlanth23.annoncesnc.ui.fragment.DemoFragmentAnnonces">
 
 
     <TextView

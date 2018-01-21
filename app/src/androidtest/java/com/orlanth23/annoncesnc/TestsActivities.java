@@ -5,7 +5,7 @@ import android.support.test.runner.AndroidJUnit4;
 import android.view.View;
 import android.widget.EditText;
 
-import com.orlanth23.annoncesnc.activity.ChangePasswordFirebaseActivity;
+import com.orlanth23.annoncesnc.ui.activity.ChangePasswordFirebaseActivity;
 
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;

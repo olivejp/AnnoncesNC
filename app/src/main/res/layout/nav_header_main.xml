@@ -12,8 +12,8 @@
         android:id="@+id/img_header_bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
-        android:src="@drawable/ic_drawer_header" />
+        android:background="@color/ColorPrimary"
+        android:scaleType="centerCrop" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -23,7 +23,7 @@
         android:padding="@dimen/activity_horizontal_margin">
 
         <ImageView
-            android:id="@+id/img_profile"
+            android:id="@+id/nav_img_profile"
             android:layout_width="@dimen/profile_width"
             android:layout_height="@dimen/profile_height"
             android:paddingTop="@dimen/nav_header_vertical_spacing"
