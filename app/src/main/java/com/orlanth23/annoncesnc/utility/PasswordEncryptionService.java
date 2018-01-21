@@ -1,11 +1,10 @@
 package com.orlanth23.annoncesnc.utility;
 
+import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
 
 import com.orlanth23.annoncesnc.webservice.Proprietes;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -30,19 +29,21 @@ public class PasswordEncryptionService {
     }
 
     public static String desEncryptIt(String value) {
-        try {
-            byte[] clearText = value.getBytes("UTF8");
-            Cipher cipher = Cipher.getInstance("DES");
-            cipher.init(Cipher.ENCRYPT_MODE, getSecretKey());
-            return Base64.encodeToString(cipher.doFinal(clearText), Base64.DEFAULT);
-        } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException e) {
-            Log.e("desEncryptIt", e.getMessage(), e);
+        if (!TextUtils.isEmpty(value)) {
+            try {
+                byte[] clearText = value.getBytes("UTF8");
+                Cipher cipher = Cipher.getInstance("DES");
+                cipher.init(Cipher.ENCRYPT_MODE, getSecretKey());
+                return Base64.encodeToString(cipher.doFinal(clearText), Base64.DEFAULT);
+            } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchPaddingException | UnsupportedEncodingException | IllegalBlockSizeException | BadPaddingException e) {
+                Log.e("desEncryptIt", e.getMessage(), e);
+            }
         }
         return value;
     }
 
-    public static String desDecryptIt(@NotNull String value) {
-        if (!value.isEmpty()) {
+    public static String desDecryptIt(String value) {
+        if (!TextUtils.isEmpty(value)) {
             try {
                 byte[] encrypedPwdBytes = Base64.decode(value, Base64.DEFAULT);
                 Cipher cipher = Cipher.getInstance("DES");

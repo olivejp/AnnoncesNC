@@ -1,4 +1,4 @@
-package com.orlanth23.annoncesnc.ui.fragment;
+package com.orlanth23.annoncesnc.fragment;
 
 import android.app.Activity;
 import android.content.Context;
@@ -24,6 +24,8 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.activity.CustomCompatActivity;
+import com.orlanth23.annoncesnc.adapter.CardViewDataAdapter;
 import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.dto.Annonce;
 import com.orlanth23.annoncesnc.dto.AnnonceFirebase;
@@ -31,8 +33,6 @@ import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.listener.EndlessRecyclerOnScrollListener;
 import com.orlanth23.annoncesnc.provider.ProviderContract;
 import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesnc.ui.activity.CustomCompatActivity;
-import com.orlanth23.annoncesnc.ui.adapter.CardViewDataAdapter;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
@@ -54,7 +54,7 @@ import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
 public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
 
-    public static final String TAG = CardViewFragment.class.getName();
+    public static final String tag = CardViewFragment.class.getName();
 
     public static final String PARAM_ACTION = "ACTION";
     public static final String PARAM_KEYWORD = "KEYWORD";
@@ -77,7 +77,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
     LinearLayout linearEmpty;
     @BindView(R.id.my_recycler_view)
     RecyclerView mRecyclerView;
-    private int currentPage = 1;
+    private int current_page = 1;
     private CardViewDataAdapter mAdapter;
     private String action;
     private String mode;
@@ -121,121 +121,6 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
         return fragment;
     }
 
-    private void loadData(int currentPage) {
-        // Création d'un RestAdapter pour le futur appel de mon RestService
-        ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
-        Call<ReturnWS> call = null;
-
-        switch (action) {
-            case ACTION_ANNONCE_BY_CATEGORY:
-                // Appel du service RETROFIT
-                if (category != null) {
-                    // S'il y a du réseau on va recuperer la liste des annonces sur le net
-                    if (Utility.checkWifiAndMobileData(mContext)) {
-                        Query query = FirebaseDatabase.getInstance().getReference("annonces").orderByChild("idCategory").equalTo(category.getIdCAT());
-                        query.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                                    AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
-                                    annonceFirebase.getUUIDFirebaseAnnonce();
-                                }
-                            }
-
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
-                }
-                break;
-            case ACTION_ANNONCE_BY_KEYWORD:
-                // Appel du service RETROFIT
-                call = serviceAnnonce.searchAnnonceWithPage(keyword, currentPage);
-                break;
-            case ACTION_ANNONCE_BY_USER:
-                // S'il y a du réseau on va recuperer la liste des annonces sur le net
-                if (Utility.checkWifiAndMobileData(mContext)) {
-                    Query query = FirebaseDatabase.getInstance().getReference("annonces").orderByChild("idUtilisateur").equalTo(idUser);
-                    query.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                                AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
-                                annonceFirebase.getUUIDFirebaseAnnonce();
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    });
-                } else {
-                    // Tentative de récupération dans le contentProvider
-                    String where = AnnonceContract.COL_ID_UTILISATEUR + "=?";
-                    String[] args = new String[]{idUser};
-                    Cursor cursor = getActivity().getContentResolver().query(ProviderContract.AnnonceEntry.CONTENT_URI, null, where, args, null);
-                    if (cursor != null) {
-                        while (cursor.moveToNext()) {
-                            AnnonceFirebase annonceFirebase = new AnnonceFirebase();
-                            annonceFirebase.setUUIDFirebaseAnnonce(cursor.getString(cursor.getColumnIndex(AnnonceContract.COL_UUID_ANNONCE)));
-
-                        }
-                        cursor.close();
-                    }
-                }
-                break;
-            case ACTION_MULTI_PARAM:
-                // Appel du service RETROFIT multiparamètre
-                call = serviceAnnonce.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage);
-                break;
-            default:
-                break;
-        }
-        if (call != null) {
-            call.enqueue(this);
-        }
-    }
-
-    private void changeVisibility() {
-        if (linearContent != null && linearEmpty != null) {
-            if (mListAnnonces.isEmpty()) {
-                linearContent.setVisibility(View.GONE);
-                linearEmpty.setVisibility(View.VISIBLE);
-                textEmpty.setVisibility(View.VISIBLE);
-            } else {
-                linearContent.setVisibility(View.VISIBLE);
-                linearEmpty.setVisibility(View.GONE);
-                textEmpty.setVisibility(View.GONE);
-            }
-        }
-    }
-
-    private void onPostWebservice(ArrayList<Annonce> listAnnonces) {
-        if (listAnnonces != null) {
-            for (Annonce annonce : listAnnonces) {
-                mListAnnonces.add(annonce);
-                if (!mRecyclerView.isComputingLayout()) {
-                    mAdapter.notifyItemInserted(mListAnnonces.indexOf(annonce));
-                }
-            }
-        }
-
-        changeVisibility();
-
-        currentPage++;
-    }
-
-
-    private void onFailureWs() {
-        Activity activity = getActivity();
-        if (activity != null) {
-            SendDialogByActivity(activity, getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
-        }
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -270,8 +155,8 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
             }
         }
         mAdapter = new CardViewDataAdapter(mContext, mListAnnonces, mode);
-        currentPage = 1;
-        loadData(currentPage);
+        current_page = 1;
+        loadData(current_page);
     }
 
     @Override
@@ -363,7 +248,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                     mLinearLayoutManager) {
                 @Override
                 public void onLoadMore() {
-                    loadData(currentPage);
+                    loadData(current_page);
                 }
             });
         }
@@ -406,6 +291,131 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
         changeVisibility();
 
         return rootView;
+    }
+
+
+    private void loadData(int currentPage) {
+        // Création d'un RestAdapter pour le futur appel de mon RestService
+        ServiceAnnonce serviceAnnonce = new Retrofit.Builder().baseUrl(Proprietes.getServerEndpoint()).addConverterFactory(GsonConverterFactory.create()).build().create(ServiceAnnonce.class);
+        Call<ReturnWS> call = null;
+
+        switch (action) {
+            case ACTION_ANNONCE_BY_CATEGORY:
+                // Appel du service RETROFIT
+                if (category != null) {
+                    // S'il y a du réseau on va recuperer la liste des annonces sur le net
+                    if (Utility.checkWifiAndMobileData(mContext)) {
+                        Query query = FirebaseDatabase.getInstance().getReference("annonces").orderByChild("idCategory").equalTo(category.getIdCAT());
+                        query.addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                    AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
+                                    annonceFirebase.getUUIDFirebaseAnnonce();
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                    }
+                }
+                break;
+            case ACTION_ANNONCE_BY_KEYWORD:
+                // Appel du service RETROFIT
+                call = serviceAnnonce.searchAnnonceWithPage(keyword, currentPage);
+                break;
+            case ACTION_ANNONCE_BY_USER:
+                // S'il y a du réseau on va recuperer la liste des annonces sur le net
+                if (Utility.checkWifiAndMobileData(mContext)) {
+                    Query query = FirebaseDatabase.getInstance().getReference("annonces").orderByChild("idUtilisateur").equalTo(idUser);
+                    query.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
+                                annonceFirebase.getUUIDFirebaseAnnonce();
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                } else {
+                    // Tentative de récupération dans le contentProvider
+                    String where = AnnonceContract.COL_ID_UTILISATEUR + "=?";
+                    String[] args = new String[]{idUser};
+                    Cursor cursor = getActivity().getContentResolver().query(ProviderContract.AnnonceEntry.CONTENT_URI, null, where, args, null);
+                    if (cursor != null) {
+                        while (cursor.moveToNext()) {
+                            AnnonceFirebase annonceFirebase = new AnnonceFirebase();
+                            annonceFirebase.setUUIDFirebaseAnnonce(cursor.getString(cursor.getColumnIndex(AnnonceContract.COL_UUID_ANNONCE)));
+
+                        }
+                        cursor.close();
+                    }
+                }
+                break;
+            case ACTION_MULTI_PARAM:
+                // Appel du service RETROFIT multiparamètre
+                call = serviceAnnonce.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage);
+                break;
+        }
+
+        if (call != null) {
+            call.enqueue(this);
+        }
+    }
+
+    private void changeVisibility() {
+        if (linearContent != null && linearEmpty != null) {
+            if (mListAnnonces.isEmpty()) {
+                linearContent.setVisibility(View.GONE);
+                linearEmpty.setVisibility(View.VISIBLE);
+                textEmpty.setVisibility(View.VISIBLE);
+            } else {
+                linearContent.setVisibility(View.VISIBLE);
+                linearEmpty.setVisibility(View.GONE);
+                textEmpty.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void onPostWebservice(ArrayList<Annonce> listAnnonces) {
+        if (listAnnonces != null) {
+            for (Annonce annonce : listAnnonces) {
+                mListAnnonces.add(annonce);
+                if (!mRecyclerView.isComputingLayout()) {
+                    mAdapter.notifyDataSetChanged();
+                    mAdapter.notifyItemInserted(mListAnnonces.indexOf(annonce));
+                }
+            }
+        }
+
+        changeVisibility();
+
+        current_page++;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+    }
+
+    private void onFailureWs() {
+        Activity activity = getActivity();
+        if (activity != null) {
+            SendDialogByActivity(activity, getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
+        }
     }
 
     @Override

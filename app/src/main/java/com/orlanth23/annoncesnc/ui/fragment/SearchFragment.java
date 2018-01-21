@@ -1,8 +1,9 @@
-package com.orlanth23.annoncesnc.ui.fragment;
+package com.orlanth23.annoncesnc.fragment;
 
 
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -11,7 +12,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -19,10 +19,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.orlanth23.annoncesnc.R;
+import com.orlanth23.annoncesnc.activity.CustomCompatActivity;
+import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
 import com.orlanth23.annoncesnc.dto.Categorie;
 import com.orlanth23.annoncesnc.list.ListeCategories;
-import com.orlanth23.annoncesnc.ui.activity.CustomCompatActivity;
-import com.orlanth23.annoncesnc.ui.adapter.SpinnerAdapter;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 
@@ -45,7 +45,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
         }
     };
     @BindView(R.id.buttonSearch)
-    Button btnSearch;
+    FloatingActionButton btnSearch;
     @BindView(R.id.editTextSearch)
     EditText editKeyword;
     @BindView(R.id.checkBoxPhoto)
@@ -209,7 +209,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
             }
 
             // On va remplacer le fragment par celui de la liste d'annonce
-            getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.TAG).addToBackStack(null).commit();
+            getFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.tag).addToBackStack(null).commit();
         }
     }
 }

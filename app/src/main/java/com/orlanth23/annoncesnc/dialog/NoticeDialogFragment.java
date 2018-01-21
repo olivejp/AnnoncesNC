@@ -57,7 +57,6 @@ public class NoticeDialogFragment extends DialogFragment {
 
         /* Fenêtre de confirmation */
         // On applique le message d'erreur
-        // builder.setMessage(getArguments().getString(P_MESSAGE));
         textview.setText(getArguments().getString(P_MESSAGE));
 
         switch (typeBouton) {
@@ -87,7 +86,7 @@ public class NoticeDialogFragment extends DialogFragment {
                 break;
         }
 
-        ImageView imgView = (ImageView) view.findViewById(R.id.imageDialog);
+        ImageView imgView = view.findViewById(R.id.imageDialog);
         switch (typeImage) {
             case TYPE_IMAGE_CAUTION:
                 imgView.setImageResource(R.drawable.ic_attention);
