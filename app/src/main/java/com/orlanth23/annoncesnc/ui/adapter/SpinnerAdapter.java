@@ -10,7 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.dto.Categorie;
+import com.orlanth23.annoncesnc.domain.Categorie;
 
 import java.util.ArrayList;
 

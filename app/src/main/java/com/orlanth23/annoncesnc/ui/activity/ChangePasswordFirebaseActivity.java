@@ -6,9 +6,9 @@ import android.widget.EditText;
 
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
-import com.orlanth23.annoncesnc.dto.CurrentUser;
-import com.orlanth23.annoncesnc.interfaces.CustomChangePasswordCallback;
+import com.orlanth23.annoncesnc.domain.CurrentUser;
 import com.orlanth23.annoncesnc.service.UserService;
+import com.orlanth23.annoncesnc.ui.interfaces.CustomChangePasswordCallback;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
 

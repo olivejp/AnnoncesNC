@@ -17,34 +17,28 @@ import butterknife.ButterKnife;
 import it.sephiroth.android.library.imagezoom.ImageViewTouch;
 import it.sephiroth.android.library.imagezoom.ImageViewTouchBase;
 
-
+@SuppressWarnings("squid:MaximumInheritanceDepth")
 public class ImageViewerActivity extends AppCompatActivity {
 
     public static final String BUNDLE_KEY_URI = "URI";
 
     private final Handler mHideHandler = new Handler();
-    private final Runnable mShowPart2Runnable = new Runnable() {
-        @Override
-        public void run() {
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.show();
-            }
+    private final Runnable mShowPart2Runnable = () -> {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.show();
         }
     };
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            ActionBar actionBar = getSupportActionBar();
-            if (actionBar != null) {
-                actionBar.hide();
-            }
-            mHideHandler.removeCallbacks(mShowPart2Runnable);
+    private final Runnable mHideRunnable = () -> {
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
         }
+        mHideHandler.removeCallbacks(mShowPart2Runnable);
     };
     @BindView(R.id.imageViewer)
     ImageViewTouch imageViewer;
-    private String P_FILE_URI_TEMP;
+    private String fileUriTemp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,34 +54,29 @@ public class ImageViewerActivity extends AppCompatActivity {
         }
 
         if (bundle != null) {
-            P_FILE_URI_TEMP = bundle.getString(BUNDLE_KEY_URI);
-            if (P_FILE_URI_TEMP != null)
-                if (P_FILE_URI_TEMP.contains(Constants.PROTOCOL_HTTP) || P_FILE_URI_TEMP.contains(Constants.PROTOCOL_HTTPS)) {
-                    GlideApp.with(this).load(P_FILE_URI_TEMP).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(imageViewer);
+            fileUriTemp = bundle.getString(BUNDLE_KEY_URI);
+            if (fileUriTemp != null)
+                if (fileUriTemp.contains(Constants.PROTOCOL_HTTP) || fileUriTemp.contains(Constants.PROTOCOL_HTTPS)) {
+                    GlideApp.with(this).load(fileUriTemp).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(imageViewer);
                 } else {
-                    Uri uri = Uri.parse(P_FILE_URI_TEMP);
+                    Uri uri = Uri.parse(fileUriTemp);
                     GlideApp.with(this).load(new File(String.valueOf(uri))).placeholder(R.drawable.progress_refresh).error(R.drawable.ic_camera_black).into(imageViewer);
                 }
         }
         imageViewer.setDisplayType(ImageViewTouchBase.DisplayType.FIT_TO_SCREEN);
     }
 
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(BUNDLE_KEY_URI, P_FILE_URI_TEMP);
+        outState.putString(BUNDLE_KEY_URI, fileUriTemp);
     }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        delayedHide(100);
-    }
-
-    private void delayedHide(int delayMillis) {
         mHideHandler.removeCallbacks(mHideRunnable);
-        mHideHandler.postDelayed(mHideRunnable, delayMillis);
+        mHideHandler.postDelayed(mHideRunnable, 100);
     }
 
     @Override

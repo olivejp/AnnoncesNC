@@ -8,9 +8,9 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.Nullable;
 
-import com.orlanth23.annoncesnc.dto.StatutPhoto;
-import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.database.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.database.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.domain.StatutPhoto;
 
 import java.util.Map;
 import java.util.Set;

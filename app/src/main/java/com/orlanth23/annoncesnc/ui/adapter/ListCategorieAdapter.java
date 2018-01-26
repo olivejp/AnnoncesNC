@@ -10,7 +10,7 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.dto.Categorie;
+import com.orlanth23.annoncesnc.domain.Categorie;
 
 import java.util.ArrayList;
 
@@ -47,10 +47,10 @@ public class ListCategorieAdapter extends BaseAdapter {
             convertView = mInflater.inflate(R.layout.drawer_list_categorie, null);
         }
 
-        TextView txtColorCategory = (TextView) convertView.findViewById(R.id.colorCategory);
-        TextView txtidCategory = (TextView) convertView.findViewById(R.id.idCategory);
-        TextView txtTitle = (TextView) convertView.findViewById(R.id.titleCategory);
-        TextView txtCount = (TextView) convertView.findViewById(R.id.counterCategory);
+        TextView txtColorCategory = convertView.findViewById(R.id.colorCategory);
+        TextView txtidCategory = convertView.findViewById(R.id.idCategory);
+        TextView txtTitle = convertView.findViewById(R.id.titleCategory);
+        TextView txtCount = convertView.findViewById(R.id.counterCategory);
         txtidCategory.setText(String.valueOf(navCategorieItems.get(position).getIdCAT()));
 
         int color = Color.parseColor(navCategorieItems.get(position).getCouleurCAT());

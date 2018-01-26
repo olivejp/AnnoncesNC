@@ -22,8 +22,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.domain.CurrentUser;
+import com.orlanth23.annoncesnc.ui.dialog.NoticeDialogFragment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

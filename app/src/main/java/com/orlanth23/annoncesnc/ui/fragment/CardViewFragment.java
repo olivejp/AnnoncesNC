@@ -1,12 +1,12 @@
-package com.orlanth23.annoncesnc.fragment;
+package com.orlanth23.annoncesnc.ui.fragment;
 
 import android.app.Activity;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -24,15 +24,15 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.activity.CustomCompatActivity;
-import com.orlanth23.annoncesnc.adapter.CardViewDataAdapter;
-import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesnc.dto.Annonce;
-import com.orlanth23.annoncesnc.dto.AnnonceFirebase;
-import com.orlanth23.annoncesnc.dto.Categorie;
+import com.orlanth23.annoncesnc.database.provider.ProviderContract;
+import com.orlanth23.annoncesnc.database.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.domain.Annonce;
+import com.orlanth23.annoncesnc.domain.AnnonceFirebase;
+import com.orlanth23.annoncesnc.domain.Categorie;
 import com.orlanth23.annoncesnc.listener.EndlessRecyclerOnScrollListener;
-import com.orlanth23.annoncesnc.provider.ProviderContract;
-import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.ui.activity.CustomCompatActivity;
+import com.orlanth23.annoncesnc.ui.adapter.CardViewDataAdapter;
+import com.orlanth23.annoncesnc.ui.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.Proprietes;
@@ -54,7 +54,7 @@ import static com.orlanth23.annoncesnc.utility.Utility.SendDialogByActivity;
 
 public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
 
-    public static final String tag = CardViewFragment.class.getName();
+    public static final String TAG = CardViewFragment.class.getName();
 
     public static final String PARAM_ACTION = "ACTION";
     public static final String PARAM_KEYWORD = "KEYWORD";
@@ -68,7 +68,6 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
     public static final String ACTION_ANNONCE_BY_CATEGORY = "ACTION_ANNONCE_BY_CATEGORY";
     public static final String ACTION_ANNONCE_BY_USER = "ACTION_ANNONCE_BY_USER";
     public static final String ACTION_MULTI_PARAM = "ACTION_MULTI_PARAM";
-    public static final String ACTION_RECENT_ANNONCES = "ACTION_RECENT_ANNONCES";
     @BindView(R.id.textEmpty)
     TextView textEmpty;
     @BindView(R.id.linearContent)
@@ -77,7 +76,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
     LinearLayout linearEmpty;
     @BindView(R.id.my_recycler_view)
     RecyclerView mRecyclerView;
-    private int current_page = 1;
+    private int currentPage = 1;
     private CardViewDataAdapter mAdapter;
     private String action;
     private String mode;
@@ -151,12 +150,14 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                         pMinPrice = getArguments().getInt(PARAM_MIN_PRICE);
                         pPhoto = getArguments().getBoolean(PARAM_PHOTO);
                         break;
+                    default:
+                        break;
                 }
             }
         }
         mAdapter = new CardViewDataAdapter(mContext, mListAnnonces, mode);
-        current_page = 1;
-        loadData(current_page);
+        currentPage = 1;
+        loadData(currentPage);
     }
 
     @Override
@@ -166,7 +167,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(PARAM_ACTION, action);
         if (category != null) {
@@ -192,7 +193,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // On inflate la vue
         View rootView = inflater.inflate(R.layout.fragment_card_view, container, false);
@@ -224,6 +225,8 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                         pMinPrice = savedInstanceState.getInt(PARAM_MIN_PRICE);
                         pPhoto = savedInstanceState.getBoolean(PARAM_PHOTO);
                         break;
+                    default:
+                        break;
                 }
             }
         }
@@ -248,13 +251,13 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                     mLinearLayoutManager) {
                 @Override
                 public void onLoadMore() {
-                    loadData(current_page);
+                    loadData(currentPage);
                 }
             });
         }
 
         //  Changement du titre et de la couleur de l'activité selon les cas
-        int color = ContextCompat.getColor(getActivity(), R.color.ColorPrimary);
+        int color = getActivity().getResources().getColor(R.color.ColorPrimary);
         String title = null;
 
         switch (action) {
@@ -272,6 +275,8 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
                 break;
             case ACTION_MULTI_PARAM:
                 title = getString(R.string.action_search);
+                break;
+            default:
                 break;
         }
 
@@ -302,25 +307,23 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
         switch (action) {
             case ACTION_ANNONCE_BY_CATEGORY:
                 // Appel du service RETROFIT
-                if (category != null) {
-                    // S'il y a du réseau on va recuperer la liste des annonces sur le net
-                    if (Utility.checkWifiAndMobileData(mContext)) {
-                        Query query = FirebaseDatabase.getInstance().getReference("annonces").orderByChild("idCategory").equalTo(category.getIdCAT());
-                        query.addListenerForSingleValueEvent(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                                    AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
-                                    annonceFirebase.getUUIDFirebaseAnnonce();
-                                }
+                // S'il y a du réseau on va recuperer la liste des annonces sur le net
+                if (category != null && Utility.checkWifiAndMobileData(mContext)) {
+                    Query query = FirebaseDatabase.getInstance().getReference("annonces").orderByChild("idCategory").equalTo(category.getIdCAT());
+                    query.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                AnnonceFirebase annonceFirebase = postSnapshot.getValue(AnnonceFirebase.class);
+                                annonceFirebase.getUUIDFirebaseAnnonce();
                             }
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            // Do Nothing
+                        }
+                    });
 
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
-
-                            }
-                        });
-                    }
                 }
                 break;
             case ACTION_ANNONCE_BY_KEYWORD:
@@ -342,7 +345,7 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
 
                         @Override
                         public void onCancelled(DatabaseError databaseError) {
-
+                            // Do Nothing
                         }
                     });
                 } else {
@@ -363,6 +366,8 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
             case ACTION_MULTI_PARAM:
                 // Appel du service RETROFIT multiparamètre
                 call = serviceAnnonce.searchAnnonceWithMultiparam(category.getIdCAT(), pMinPrice, pMaxPrice, keyword, pPhoto, currentPage);
+                break;
+            default:
                 break;
         }
 
@@ -398,23 +403,13 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
 
         changeVisibility();
 
-        current_page++;
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
+        currentPage++;
     }
 
     private void onFailureWs() {
         Activity activity = getActivity();
         if (activity != null) {
-            SendDialogByActivity(activity, getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, tag);
+            SendDialogByActivity(activity, getString(R.string.dialog_failed_webservice), NoticeDialogFragment.TYPE_BOUTON_OK, NoticeDialogFragment.TYPE_IMAGE_ERROR, TAG);
         }
     }
 
@@ -426,8 +421,8 @@ public class CardViewFragment extends Fragment implements Callback<ReturnWS> {
             if (rs.statusValid()) {
                 Type listType = new TypeToken<ArrayList<Annonce>>() {
                 }.getType();
-                ArrayList<Annonce> mListAnnonces = gson.fromJson(rs.getMsg(), listType);
-                onPostWebservice(mListAnnonces);
+                ArrayList<Annonce> listAnnonces = gson.fromJson(rs.getMsg(), listType);
+                onPostWebservice(listAnnonces);
             } else {
                 onFailureWs();
             }

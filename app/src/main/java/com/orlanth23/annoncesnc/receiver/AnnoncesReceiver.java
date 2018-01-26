@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.orlanth23.annoncesnc.provider.ProviderContract;
+import com.orlanth23.annoncesnc.database.provider.ProviderContract;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.utility.Utility;
 

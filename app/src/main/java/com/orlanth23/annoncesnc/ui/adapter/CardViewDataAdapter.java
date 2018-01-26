@@ -12,9 +12,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.dto.Annonce;
-import com.orlanth23.annoncesnc.dto.Categorie;
-import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.domain.Annonce;
+import com.orlanth23.annoncesnc.domain.Categorie;
+import com.orlanth23.annoncesnc.domain.list.ListeCategories;
 import com.orlanth23.annoncesnc.ui.fragment.DetailAnnonceFragment;
 import com.orlanth23.annoncesnc.utility.Utility;
 

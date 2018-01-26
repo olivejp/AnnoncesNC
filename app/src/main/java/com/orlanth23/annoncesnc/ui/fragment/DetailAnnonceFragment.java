@@ -31,13 +31,13 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.dto.Annonce;
-import com.orlanth23.annoncesnc.dto.Categorie;
-import com.orlanth23.annoncesnc.dto.Photo;
-import com.orlanth23.annoncesnc.dto.StatutPhoto;
-import com.orlanth23.annoncesnc.list.ListeCategories;
-import com.orlanth23.annoncesnc.provider.ProviderContract;
-import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.database.provider.ProviderContract;
+import com.orlanth23.annoncesnc.database.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.domain.Annonce;
+import com.orlanth23.annoncesnc.domain.Categorie;
+import com.orlanth23.annoncesnc.domain.Photo;
+import com.orlanth23.annoncesnc.domain.StatutPhoto;
+import com.orlanth23.annoncesnc.domain.list.ListeCategories;
 import com.orlanth23.annoncesnc.ui.activity.CustomCompatActivity;
 import com.orlanth23.annoncesnc.ui.activity.ImageViewerActivity;
 import com.orlanth23.annoncesnc.ui.activity.PostAnnonceActivity;
@@ -225,8 +225,8 @@ public class DetailAnnonceFragment extends Fragment {
         // On inflate la vue
         ButterKnife.bind(this, rootView);
 
-        horizontalScrollView = (HorizontalScrollView) rootView.findViewById(R.id.horizontalScrollView);
-        scrollImageView = (ScrollView) rootView.findViewById(R.id.scrollImageView);
+        horizontalScrollView = rootView.findViewById(R.id.horizontalScrollView);
+        scrollImageView = rootView.findViewById(R.id.scrollImageView);
 
         // Intégration de AdMob
 //        AdView mAdView = (AdView) rootView.findViewById(R.id.adView);
@@ -309,8 +309,8 @@ public class DetailAnnonceFragment extends Fragment {
         dialogDeleteChoice.setContentView(R.layout.dialog_delete_choice);
         dialogDeleteChoice.setTitle("Supprimer l'annonce ?");
 
-        Button dialogButtonYes = (Button) dialogDeleteChoice.findViewById(R.id.dialog_delete_yes);
-        Button dialogButtonNo = (Button) dialogDeleteChoice.findViewById(R.id.dialog_delete_no);
+        Button dialogButtonYes = dialogDeleteChoice.findViewById(R.id.dialog_delete_yes);
+        Button dialogButtonNo = dialogDeleteChoice.findViewById(R.id.dialog_delete_no);
 
         dialogButtonYes.setOnClickListener(new View.OnClickListener() {
             @Override

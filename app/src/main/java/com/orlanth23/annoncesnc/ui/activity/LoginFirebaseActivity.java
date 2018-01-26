@@ -13,12 +13,12 @@ import android.widget.Toast;
 
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
-import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesnc.dto.CurrentUser;
-import com.orlanth23.annoncesnc.dto.Utilisateur;
-import com.orlanth23.annoncesnc.interfaces.CustomLostPasswordCallback;
-import com.orlanth23.annoncesnc.interfaces.CustomUserSignCallback;
+import com.orlanth23.annoncesnc.domain.CurrentUser;
+import com.orlanth23.annoncesnc.domain.Utilisateur;
 import com.orlanth23.annoncesnc.service.UserService;
+import com.orlanth23.annoncesnc.ui.dialog.NoticeDialogFragment;
+import com.orlanth23.annoncesnc.ui.interfaces.CustomLostPasswordCallback;
+import com.orlanth23.annoncesnc.ui.interfaces.CustomUserSignCallback;
 import com.orlanth23.annoncesnc.utility.PasswordEncryptionService;
 import com.orlanth23.annoncesnc.utility.Utility;
 

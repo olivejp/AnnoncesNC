@@ -18,8 +18,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.database.DatabaseReference;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.dto.CurrentUser;
-import com.orlanth23.annoncesnc.dto.Utilisateur;
+import com.orlanth23.annoncesnc.domain.CurrentUser;
+import com.orlanth23.annoncesnc.domain.Utilisateur;
 import com.orlanth23.annoncesnc.utility.Utility;
 
 import butterknife.BindView;

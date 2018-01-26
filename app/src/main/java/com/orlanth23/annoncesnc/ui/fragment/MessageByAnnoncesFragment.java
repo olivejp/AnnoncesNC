@@ -3,8 +3,8 @@ package com.orlanth23.annoncesnc.ui.fragment;
 import android.app.Fragment;
 import android.os.Bundle;
 
-import com.orlanth23.annoncesnc.dto.Annonce;
-import com.orlanth23.annoncesnc.dto.Message;
+import com.orlanth23.annoncesnc.domain.Annonce;
+import com.orlanth23.annoncesnc.domain.Message;
 
 import java.util.ArrayList;
 

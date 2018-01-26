@@ -26,7 +26,7 @@
         android:label="@string/app_name"
         android:theme="@style/MyMaterialTheme">
         <activity
-            android:name=".activity.FullScreenActivity"
+            android:name=".ui.activity.FullScreenActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/app_name"
             android:noHistory="true"
@@ -48,7 +48,7 @@
         </activity>
 
         <activity
-            android:name=".activity.SwipeActivity"
+            android:name=".ui.activity.SwipeActivity"
             android:label="Demo"
             android:theme="@style/MyMaterialTheme" />
         <activity
@@ -57,13 +57,13 @@
             android:theme="@style/MyMaterialTheme"
             android:windowSoftInputMode="adjustResize|stateHidden|adjustPan" />
         <activity
-            android:name=".activity.LoginFirebaseActivity"
+            android:name="ui.activity.LoginFirebaseActivity"
             android:label="@string/title_activity_login"
             android:parentActivityName=".activity.MainActivity"
             android:theme="@style/MyMaterialTheme"
             android:windowSoftInputMode="adjustResize|stateHidden" />
         <activity
-            android:name=".activity.PostAnnonceActivity"
+            android:name="ui.activity.PostAnnonceActivity"
             android:label="@string/action_post"
             android:parentActivityName=".activity.MainActivity"
             android:windowSoftInputMode="adjustResize|stateHidden">
@@ -72,16 +72,16 @@
                 android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.RegisterFirebaseActivity"
+            android:name="ui.activity.RegisterFirebaseActivity"
             android:label="@string/title_register"
-            android:parentActivityName=".activity.LoginFirebaseActivity"
+            android:parentActivityName="ui.activity.LoginFirebaseActivity"
             android:windowSoftInputMode="adjustResize|stateHidden">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity" />
+                android:value="com.orlanth23.annoncesnc.ui.activity.LoginFirebaseActivity" />
         </activity>
         <activity
-            android:name=".activity.SettingsActivity"
+            android:name="ui.activity.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".activity.MainActivity">
             <meta-data
@@ -89,15 +89,15 @@
                 android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.LostFirebasePasswordActivity"
+            android:name=".ui.activity.LostFirebasePasswordActivity"
             android:label="@string/action_lost_password"
-            android:parentActivityName=".activity.LoginFirebaseActivity">
+            android:parentActivityName=".ui.activity.LoginFirebaseActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.LoginFirebaseActivity" />
+                android:value="com.orlanth23.annoncesnc.ui.activity.LoginFirebaseActivity" />
         </activity>
         <activity
-            android:name=".activity.ChangePasswordFirebaseActivity"
+            android:name=".ui.activity.ChangePasswordFirebaseActivity"
             android:label="@string/change_password"
             android:parentActivityName=".activity.MainActivity">
             <meta-data
@@ -105,21 +105,21 @@
                 android:value="com.orlanth23.annoncesnc.activity.MainActivity" />
         </activity>
         <activity
-            android:name=".activity.WorkImageActivity"
+            android:name=".ui.activity.WorkImageActivity"
             android:label="@string/title_activity_work_image"
-            android:parentActivityName=".activity.PostAnnonceActivity">
+            android:parentActivityName=".ui.activity.PostAnnonceActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.orlanth23.annoncesnc.activity.PostAnnonceActivity" />
+                android:value="com.orlanth23.annoncesnc.ui.activity.PostAnnonceActivity" />
         </activity>
         <activity
-            android:name=".activity.ImageViewerActivity"
+            android:name=".ui.activity.ImageViewerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_image_viewer"
             android:theme="@style/ImageViewerTheme" />
 
         <provider
-            android:name=".provider.AnnoncesProvider"
+            android:name=".database.provider.AnnoncesProvider"
             android:authorities="@string/content_authority"
             android:exported="false"
             android:syncable="true" />
@@ -144,7 +144,7 @@
                 android:name="android.content.SyncAdapter"
                 android:resource="@xml/syncadapter" />
         </service>
-        <service android:name=".notification.AnnonceMessaging">
+        <service android:name=".ui.notification.AnnonceMessaging">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>

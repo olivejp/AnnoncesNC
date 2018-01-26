@@ -8,7 +8,7 @@ import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.orlanth23.annoncesnc.provider.ProviderContract;
+import com.orlanth23.annoncesnc.database.provider.ProviderContract;
 
 import org.junit.Before;
 import org.junit.Test;

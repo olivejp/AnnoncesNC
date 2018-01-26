@@ -31,16 +31,16 @@ import com.google.firebase.storage.StorageMetadata;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.dto.AnnonceFirebase;
-import com.orlanth23.annoncesnc.dto.PhotoFirebase;
-import com.orlanth23.annoncesnc.dto.StatutAnnonce;
-import com.orlanth23.annoncesnc.dto.StatutPhoto;
-import com.orlanth23.annoncesnc.list.ListeCategories;
-import com.orlanth23.annoncesnc.list.ListeStats;
-import com.orlanth23.annoncesnc.provider.ProviderContract;
-import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
-import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.database.provider.ProviderContract;
+import com.orlanth23.annoncesnc.database.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.database.provider.contract.InfosServerContract;
+import com.orlanth23.annoncesnc.database.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.domain.AnnonceFirebase;
+import com.orlanth23.annoncesnc.domain.PhotoFirebase;
+import com.orlanth23.annoncesnc.domain.StatutAnnonce;
+import com.orlanth23.annoncesnc.domain.StatutPhoto;
+import com.orlanth23.annoncesnc.domain.list.ListeCategories;
+import com.orlanth23.annoncesnc.domain.list.ListeStats;
 import com.orlanth23.annoncesnc.utility.Utility;
 import com.orlanth23.annoncesnc.webservice.InfoServer;
 
@@ -50,10 +50,10 @@ import java.util.List;
 import java.util.UUID;
 
 import static android.content.Context.NOTIFICATION_SERVICE;
-import static com.orlanth23.annoncesnc.provider.AnnoncesProvider.sSelectionAnnoncesByStatut;
-import static com.orlanth23.annoncesnc.provider.AnnoncesProvider.sSelectionPhotosByStatut;
-import static com.orlanth23.annoncesnc.provider.ProviderContract.AnnonceEntry;
-import static com.orlanth23.annoncesnc.provider.ProviderContract.PhotoEntry;
+import static com.orlanth23.annoncesnc.database.provider.AnnoncesProvider.sSelectionAnnoncesByStatut;
+import static com.orlanth23.annoncesnc.database.provider.AnnoncesProvider.sSelectionPhotosByStatut;
+import static com.orlanth23.annoncesnc.database.provider.ProviderContract.AnnonceEntry;
+import static com.orlanth23.annoncesnc.database.provider.ProviderContract.PhotoEntry;
 
 public class AnnoncesSyncAdapter extends AbstractThreadedSyncAdapter {
 

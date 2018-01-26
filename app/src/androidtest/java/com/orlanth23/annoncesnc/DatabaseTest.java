@@ -6,11 +6,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
-import com.orlanth23.annoncesnc.provider.AnnoncesDbHelper;
-import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesnc.provider.contract.MessageContract;
-import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
-import com.orlanth23.annoncesnc.provider.contract.UtilisateurContract;
+import com.orlanth23.annoncesnc.database.provider.AnnoncesDbHelper;
+import com.orlanth23.annoncesnc.database.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.database.provider.contract.MessageContract;
+import com.orlanth23.annoncesnc.database.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.database.provider.contract.UtilisateurContract;
 
 import org.junit.Before;
 import org.junit.Test;

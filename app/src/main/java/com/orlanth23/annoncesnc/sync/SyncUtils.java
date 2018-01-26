@@ -8,7 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
-import com.orlanth23.annoncesnc.provider.ProviderContract;
+import com.orlanth23.annoncesnc.database.provider.ProviderContract;
 
 public class SyncUtils {
 

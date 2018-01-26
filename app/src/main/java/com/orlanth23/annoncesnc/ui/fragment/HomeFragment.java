@@ -20,10 +20,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.list.ListeStats;
-import com.orlanth23.annoncesnc.provider.AnnoncesProvider;
-import com.orlanth23.annoncesnc.provider.ProviderContract;
-import com.orlanth23.annoncesnc.provider.contract.InfosServerContract;
+import com.orlanth23.annoncesnc.database.provider.AnnoncesProvider;
+import com.orlanth23.annoncesnc.database.provider.ProviderContract;
+import com.orlanth23.annoncesnc.database.provider.contract.InfosServerContract;
+import com.orlanth23.annoncesnc.domain.list.ListeStats;
 import com.orlanth23.annoncesnc.ui.activity.CustomCompatActivity;
 
 import java.util.concurrent.atomic.AtomicInteger;

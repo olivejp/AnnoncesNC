@@ -6,7 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.orlanth23.annoncesnc.database.DictionaryDAO;
-import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.domain.CurrentUser;
 import com.orlanth23.annoncesnc.receiver.AnnoncesReceiver;
 
 public class FullScreenActivity extends AppCompatActivity {

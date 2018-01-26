@@ -21,8 +21,8 @@ import android.widget.Toast;
 import com.orlanth23.annoncesnc.R;
 import com.orlanth23.annoncesnc.activity.CustomCompatActivity;
 import com.orlanth23.annoncesnc.adapter.SpinnerAdapter;
-import com.orlanth23.annoncesnc.dto.Categorie;
-import com.orlanth23.annoncesnc.list.ListeCategories;
+import com.orlanth23.annoncesnc.domain.Categorie;
+import com.orlanth23.annoncesnc.domain.list.ListeCategories;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
 
@@ -209,7 +209,7 @@ public class SearchFragment extends Fragment implements OnClickListener {
             }
 
             // On va remplacer le fragment par celui de la liste d'annonce
-            getFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.tag).addToBackStack(null).commit();
+            getFragmentManager().beginTransaction().replace(R.id.frame_container, cardViewFragment, CardViewFragment.TAG).addToBackStack(null).commit();
         }
     }
 }

@@ -33,19 +33,19 @@ import android.widget.Toast;
 import com.bumptech.glide.request.target.BitmapImageViewTarget;
 import com.bumptech.glide.request.transition.Transition;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.dialog.NoticeDialogFragment;
-import com.orlanth23.annoncesnc.dto.Annonce;
-import com.orlanth23.annoncesnc.dto.Categorie;
-import com.orlanth23.annoncesnc.dto.CurrentUser;
-import com.orlanth23.annoncesnc.dto.Photo;
-import com.orlanth23.annoncesnc.dto.StatutAnnonce;
-import com.orlanth23.annoncesnc.dto.StatutPhoto;
-import com.orlanth23.annoncesnc.list.ListeCategories;
-import com.orlanth23.annoncesnc.provider.ProviderContract;
-import com.orlanth23.annoncesnc.provider.contract.AnnonceContract;
-import com.orlanth23.annoncesnc.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.database.provider.ProviderContract;
+import com.orlanth23.annoncesnc.database.provider.contract.AnnonceContract;
+import com.orlanth23.annoncesnc.database.provider.contract.PhotoContract;
+import com.orlanth23.annoncesnc.domain.Annonce;
+import com.orlanth23.annoncesnc.domain.Categorie;
+import com.orlanth23.annoncesnc.domain.CurrentUser;
+import com.orlanth23.annoncesnc.domain.Photo;
+import com.orlanth23.annoncesnc.domain.StatutAnnonce;
+import com.orlanth23.annoncesnc.domain.StatutPhoto;
+import com.orlanth23.annoncesnc.domain.list.ListeCategories;
 import com.orlanth23.annoncesnc.sync.AnnoncesAuthenticatorService;
 import com.orlanth23.annoncesnc.ui.adapter.SpinnerAdapter;
+import com.orlanth23.annoncesnc.ui.dialog.NoticeDialogFragment;
 import com.orlanth23.annoncesnc.ui.glide.GlideApp;
 import com.orlanth23.annoncesnc.utility.Constants;
 import com.orlanth23.annoncesnc.utility.Utility;
@@ -288,9 +288,9 @@ public class PostAnnonceActivity extends CustomCompatActivity implements NoticeD
         dialogImageChoice.setContentView(R.layout.dialog_photo_choice);
         dialogImageChoice.setTitle("Que voulez vous faire ?");
 
-        Button dialogButtonAnnuler = (Button) dialogImageChoice.findViewById(R.id.dialog_button_annuler);
-        Button dialogButtonNewPhoto = (Button) dialogImageChoice.findViewById(R.id.dialog_button_new_photo);
-        Button dialogButtonGallery = (Button) dialogImageChoice.findViewById(R.id.dialog_button_gallery_photo);
+        Button dialogButtonAnnuler = dialogImageChoice.findViewById(R.id.dialog_button_annuler);
+        Button dialogButtonNewPhoto = dialogImageChoice.findViewById(R.id.dialog_button_new_photo);
+        Button dialogButtonGallery = dialogImageChoice.findViewById(R.id.dialog_button_gallery_photo);
 
         // if button is clicked, close the custom dialog
         dialogButtonAnnuler.setOnClickListener(new View.OnClickListener() {

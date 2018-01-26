@@ -13,7 +13,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.FirebaseDatabase;
 import com.orlanth23.annoncesnc.R;
-import com.orlanth23.annoncesnc.dto.CurrentUser;
+import com.orlanth23.annoncesnc.domain.CurrentUser;
 
 public abstract class CustomCompatActivity extends AppCompatActivity {
 
